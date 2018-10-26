@@ -4,7 +4,7 @@
 # 這是最主要的 R code (marginS and marginFree) since [2018/05/20]-[2018/07/08] instance-4
 # porting to HNSCC_Tex_survival since [2018/10/24] {3 levels:main, TCGA_HNSCC_[marginS/marginFree], cutofFinder_func.R}
 
-# [2018/10/26] sync: pull and push with remote github
+# [2018/10/26] sync: pull and push with remote github (well done)
 # Tutorial: Survival analysis of TCGA patients integrating gene expression (RNASeq) data
 # https://www.biostars.org/p/153013/
 # HNSCC or LUAD, there is many web tools: https://github.com/mdozmorov/TCGAsurvival/blob/master/Cancer_DB.Rmd
