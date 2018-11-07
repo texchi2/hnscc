@@ -6,6 +6,9 @@
 
 # [2018/10/26] sync: pull and push with remote github (well done); Screens connect from iPad pro (ok)
 #  git config remote.origin.url git@github.com:texchi2/hnscc.git  # for pull/push (sync by ssh without id/pw)
+# Happy Birthday [2018/11/07] resume from project of hnscc_git
+# 
+
 # Tutorial: Survival analysis of TCGA patients integrating gene expression (RNASeq) data
 # https://www.biostars.org/p/153013/
 # HNSCC or LUAD, there is many web tools: https://github.com/mdozmorov/TCGAsurvival/blob/master/Cancer_DB.Rmd
