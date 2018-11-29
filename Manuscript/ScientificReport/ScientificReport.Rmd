@@ -1,0 +1,92 @@
+---
+title: A Biomarker Cutoff Optimization in TCGA HNSCC 
+subtitle: Do you have a subtitle? If so, write it here
+titlerunning: Short form of title (if too long for head)
+authorrunning: Short form of author list if too long for running head
+thanks: | 
+    Grants or other notes about the article that should go on the front 
+    page should be placed here. General acknowledgments should be placed at the
+    end of the article.
+
+authors: 
+- name: Li-Hsing Chi 1
+  address: Department of YYY, University of XXX
+  email: abc@def
+  
+- name: Âuthóř 2
+  address: Department of ZZZ, University of WWW
+  email: djf@wef
+
+keywords:
+- HNSCC
+- TCGA
+- survival
+- cutoff
+
+#PACS: 
+#- PAC1
+#- superPAC
+    
+MSC:
+- MSC code 1
+- MSC code 2    
+
+abstract:
+  Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment. Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of estrogen receptor (ER) and progesterone receptor (PgR) in breast cancer tissues. This distribution of these important markers is analyzed and correlated with immunohistologically determined ER status.
+
+bibliography: bibliography.bib
+output: rticles::springer_article
+---
+
+# Introduction {#intro}
+
+Your text comes here. Separate text sections with
+
+# Material and method {#sec:1}
+
+Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
+1) Implementation under Rstudio server! run .R code
+github as a version control
+workflow: data access GDC portal, data cleaning, clinicopathologic features determination, extraction RNAseq for each gene, run100 for Cutoff Determination with P-value plot, ranking by fold change and significant P-value. wenn diagram => yield a table of candidate genes.
+ROC curve
+The optimal cutoff is defined as the point with the most
+significant (log-rank test) split. Hazard ratios (HRs) including
+95% confidence intervals are calculated.
+
+2) manuscript in kniR.rmd r markdown or sweav to generate reproducible research article
+3) surgical margin issue in survival analysis (even it is not a biological feature, which somehow is an artificial result, there is the most important effect on patient's prognosis)
+4) Peter (a list with ranking) of mRNA (RNAseq) or LncRNA
+cTNM alone (in KM analysis);
+instead of pTNM, clinical features 不必多 (Joy's manuscript: smoking (±), betel nut)
+n=500 case number 要多一些
+The criteria of candidate genes: more 2500 genes (top 100); gene of non-coding RNA ?
+IHC to convince and validate those genes
+<30 published articles in pubmed
+not related with known HNSCC genes
+
+## Subsection title {#sec:2}
+
+as required. Don't forget to give each section
+and subsection a unique label (see Sect. \ref{sec:1}).
+
+# Discussion {#sec:4}
+評估一下 
+你的方法跟..之間有和差異嗎? prognoscan, cutoff finder (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
+http://molpath.charite.de/cutoff/index.jsp
+Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atlas 有 TCGA最適跟中切
+跟FireBrowse: http://firebrowse.org/# => TCGA 有預後跟臨床關係的相關性 其中有顯著意義的probe
+你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA
+
+#### Paragraph headings 
+
+Use paragraph headings as needed.
+
+\begin{align}
+a^2+b^2=c^2
+\end{align}
+
+
+
+
+
+# References
