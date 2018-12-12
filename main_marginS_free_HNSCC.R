@@ -11,7 +11,7 @@
 # $ git config --global user.name "texchi2"
 # $ git config remote.origin.url git@github.com:texchi2/hnscc.git
 # or without --global for IBM Watson Studio instance (sudo is not available)
-# }  
+# } in case of Permissions 0644 for '~/.ssh/id_rsa' are too open."  => $ chmod 400 ~/.ssh/id_rsa 
 #  =>steps: commit/pull/push and done (to sync by ssh without id/pw)
 # Happy Birthday [2018/11/07] resume from project of hnscc_github
 # (2018/11/08 happy Yang's LN: start to shrink => still => ANA 1:620 suggested SLE?)
