@@ -91,6 +91,14 @@ install.packages("binaryLogic") # as.binary
 # for sweave and knitr
 install.packages("knitr")
 
+# check installed package
+# {
+package_list <- as.data.frame(installed.packages()[,c(1,3:4)])
+rownames(package_list) <- NULL
+package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE]
+# print(package_list, row.names=FALSE)
+# }
+
 
 ## START: set path on google drive ####
 #library(FirebrowseR)
