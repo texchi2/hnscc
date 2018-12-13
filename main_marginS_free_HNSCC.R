@@ -29,7 +29,7 @@
 # source("fun.R") # multi <- function() {} in fun.R
 # mult(-4:4, 2)
 
-# install packages
+# install packages (must)
 #{
 # make from the source "curl" and its libcurl, compiling under shell
 # $ wget https://github.com/curl/curl/releases/download/curl-7_59_0/curl-7.59.0.tar.gz
@@ -93,10 +93,18 @@ install.packages("knitr")
 
 # check installed package
 # {
-package_list <- as.data.frame(installed.packages()[,c(1,3:4)])
+package_list0 <- installed.packages()
+package_list <- as.data.frame(package_list0[,c(1,3:4)]) # col4 is Priority
 rownames(package_list) <- NULL
-package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE]
+package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE] # removal BASE and recommended packages
 # print(package_list, row.names=FALSE)
+# 
+library(dplyr)
+package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "compositions", "openssl","psych", "survival", "reshape", "data.table","scales", "dplyr", "magrittr","plyr","ca","devtools","debugr","pforeach","ggrough","gdtools","svglite","xml2","rticles","gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis","xlsx","r2excel","githubinstall","minpack.lm","gplots","VennDiagram","venn","binaryLogic","knitr"))
+#right <- right_join(package_list, package_must)
+#right <- select(right, Package)
+# Filtering joins: #drops all observations in df1(L) that match in df2(R)
+right <- anti_join(package_must, package_list, by="Package") # *** we need to install them manually
 # }
 
 
