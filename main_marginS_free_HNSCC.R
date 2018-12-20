@@ -43,6 +43,7 @@ install.packages(c("psych", "survival", "reshape", "data.table"))
 install.packages(c("scales", "dplyr", "magrittr"))
 install.packages(c("plyr")) #ddply()
 install.packages("ca")
+install.packages("spelling")
 # followings from github
 install.packages("devtools")
 library(devtools)
