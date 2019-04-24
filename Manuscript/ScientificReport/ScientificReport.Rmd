@@ -43,7 +43,7 @@ output: rticles::springer_article
 Your text comes here. Separate text sections with
 
 # Material and method {#sec:1}
-
+<!-- # since the date [2019//04/24] after -->
 Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
 1) Implementation under Rstudio server! run .R code
 github as a version control
