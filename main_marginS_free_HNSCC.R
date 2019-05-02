@@ -16,6 +16,7 @@
 # Happy Birthday [2018/11/07] resume from project of hnscc_github
 # (2018/11/08 happy Yang's LN: start to shrink => still => ANA 1:620 suggested SLE?)
 # [2018/11/30] Teamviewer is better.
+# [2019/05/02] start to work
 
 # Tutorial: Survival analysis of TCGA patients integrating gene expression (RNASeq) data
 # https://www.biostars.org/p/153013/
