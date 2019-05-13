@@ -119,15 +119,17 @@ right <- anti_join(package_must, package_list, by="Package")
 # }
 
 
-## START: set path on google drive ####
+## START: set path on GCP cloud drive ####
 #library(FirebrowseR)
-TCGA_cohort <- "LUAD" # cancer type
+TCGA_cohort <- "HNSCC" # cancer type: LUAD
 #path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
-path_LUAD <- "~/R/LUAD_Peter_survival" # under rstudio-server on GCP
-#path_LUAD <- "~/R/LUAD_Peter_survival/mount" # mount google drive to ubuntu@instances-4 at GCP
-# it can’t read “mounted” directory from R
+# rename path_LUAD ad path_cohort
+path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
+# path_LUAD <- "~/R/LUAD_Peter_survival" # under rstudio-server on GCP
+#x path_LUAD <- "~/R/LUAD_Peter_survival/mount" # mount google drive to ubuntu@instances-4 at GCP
+#x it can’t read “mounted” directory from R
 #path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
-setwd(path_LUAD) # set the working directory to the google drive
+setwd(path_cohort) # set the working directory under rstudio-server on GCP
 
 load(file="whole_genome.Rda") # the name list of protein coding genome
 # below 2 lines: it needs to be modified for a function cal
@@ -142,11 +144,11 @@ LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
 # }
 
 # by "Source on Save" checked
-#source(paste(path_LUAD, "TCGA_LUAD_marginS.R", sep="")) # survival_marginS <- function() {} in TCGA_LUAD_marginS.R
-#source(paste(path_LUAD, "TCGA_LUAD_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
-source(file=file.path(path_LUAD, "TCGA_LUAD_marginS.R")) # survival_marginS <- function() {} in TCGA_LUAD_marginS.R
-source(file=file.path(path_LUAD, "TCGA_LUAD_marginFree.R")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
-source(file=file.path(path_LUAD, "cutofFinder_func.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
+#source(paste(path_cohort, "TCGA_LUAD_marginS.R", sep="")) # survival_marginS <- function() {} in TCGA_LUAD_marginS.R
+#source(paste(path_cohort, "TCGA_LUAD_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
+source(file=file.path(path_cohort, "TCGA_LUAD_marginS.R")) # survival_marginS <- function() {} in TCGA_LUAD_marginS.R
+source(file=file.path(path_cohort, "TCGA_LUAD_marginFree.R")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
+source(file=file.path(path_cohort, "cutofFinder_func.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
 # https://support.rstudio.com/hc/en-us/articles/200484448-Editing-and-Executing-Code
 
 #install.packages("gmailr") # dependencies ‘curl’, ‘openssl’ are not available for package ‘httr’
@@ -732,7 +734,7 @@ print(paste("Expended duration:", end_time - start_time, "hours"))
 # [Results] ####
 #====== Analysis of output .Rda of _marginS_ or _marginFree_
 # [2018/06/20] they are stored at ./run04_marginS_
-path_ZSWIM2 <- file.path(path_LUAD, "run04_marginS_")
+path_ZSWIM2 <- file.path(path_cohort, "run04_marginS_")
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
 # 3 hours for 1,000 genes to be scanned under GCP Rstudio server
@@ -926,7 +928,7 @@ for (ip in (bb:aa)) {
 
 #_marginS_ or _marginFree_ by SFree; saving on ./run04_marginS_, files => 17030
 save(candidate_sample, candidate_cox, n_percent_Bonferroni, file=file.path(path_ZSWIM2, paste("LUAD_OS", SFree, "pvalueKM_candidate_cox.Rda", sep=""))) #ok; with KM_sig and Remark, and Cox HR
-setwd(path_LUAD) 
+setwd(path_cohort) 
 #_marginS_ by SFree
 # saved file="LUAD_OS_marginS_pvalueKM_candidate_cox.Rda" above
 #_marginFree_ by SFree
@@ -1648,7 +1650,7 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 # save the workbook to an Excel file and write the file to disk.####
 setwd(path_ZSWIM2)
 xlsx::saveWorkbook(wb, filenamex)
-setwd(path_LUAD)
+setwd(path_cohort)
 #xlsx.openFile(filenamex) # open file to review
 
 
@@ -1746,7 +1748,7 @@ aks_genes %in% unlist(candidates_Bonferroni_pvalue$Gene_id)
 #### [mainB process #part B] { margin free ####
 # genome-wide scan for margin 0 only cohort ###
 # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
-#source(paste(path_LUAD, "TCGA_LUAD_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
+#source(paste(path_cohort, "TCGA_LUAD_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
 # START: set path, variables and functions...
 
 # then run from here: start_time to end_time
@@ -2550,7 +2552,7 @@ david_good <- merge(candidate_good_uni_HR0p5, candidate_good_multi_HR0p5, by="ge
 # failure to apply "sudo" in R ;-)
 isect_list <- unlist(c(isect_HR2p5, isect_HR0p5)) # 42 genes
 scp_list <- paste("LUAD_survivalAnalysis_marginS_", isect_list, ".xlsx", sep="")
-#setwd(path_LUAD)
+#setwd(path_cohort)
 #if (scp_list %in% dir()) {
 # copy file to ./xlsx directory
 # dir.create("./xlsx")
