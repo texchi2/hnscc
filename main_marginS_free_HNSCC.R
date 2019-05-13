@@ -50,6 +50,7 @@ install.packages("spelling")
 install.packages("devtools")
 library(devtools)
 install_github("jsugarelli/debugr") # package requires R >= 3.5.0
+# current R version 3.4.4
 # dwatch() debugr_switchOff() debugr_switchOn()
 devtools::install_github("hoxo-m/pforeach", force=T)
 devtools::install_github("xvrdm/ggrough", force=T) # ggrough converts my ggplot2 plots to rough/sketchy charts, using the excellent javascript roughjs library.
@@ -73,7 +74,10 @@ devtools::install_github("ismayc/rticles", force=T) # R Markdown "Reed Senior Th
 # https://www.r-bloggers.com/r-markdown-senior-thesis-template/
 # end of github packages installation
 
-install.packages(c("gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis"))
+install.packages(c("gmailr", "ggplot2", "rms", "xlsx", "r2excel", "tis"))
+# base: graphics, 
+# ok in previous version of rms, r2excel
+#{
 # $ wget https://www.rforge.net/rJava/snapshot/rJava_0.9-10.tar.gz
 # install.packages("rJava", repos="~/R/rJava_0.9-10.tar.gz") # it is tuft to install
 
@@ -84,6 +88,7 @@ install_github("kassambara/r2excel", force=T) # the only way OK; reinstall it
 install.packages("githubinstall")
 library("githubinstall")
 githubinstall("r2excel")
+#}
 #} all libraries are installed.
 
 install.packages("minpack.lm")
@@ -108,7 +113,9 @@ package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "comp
 #right <- right_join(package_list, package_must)
 #right <- select(right, Package)
 # Filtering joins: #drops all observations in df1(L) that match in df2(R)
-right <- anti_join(package_must, package_list, by="Package") # *** "right": which failed to be installed => we need to install them manually
+# *** "right": which failed to be installed => we need to install them manually
+right <- anti_join(package_must, package_list, by="Package")
+# [2019/05/13] skip rticles and debugr so far
 # }
 
 
