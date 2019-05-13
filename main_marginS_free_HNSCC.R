@@ -64,14 +64,14 @@ devtools::install_github("xvrdm/ggrough", force=T) # ggrough converts my ggplot2
 #{
 # $ sudo apt-get install libcairo2-dev
 #system("sudo apt-get install libcairo2-dev")
-devtools::install_github('davidgohel/gdtools')
-devtools::install_github("r-lib/svglite")
+devtools::install_github('davidgohel/gdtools', force=T)
+devtools::install_github("r-lib/svglite", force=T)
 #$ sudo apt-get install libxml2
-devtools::install_github("r-lib/xml2")
+devtools::install_github("r-lib/xml2", force=T)
 # }
-devtools::install_github("ismayc/rticles") # R Markdown "Reed Senior Thesis" template, https://www.r-bloggers.com/r-markdown-senior-thesis-template/
+devtools::install_github("ismayc/rticles", force=T) # R Markdown "Reed Senior Thesis" template, https://www.r-bloggers.com/r-markdown-senior-thesis-template/
 # https://www.r-bloggers.com/r-markdown-senior-thesis-template/
-#
+# end of github packages installation
 
 install.packages(c("gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis"))
 # $ wget https://www.rforge.net/rJava/snapshot/rJava_0.9-10.tar.gz
