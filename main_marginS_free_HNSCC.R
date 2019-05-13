@@ -16,8 +16,8 @@
 # Happy Birthday [2018/11/07] resume from project of hnscc_github
 # (2018/11/08 happy Yang's LN: start to shrink => still => ANA 1:620 suggested SLE?)
 # [2018/11/30] Teamviewer is better.
-# [2019/05/02] start to work [2019/05/08] upgrade Rstudio server + install openssl 1.1.0
-# 
+# [2019/05/02] start to work [2019/05/08] upgraded Rstudio server + install openssl 1.1.0
+# [2019/05/13]
 
 # Tutorial: Survival analysis of TCGA patients integrating gene expression (RNASeq) data
 # https://www.biostars.org/p/153013/
@@ -31,8 +31,8 @@
 # source("fun.R") # multi <- function() {} in fun.R
 # mult(-4:4, 2)
 
-# install packages (must)
 #{
+# (install packages (must)) ####
 # make from the source "curl" and its libcurl, compiling under shell
 # $ wget https://github.com/curl/curl/releases/download/curl-7_59_0/curl-7.59.0.tar.gz
 # $ tar -xzvf curl-7.59.0.tar.gz
@@ -46,13 +46,13 @@ install.packages(c("scales", "dplyr", "magrittr"))
 install.packages(c("plyr")) #ddply()
 install.packages("ca")
 install.packages("spelling")
-# followings from github
+# followings: for github
 install.packages("devtools")
 library(devtools)
 install_github("jsugarelli/debugr") # package requires R >= 3.5.0
 # dwatch() debugr_switchOff() debugr_switchOn()
-devtools::install_github("hoxo-m/pforeach")
-devtools::install_github("xvrdm/ggrough") # ggrough converts my ggplot2 plots to rough/sketchy charts, using the excellent javascript roughjs library.
+devtools::install_github("hoxo-m/pforeach", force=T)
+devtools::install_github("xvrdm/ggrough", force=T) # ggrough converts my ggplot2 plots to rough/sketchy charts, using the excellent javascript roughjs library.
 # dependencies gdtools, ‘svglite’, ‘xml2’; https://xvrdm.github.io/ggrough/
 # usage:
 # ggplot() -> p 
@@ -71,6 +71,7 @@ devtools::install_github("r-lib/xml2")
 # }
 devtools::install_github("ismayc/rticles") # R Markdown "Reed Senior Thesis" template, https://www.r-bloggers.com/r-markdown-senior-thesis-template/
 # https://www.r-bloggers.com/r-markdown-senior-thesis-template/
+#
 
 install.packages(c("gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis"))
 # $ wget https://www.rforge.net/rJava/snapshot/rJava_0.9-10.tar.gz
