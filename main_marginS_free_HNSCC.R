@@ -146,9 +146,9 @@ LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
 # by "Source on Save" checked
 #source(paste(path_cohort, "TCGA_LUAD_marginS.R", sep="")) # survival_marginS <- function() {} in TCGA_LUAD_marginS.R
 #source(paste(path_cohort, "TCGA_LUAD_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
-source(file=file.path(path_cohort, "TCGA_LUAD_marginS.R")) # survival_marginS <- function() {} in TCGA_LUAD_marginS.R
-source(file=file.path(path_cohort, "TCGA_LUAD_marginFree.R")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
-source(file=file.path(path_cohort, "cutofFinder_func.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
+source(file=file.path(path_cohort, "TCGA_HNSCC_marginS.R")) # survival_marginS <- function() {} in TCGA_LUAD_marginS.R
+source(file=file.path(path_cohort, "TCGA_HNSCC_marginFree.R")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
+source(file=file.path(path_cohort, "cutofFinder_func_HNSCC.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
 # https://support.rstudio.com/hc/en-us/articles/200484448-Editing-and-Executing-Code
 
 #install.packages("gmailr") # dependencies ‘curl’, ‘openssl’ are not available for package ‘httr’
@@ -181,6 +181,7 @@ library("psych") # for describe()
 library(survival)
 
 # ***colnames of osccT
+# it should be modified
 coln_osccT <- c("Unique.ID","Gender","ageDx",
                 "pathologic_T","pathologic_N",
                 "pathologic_M","stage", "margin",

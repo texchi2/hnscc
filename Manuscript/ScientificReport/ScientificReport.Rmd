@@ -47,6 +47,9 @@ Your text comes here. Separate text sections with
 install linux on GCP with ssh connection
 install R base and Rstudio server
 install R packages on CRAN repository and Github
+load(file="whole_genome.Rda") # the name list of protein coding genome
+# below 2 lines: it needs to be modified for a function cal
+LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
 
 
 
