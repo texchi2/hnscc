@@ -51,6 +51,7 @@ load(file="whole_genome.Rda") # the name list of protein coding genome
 # below 2 lines: it needs to be modified for a function cal
 LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
 
+introduce R scripts: TCGA_HNSCC_marginFree.R  TCGA_HNSCC_marginS.R  cutofFinder_func_HNSCC.R  main_marginS_free_HNSCC.R
 
 
 Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
