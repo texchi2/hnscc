@@ -182,8 +182,9 @@ library(survival)
 
 # ***colnames of osccT
 # the clinical features should be modified:
-# cTNM alone (KM analysis); smoking (±)
-# instead of pTNM, Clinicopathological features 不必多 (Joy's manuscript)
+# cTNM alone (KM analysis); smoking (±)  smoking in TCGA LUAD?
+# instead of pTNM;
+# Clinicopathological features 不必多 (Joy's manuscript)
 # {
 # age 65 year old
 # Gender
@@ -202,11 +203,17 @@ library(survival)
 # <30 published articles in pubmed
 # not related with known HNSCC genes
 # }
+# # pathologic_T => clinical_T and so on...
 coln_osccT <- c("Unique.ID","Gender","ageDx",
-                "pathologic_T","pathologic_N",
-                "pathologic_M","stage", "margin",
+                "clinical_T","clinical_N",
+                "clinical_M","stage", "margin",
                 "OS_IND","OS..months._from.biopsy",
                 "RFS_IND", "RFS..months._from.op", "H.score_T", paste("PMM1", "_median", sep=""))
+# # coln_osccT <- c("Unique.ID","Gender","ageDx",
+#                 "pathologic_T","pathologic_N",
+#                 "pathologic_M","stage", "margin",
+#                 "OS_IND","OS..months._from.biopsy",
+#                 "RFS_IND", "RFS..months._from.op", "H.score_T", paste("PMM1", "_median", sep=""))
 
 
 # for tableChi1 (table 2)
@@ -220,13 +227,14 @@ ciUniMti <- c("Features",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value",	"HR",	"CI95%(
 featuresUni <- c("Gender",
                  "Age at diagnosis",
                  #                 "Primary site",
-                 #                 "Clinical T Status",
-                 #                 "Clinical N Status",
-                 #                 "Clinical Stage",
-                 "Pathologic T status",
-                 "Pathologic N status",
-                 "Pathologic M status",
-                 "Pathologic Stage",
+                                  "Clinical T Status",
+                                  "Clinical N Status",
+                                  "Clinical M Status",                 
+                                  "Clinical Stage",
+                 #"Pathologic T status",
+                 #"Pathologic N status",
+                 #"Pathologic M status",
+                 #"Pathologic Stage",
                  "Surgical Margin status",
                  #                 "Lymphovascular Invasion",
                  #                 "Perineural Invasion",

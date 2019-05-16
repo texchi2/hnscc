@@ -44,6 +44,7 @@ Your text comes here. Separate text sections with
 
 # Material and method {#sec:1}
 <!-- # since the date [2019/05/13] after -->
+[Survival analysis]
 install linux on GCP with ssh connection
 install R base and Rstudio server
 install R packages on CRAN repository and Github
@@ -53,9 +54,34 @@ LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
 
 introduce R scripts: TCGA_HNSCC_marginFree.R  TCGA_HNSCC_marginS.R  cutofFinder_func_HNSCC.R  main_marginS_free_HNSCC.R
 https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0
+Features selection:
+pathologic_T => clinical_T of coln_osccT
+in table 3 and table 4: featuresUni
+
+
+
 
 by Joy Su
 *P value <0.05 was considered statistically significant (Student’s t test for continuous variables and Pearson’s chi-square test for variables). SD represents the standard deviation. The tumor stage, tumor, lymph node, and distal metastasis status were classified according to the international system for staging HNSCC
+
+
+
+[IHC]
+Immunohistochemical staining
+
+Three representative 1-mm-diameter cores from each tumor, taken from formalin-fixed paraffin-embedded tissues, were selected for morphology typical of the diagnosis. Assessable cores were obtained in 90 cases. The histopathological diagnoses of all samples were reviewed and confirmed by a pathologist, Michael Hsiao. IHC staining was performed on serial 5-μm-thick tissue sections cut from the tissue microarray (TMA) using an automated immunostainer (Ventana, Tucson, AZ, USA). Briefly, the sections were first dewaxed in a 60 °C oven, deparaffinized in xylene, and rehydrated in graded alcohol. Antigens were retrieved by heat-induced antigen retrieval for 30 min in Tris-EDTA buffer. The slides were stained with a polyclonal rabbit anti-human GLUT4 antibody (1:750, Epitomics, Cambridge, MA, USA). The sections were subsequently counterstained with hematoxylin, dehydrated, and mounted. The IHC staining intensity was scored by two pathologists as follows: no cytoplasmic staining or cytoplasmic staining in <10% of tumor cells was defined as score 0; faint/barely perceptible partial cytoplasmic staining in >10% of tumor cells was defined as score 1+; moderate cytoplasmic staining in >10% of tumor cells was defined as score 2+; and strong cytoplasmic staining in >10% of tumor cells was defined as score 3+. Scores of 0 and 1+ were defined as low GLUT4 expression, while scores of 2+ and 3+ were defined as high GLUT4 expression.
+
+[Case selection]
+Case selection from TCGA and TMU cohort
+
+In total, 90 patients diagnosed with head and neck squamous cell carcinoma at the Taipei Medical University Hospital in Taiwan from 1991 to 2010 were included in this study. Patients who received preoperative chemotherapy or radiation therapy were excluded. Clinical information and pathology data were collected via a retrospective review of patient medical records. All cases were staged according to the 7th edition of the Cancer Staging Manual of the American Joint Committee on Cancer (AJCC), and the histological cancer type was classified according to the World Health Organization (WHO) 2004 classification guidelines. Follow-up data were available in all cases, and the longest clinical follow-up time was 190 months. Overall survival and disease-free survival were defined as the intervals from surgery to death caused by head and neck squamous cell carcinoma and recurrence or distant metastasis, respectively. The study was performed with the approval of the Institutional Review Board and with permission from the ethics committee of the institution involved (TMU-IRB 99049).
+
+[Statistical analysis]
+
+The nonparametric Mann–Whitney U test was used to analyze the statistical significance of results from three independent experiments. Statistical analyses were performed using SPSS (Statistical Package for the Social Sciences) 17.0 software (SPSS, Chicago, IL, USA). A paired t test was performed to compare the GLUT4 IHC expression levels in cancer tissues and in the corresponding normal adjacent tissues. The association between clinicopathological categorical variables and the GLUT4 IHC expression levels were analyzed by Pearson’s chi-square test. Estimates of the survival rates were calculated using the Kaplan–Meier method and compared using the log-rank test. The follow-up time was censored if the patient was lost during follow-up. Univariate and multivariate analyses were performed using Cox proportional hazards regression analysis with and without an adjustment for GLUT4 IHC expression level, tumor stage, lymph node stage, and recurrence status. For all analyses, a P value of <0.05 was considered significant.
+
+
+
 
 Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
 1) Implementation under Rstudio server! run .R code
