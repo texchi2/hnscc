@@ -181,7 +181,27 @@ library("psych") # for describe()
 library(survival)
 
 # ***colnames of osccT
-# it should be modified
+# the clinical features should be modified:
+# cTNM alone (KM analysis); smoking (±)
+# instead of pTNM, Clinicopathological features 不必多 (Joy's manuscript)
+# {
+# age 65 year old
+# Gender
+# T stage T1 + T2 T13+ T4 (clinical)
+# N stage 1, 123
+# M stage M0, M1
+# Clinical stage I II, III IV
+# Recurrence no yes
+# }
+# 
+# The criteria of candidate genes:
+# {
+# n=500 要多一些
+# more than 2500 genes; gene of non-coding RNA ?
+# IHC
+# <30 published articles in pubmed
+# not related with known HNSCC genes
+# }
 coln_osccT <- c("Unique.ID","Gender","ageDx",
                 "pathologic_T","pathologic_N",
                 "pathologic_M","stage", "margin",

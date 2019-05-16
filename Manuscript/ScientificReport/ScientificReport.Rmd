@@ -52,7 +52,10 @@ load(file="whole_genome.Rda") # the name list of protein coding genome
 LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
 
 introduce R scripts: TCGA_HNSCC_marginFree.R  TCGA_HNSCC_marginS.R  cutofFinder_func_HNSCC.R  main_marginS_free_HNSCC.R
+https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0
 
+by Joy Su
+*P value <0.05 was considered statistically significant (Student’s t test for continuous variables and Pearson’s chi-square test for variables). SD represents the standard deviation. The tumor stage, tumor, lymph node, and distal metastasis status were classified according to the international system for staging HNSCC
 
 Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
 1) Implementation under Rstudio server! run .R code
@@ -80,12 +83,28 @@ as required. Don't forget to give each section
 and subsection a unique label (see Sect. \ref{sec:1}).
 
 # Discussion {#sec:4}
-評估一下 
+=Dato 評估一下
+Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.
 你的方法跟..之間有和差異嗎? prognoscan, cutoff finder (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
 http://molpath.charite.de/cutoff/index.jsp
 Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atlas 有 TCGA最適跟中切
 跟FireBrowse: http://firebrowse.org/# => TCGA 有預後跟臨床關係的相關性 其中有顯著意義的probe
 你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA
+
+=professor 陳志榮
+biological meanings (surgical margin is an artificial factor)
+=> margin (-) vs margin (+) 比較才公平
+
+=Michael2
+Dato 共同第一作者: 成大 n=44 microarray
+Scientific Report; template from 把joy的paper拿來學
+Rationale of PMM1: metabolic genes (yes, this is publishable) => PMM1 in HNSCC re-run  cutoff finder
+Broader gene candidate (first 100)
+gene signature from betel nut
+GO, demographic
+Tracy (Glioma genes)
+IHC lung test slide
+TFs 1,500 to 3,000 Non coding 10,000
 
 #### Paragraph headings 
 
