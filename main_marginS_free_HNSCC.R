@@ -50,7 +50,7 @@ library(FirebrowseR)
 
 HNSCC.clinical.Fire <- Samples.Clinical(cohort = TCGA_cohort, format="csv") # csv or tsv? n=150? yes page one
 # [HNSCC.....Fire is our source .Rda file]
-# 
+#  The API responded with code  400. Your query might be to big
 #colnames(HNSCC.clinical.Fire)
 #TCGA_05_5420 <- HNSCC.clinical.Fire[HNSCC.clinical.Fire$tcga_participant_barcode == "TCGA-05-5420",]
 
