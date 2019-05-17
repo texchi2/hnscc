@@ -55,7 +55,6 @@ print(cancer.Type) #"HNSC"
 
 HNSCC.clinical.Fire <- Samples.Clinical(cohort = cancer.Type, format="csv") # csv or tsv? n=150? yes page one
 # [HNSCC.....Fire is our source .Rda file]
-#  The API responded with code  400. Your query might be to big
 #colnames(HNSCC.clinical.Fire)
 #TCGA_05_5420 <- HNSCC.clinical.Fire[HNSCC.clinical.Fire$tcga_participant_barcode == "TCGA-05-5420",]
 
@@ -67,7 +66,7 @@ HNSCC.clinical.Fire <- list()
 page.Size = 2000 # using a bigger page size is faster
 while(all.Found == F){
   HNSCC.clinical.Fire[[page.Counter]] = Samples.Clinical(format = "csv",
-                                                        cohort = TCGA_cohort,
+                                                        cohort = cancer.Type,
                                                         page_size = page.Size,
                                                         page = page.Counter)
   if(nrow(HNSCC.clinical.Fire[[page.Counter]]) < page.Size)
