@@ -1225,11 +1225,11 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 # #append.Rda(RFS[RFS$p_RFS <= 0.05,1:2], paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
 
 # Added code for table 2, table 3, table 4 and survival p-value save as .Rda
-# save(list = c("tableChi1", "tableOS1", "tableRFS1"), file=paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
+# save(list = c("tableChi1", "tableOS1", "tableRFS1"), file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda"))
 
 #tryCatch(
   RFS_pvalue <- OS_pvalue #:-) for LUAD only
-  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("LUAD_survivalAnalysis_marginFree_", geneName, ".Rda", sep=""))
+  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_marginFree_", geneName, ".Rda", sep=""))
   # save _marginFree_ or _marginS_
   #, error = function(e) return(NA))
 #print(paste("Create", paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""), "successfully."))

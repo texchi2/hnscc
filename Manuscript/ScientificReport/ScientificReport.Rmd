@@ -63,7 +63,11 @@ core engine: cutofFinder_func_HNSCC.R, call, run100
 {
 7)[COXPH modelling] with OS, RFS; HNSCC features: pathologic to clinical TNM
 rename LUAD.mRNA.Exp.
-export to .Rda and .XLS (appending is better)
+export to .Rda and .XLS (appending is better) HNSCC_survivalAnalysis_marginS_
+# append.Rda <- function(x, file) {
+#   old.objects <- load(file, new.env())
+#   save(list = c(old.objects, deparse(substitute(x))), file = file)
+# }
 }
 
 OR (marinS or marginFree on main_) on main_marginS_free_HNSCC.R 手動選擇:-O
@@ -75,6 +79,11 @@ core engine: cutofFinder_func_HNSCC.R, call, run100
 7)[COXPH modelling] with OS, RFS; ; HNSCC features: pathologic to clinical TNM
 rename LUAD.mRNA.Exp.
 export to .Rda and .XLS (appending is better)
+HNSCC_survivalAnalysis_marginFree_
+# append.Rda <- function(x, file) {
+#   old.objects <- load(file, new.env())
+#   save(list = c(old.objects, deparse(substitute(x))), file = file)
+# }
 }
 
 
