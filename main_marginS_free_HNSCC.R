@@ -36,7 +36,8 @@
 # or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
 # FirebrowseR - Paper describing the R FirebrowseR package.
 # GenomicDataCommons - Paper describing the R GenomicDataCommons package.
-# 
+# "FirebrowseR: an R client to the Broad Institute’s Firehose Pipeline"
+# Mario Deng, Database 2017
 ## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
 
 TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
@@ -48,7 +49,11 @@ library("devtools")
 devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
 library(FirebrowseR)
 
-HNSCC.clinical.Fire <- Samples.Clinical(cohort = TCGA_cohort, format="csv") # csv or tsv? n=150? yes page one
+cohorts = Metadata.Cohorts(format = "csv") # Download all available cohorts
+cancer.Type = cohorts[grep("head", cohorts$description, ignore.case = T), 1]
+print(cancer.Type) #"HNSC"
+
+HNSCC.clinical.Fire <- Samples.Clinical(cohort = cancer.Type, format="csv") # csv or tsv? n=150? yes page one
 # [HNSCC.....Fire is our source .Rda file]
 #  The API responded with code  400. Your query might be to big
 #colnames(HNSCC.clinical.Fire)
@@ -59,7 +64,7 @@ HNSCC.clinical.Fire <- Samples.Clinical(cohort = TCGA_cohort, format="csv") # cs
 all.Found <- F
 page.Counter <- 1
 HNSCC.clinical.Fire <- list()
-page.Size = 600 # using a bigger page size is faster
+page.Size = 2000 # using a bigger page size is faster
 while(all.Found == F){
   HNSCC.clinical.Fire[[page.Counter]] = Samples.Clinical(format = "csv",
                                                         cohort = TCGA_cohort,
@@ -198,8 +203,8 @@ for (i in beginning:LUAD_n) {
 # [x Load HSCORE from Tableau] ####
 # transfer from A1-A4 B1-B4 ... to individual case N-T-T-T
 # 
-install.packages("googledrive")
-library("googledrive")
+# install.packages("googledrive")
+# library("googledrive")
 library(readr)
 install.packages("xml2")
 library("xml2")
