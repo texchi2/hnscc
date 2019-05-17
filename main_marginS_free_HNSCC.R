@@ -1,4 +1,4 @@
-# or http://10.140.0.3:8787 (internal IP) through $ ssh -D 2001 tex@35.201.169.0
+# http://35.201.169.0:8787 or http://10.140.0.3:8787 (internal IP) through $ ssh -D 2001 tex@35.201.169.0
 # ssh has more security mechanism (better than http:// alone)
 # 這是最主要的 R code (marginS and marginFree) since [2018/05/20]-[2018/07/08] instance-4
 # porting to HNSCC_Tex_survival since [2018/10/24] {3 levels:main, TCGA_HNSCC_[marginS/marginFree], cutofFinder_func.R}
@@ -29,7 +29,34 @@
 # # or
 # source("fun.R") # multi <- function() {} in fun.R
 # mult(-4:4, 2)
+#
+# [FirebrosweR] once, data preparation ####
+# https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
+# or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
+# FirebrowseR - Paper describing the R FirebrowseR package.
+# GenomicDataCommons - Paper describing the R GenomicDataCommons package.
+# 
+## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
+# FirebrowseR - An R package to download directly the results of the analyses performed by Firehose in R.
+#go to FireBrowse ( http://gdac.broadinstitute.org/ ):
+install.packages("devtools")
+library("devtools")
+devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
+library(FirebrowseR)
 
+#
+#manuscript and TCGA survival analysis Interpretation ##
+#https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
+#integrating gene expression (RNASeq) data Why would you want to do survival
+#analysis based on gene expression data? Well, let's say you have a number of
+#genes that you are interested in and they are differentially expressed between
+#tumor and normal samples, it would be very powerful to show that alteration in
+#gene expression correlates with worse survival or earlier tumor recurrence.
+#https://groups.google.com/forum/m/#!msg/ucsc-cancer-genomics-browser/YvKnWZSsw1Q/3IAkkEMyFa4J
+#from Mary Goldman and Jing Zhu, UCSC Cancer Browser
+#https://genome-cancer.ucsc.edu/ 
+
+# 
 #{
 # (install packages (must)) ####
 # make from the source "curl" and its libcurl, compiling under shell
@@ -590,7 +617,6 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
 
 
 
-
 # # #> table(ZSWIM2$X2) # "skip XK" XKRY(19642)
 # 
 # 0   1   2   3 
@@ -1063,7 +1089,7 @@ save(LUAD_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, "LUAD_OS_marg
 
 
 
-## _marginS_ ( )
+## _marginS_
 ## Post2 process and add table2 (cox): candidate_cox ####
 # "sig" marking for significant P-value (<=0.05)
 # [uni_cox_pvalue, uni_HR, uni_sig]

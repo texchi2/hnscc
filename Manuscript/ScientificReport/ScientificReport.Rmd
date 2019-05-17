@@ -44,7 +44,29 @@ Your text comes here. Separate text sections with
 
 # Material and method {#sec:1}
 <!-- # since the date [2019/05/13] after -->
-[Survival analysis]
+# [FirebrowseR] data preparation {#sec:2}
+manuscript and TCGA survival analysis Interpretation ##
+#https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
+#integrating gene expression (RNASeq) data Why would you want to do survival
+#analysis based on gene expression data? Well, let's say you have a number of
+#genes that you are interested in and they are differentially expressed between
+#tumor and normal samples, it would be very powerful to show that alteration in
+#gene expression correlates with worse survival or earlier tumor recurrence.
+#https://groups.google.com/forum/m/#!msg/ucsc-cancer-genomics-browser/YvKnWZSsw1Q/3IAkkEMyFa4J
+#from Mary Goldman and Jing Zhu, UCSC Cancer Browser
+#https://genome-cancer.ucsc.edu/ 
+
+https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
+# or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
+# FirebrowseR - Paper describing the R FirebrowseR package.
+# GenomicDataCommons - Paper describing the R GenomicDataCommons package.
+# 
+## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
+# FirebrowseR - An R package to download directly the results of the analyses performed by Firehose in R.
+#go to FireBrowse ( http://gdac.broadinstitute.org/ ):
+
+
+#[Survival analysis] {#sec:2}
 install linux on GCP with ssh connection
 install R base and Rstudio server
 install R packages on CRAN repository and Github
