@@ -1,4 +1,3 @@
-# main_marginS_free.R [R script on tex@35.201.169.0:/R/LUAD_Peter_survival/]
 # or http://10.140.0.3:8787 (internal IP) through $ ssh -D 2001 tex@35.201.169.0
 # ssh has more security mechanism (better than http:// alone)
 # 這是最主要的 R code (marginS and marginFree) since [2018/05/20]-[2018/07/08] instance-4
@@ -121,7 +120,7 @@ right <- anti_join(package_must, package_list, by="Package")
 
 ## START: set path on GCP cloud drive ####
 #library(FirebrowseR)
-TCGA_cohort <- "HNSCC" # cancer type: LUAD
+TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
 #path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
 # rename path_LUAD ad path_cohort
 path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
@@ -129,11 +128,12 @@ path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on G
 #x path_LUAD <- "~/R/LUAD_Peter_survival/mount" # mount google drive to ubuntu@instances-4 at GCP
 #x it can’t read “mounted” directory from R
 #path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
-setwd(path_cohort) # set the working directory under rstudio-server on GCP
+setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GCP
 
 load(file="whole_genome.Rda") # the name list of protein coding genome
 # below 2 lines: it needs to be modified for a function cal
 LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
+# keep it LUAD_n as gene number
 
 # # source our functions; automatically source all of the functions in a directory, "/tmp", 
 # # which makes it easy to run a long script with a single run:
@@ -242,7 +242,7 @@ featuresUni <- c("Gender",
                  #                 "SCC Histologic Grade",
                  #                 "Radiotherapy",
                  #                 "Chemotherapy",
-                 paste("RNAseq(z-score)") # "IHC score" == "z-score"
+                 paste("RNAseq(z-score)") # or "IHC score" == "z-score"
 )
 # z-score calculation = [(value gene X in tumor Y)-(mean gene X in normal)]/(standard deviation X in normal)
 
@@ -261,7 +261,7 @@ colUni_1 <- c("Male",
               #              "Yes",# RT
               #              "Yes",# CT
               #              "G3+G4",
-              "High") # PMM1
+              "High") # PMM1 or RNAseq
 # upper rowname of table 3 and table 4
 colUni_0 <- c("Female",
               "<=65y",
@@ -277,7 +277,7 @@ colUni_0 <- c("Female",
               #              "no", # RT
               #              "no", # CT
               #              "G1+G2",
-              "Low") # PMM1
+              "Low") # PMM1 or RNAseq
 
 ####
 # Define global functions
@@ -585,7 +585,7 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
 #
 #
 #
-# [run] mainA or mainB ####
+# [run] mainA marginS then mainB marginFree ####
 # after functions defined
 
 
@@ -614,7 +614,8 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
 
 
 #### [mainA process #part A] { ####
-# genome-wide scan for margin 0 and 1 cohort ###
+# genome-wide scan for margin 0 and 1 cohort ##
+# TCGA_HNSCC_marginS.R
 # added tryCatch for Survdiff.fit error
 
 start_time <- Sys.time() # counted in minutes
@@ -643,20 +644,20 @@ aa <- LUAD_n; bb<- 1
 #aa <- 19508-1; 
 #bb<- 19508 #"WDR63"
 #xx ddply(whole_genome[main_i], , survival_marginS, failwith(NA, fun(x){...}, quiet = TRUE))
-aa <- 18758-1 # [2018/06/19] run04 done
+#aa <- 18758-1 # [2019/05/17] HNSCC start to run01 done
 #bb<- 13666
 
 
 # # Best good: by mclapply,
 # mclapply(whole_genome[aa:bb], survival_marginFree)
 # #error on : [2018-05-27 08:59:51] [error] handle_read_frame error: websocketpp.transport:7 (End of File)# #save(ZSWIM2, file=desti_ZSWIM2)
-# save(ZSWIM2, file="ZSWIM2_archive.Rda")
+# save(ZSWIM2, file="ZSWIM2_archive.Rda") # save file as .Rda
 # apply(), MARGIN=c(1,2) # applys over rows and over columns
 # 
 # x#pforeach(main_i = aa:bb, .cores=2, .errorhandling = c("stop"))({
 # Second good: by for loop, for save the ZSWIM2 data
 for (main_i in aa:bb) {
-  ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_LUAD_marginS.R")
+  ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
   save(ZSWIM2, file=desti_ZSWIM2)
 }
@@ -829,11 +830,12 @@ error03_sample <- which(ZSWIM2$X3==3) # 3.4% error03: There has only one group i
 
 
 
-# (Both) Retrieving the summary table to form z-score in LUAD (marginS), from all LUAD_survival*.Rda ####
+# (Both) Retrieving the summary table to form z-score in 
+# LUAD (marginS), from all LUAD_survival*.Rda ####
 # _marginFree_ or _marginS_ from .Rda
 # # [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
 SFree <- "_marginS_"
-#OR _marginFree_
+#OR _marginFree_ ####
 SFree <- "_marginFree_"
 # get_Rda_pvalue <- function(geneName) {
 #   load(file=paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
@@ -1776,8 +1778,8 @@ aks_genes %in% unlist(candidates_Bonferroni_pvalue$Gene_id)
 
 #### [mainB process #part B] { margin free ####
 # genome-wide scan for margin 0 only cohort ###
-# survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
-#source(paste(path_cohort, "TCGA_LUAD_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_LUAD_marginFree.R
+# survival_marginFree <- function() {} in TCGA_HNSCC_marginFree.R
+#source(paste(path_cohort, "TCGA_HNSCC_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_HNSCC_marginFree.R
 # START: set path, variables and functions...
 
 # then run from here: start_time to end_time

@@ -1,5 +1,6 @@
 survival_marginS <- function(geneName) {
 #  source(paste(path_LUAD, "cutofFinder_func.R", sep="")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
+# for HNSCC: already defined on main, source(file=file.path(path_cohort, "cutofFinder_func_HNSCC.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
   
 #  system.time( # as a timer
   #save(ZSWIM2, file=desti_ZSWIM2) # save it globally
@@ -110,14 +111,14 @@ survival_marginS <- function(geneName) {
 # Start the survival analysis for each individual gene
 ## # set path on google drive
 #library(FirebrowseR)
-# TCGA_cohort <- "LUAD" # cancer type
+# TCGA_cohort <- "HNSCC" # cancer type
 #  path_LUAD <- "~/R/LUAD_Peter_survival/" # under rstudio-server on GCP
 # #path_LUAD <- "~/R/LUAD_Peter_survival/mount" # mount google drive to ubuntu@instances-4 at GCP
 # #path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
 # # path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
 # setwd(path_LUAD) # set the working directory to the google drive => GCP
 
-# call cutofFinder_func.R, run100 ####
+# call cutofFinder_func_HNSCC.R, run100; source defined on main ####
   marginTag <- "_marginS_"
   cutoffReturn <- cutofFinder_func(geneName, marginTag) # with return cutoff1 at # of patients
 if (length(cutoffReturn) == 8) {
@@ -175,7 +176,8 @@ if (length(cutoffReturn) == 8) {
 # if (is.na(tryCatch(LUAD.clinico_mRNA.Fire <- merge(oscc, LUAD_T_mRNA.Fire, by="tcga_participant_barcode") , error = function(e) return(NA)))) {return(5)} # merge error
 #                    #n=515 with sample_type "TP", excluding "NT normal tissue" or "TR"
 # 
-# # [colnames correction] LUAD(LUAD.clinico_mRNA.Fire) => HNSCC(osccT) "TMU_TA51BCDE_T70_clinical_fullFeatures14_margin.Rda"
+# # [colnames correction] LUAD(LUAD.clinico_mRNA.Fire) 
+# => HNSCC(osccT) "TMU_TA51BCDE_T70_clinical_fullFeatures14_margin.Rda", a IHC score
 # # # > colnames(osccT) of HNSCC
 # # [1] "Unique.ID"               "H.score_N"               "H.score_T"              
 # # [4] "margin"                  "Gender"                  "age.at.diagnosis"       
@@ -693,19 +695,19 @@ library(r2excel) # (package ‘r2excel’ is available for R version 3.4.1 below
 colnames(osccCleanNA) <- coln_osccT # colnames (features) of osccT
 
 osHRmulti <- 0
-# 8 features in LUAD
+# 8 + OS/RFS features in HNSCC
 # #warning() X matrix deemed to be singular (margin) in coxph
 # https://stackoverflow.com/questions/20977401/coxph-x-matrix-deemed-to-be-singular
 oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) ~ +
   Gender +
   ageDx +
 #                 primary_site +
-#                 clinical_T +
-#                 clinical_N +
-#                 clinical_stage +
-  pathologic_T +
-  pathologic_N +
-  pathologic_M +
+                 clinical_T +
+                 clinical_N +
+                 clinical_stage +
+#  pathologic_T +
+#  pathologic_N +
+#  pathologic_M +
   stage +
   margin +
 #  R.T +
@@ -789,7 +791,7 @@ osHR$X4[osHR$X4<0.001] <- "***"
 
 
 ## *** [Multivariate for RFS] table 4 right
-## # 8 features in LUAD
+## # 8 features in HNSCC
 rfsHRmulti <- 0
 # P-value notes:
 #Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
@@ -797,12 +799,12 @@ rfscox <- coxph(Surv(osccCleanNA$RFS..months._from.op, osccCleanNA$RFS_IND==1) ~
                   Gender +
                   ageDx +
                   #                 primary_site +
-                  #                 clinical_T +
-                  #                 clinical_N +
-                  #                 clinical_stage +
-                  pathologic_T +
-                  pathologic_N +
-                  pathologic_M +
+                                   clinical_T +
+                                   clinical_N +
+                                   clinical_stage +
+                  #pathologic_T +
+                  #pathologic_N +
+                  #pathologic_M +
                   stage +
                   margin +
                   # R.T +
@@ -831,10 +833,10 @@ rfsHRmulti <- round(rfsHRmulti, 3)
 
 
 #*** [Univariate for RFS]  table 4 left panel
-# # 8 features in LUAD, put in coxph one by one
+# # 8 features in HNSCC, put in coxph one by one
 # number of features 13 -> 14 (add a feature: margin status)
 rfscox <- 0
-features_os <- colnames(osccCleanNA)[c(2:8,14)] # features selection ["Gender" to "margin", "PMM1"] 8 out of 14
+features_os <- colnames(osccCleanNA)[c(2:8,14)] # features selection ["Gender" to "margin", "PMM1"] clincical TNM, 8 out of 14
 rfsHR <- data.frame(matrix(0, nrow=length(features_os), ncol=4))
 ## *** looping the cox regression model over several features
 ## as.formula: text to code (class: forumla list)
@@ -886,13 +888,13 @@ rfsHR$X4[rfsHR$X4<0.001] <- "***"
 library("xlsx")
 library("r2excel")
 # Create an Excel workbook. Both .xls and .xlsx file formats can be used.
-#TCGA_cohort <- "LUAD" # cancer type
+#TCGA_cohort <- "HNSCC" # cancer type
 #path_LUAD <- "~/R/LUAD_Peter_survival/" # under rstudio-server on GCP
 #path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
 # path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
-setwd(path_LUAD) # change working directory to the google drive
+setwd(path_cohort) # change working directory to the HNSCC, GCP
 
-# filename for all margins cases
+# filename for all margins cases, defined as HNSCC
 filenamex <- paste(TCGA_cohort, "_survivalAnalysis_marginS_", geneName, ".xlsx", sep = "")
 wb <- createWorkbook(type="xlsx")
 # Create a sheet in that workbook
@@ -1322,8 +1324,8 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 # save(list = c("tableChi1", "tableOS1", "tableRFS1"), file=paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
 
 #tryCatch(
-  RFS_pvalue <- OS_pvalue #:-) for LUAD only
-  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+  RFS_pvalue <- OS_pvalue #:-) for HNSCC only
+  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
 #, error = function(e) return(NA))
 #print(paste("Create", paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""), "successfully."))
 

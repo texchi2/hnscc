@@ -108,12 +108,13 @@ survival_marginFree <- function(geneName) {
 # Start the survival analysis for each individual gene
 ## # set path on google drive
 #library(FirebrowseR)
-TCGA_cohort <- "LUAD" # cancer type
- path_LUAD <- "~/R/LUAD_Peter_survival" # under rstudio-server on GCP
+path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github"
+TCGA_cohort <- "HNSCC" # cancer type
+# path_LUAD <- "~/R/LUAD_Peter_survival" # under rstudio-server on GCP
 #path_LUAD <- "~/R/LUAD_Peter_survival/mount" # mount google drive to ubuntu@instances-4 at GCP
 #path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
 # path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
-setwd(path_LUAD) # set the working directory to the google drive => GCP
+setwd(path_cohort) # set the working directory to the google drive => GCP
 
 
 #load(file="TMU_TA51BCDE_T70_clinical_fullFeatures13_dichotomized.Rda") # as oscc (without margin feature)
@@ -131,7 +132,7 @@ load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda") # as oscc with "
 # geneName <- whole_genome[LUAD_n] # aka. "ZZZ3"
 # print(paste("Gene name = ", geneName, sep=""))
 
-# load and prepare $$.clinico_mRNA.Fire for survival analysis
+# load and prepare HNSCC.clinico_mRNA.Fire for survival analysis
 # check file permissions: modes 4 test for read permission; 2 write; 1 excutable; 0 exist.
 #if (file.access(".", 4))
 # 
@@ -172,7 +173,8 @@ colnames(LUAD.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
                                       "OS_IND", "OS..months._from.biopsy",
                                       "RFS_IND", "RFS..months._from.op", "H.score_T")
 # n=515 in LUAD
-oscc <- LUAD.clinico_mRNA.Fire # starting analysis with "oscc"
+# n=? in HNSCC
+oscc <- LUAD.clinico_mRNA.Fire # starting analysis with "oscc" HNSCC
 # oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
 
 ## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
@@ -862,7 +864,8 @@ library("r2excel")
 #path_LUAD <- "~/R/LUAD_Peter_survival/" # under rstudio-server on GCP
 #path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
 # path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
-setwd(path_LUAD) # change working directory to the google drive
+path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github"
+setwd(path_cohort) # change working directory to the google drive
 
 # filename for all margins cases, eighter _marginFree_ or _marginS_
 filenamex <- paste(TCGA_cohort, "_survivalAnalysis_marginFree_", geneName, ".xlsx", sep = "")
