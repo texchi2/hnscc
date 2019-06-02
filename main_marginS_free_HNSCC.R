@@ -30,7 +30,7 @@
 # source("fun.R") # multi <- function() {} in fun.R
 # mult(-4:4, 2)
 #
-# [FirebrosweR] once, data preparation ####
+# >[1.FirebrosweR] once, data preparation ####
 # R code stored at TCGA_LUAD_raw_FirebrowseR.R
 # https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 # or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
@@ -43,7 +43,11 @@
 TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
 path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
 setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GCP
+load(file="whole_genome.Rda") # the name list of protein coding genome
+LUAD_n <- length(whole_genome) # n=20499, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
 
+
+#
 install.packages("devtools")
 library("devtools")
 devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
@@ -51,9 +55,9 @@ library(FirebrowseR)
 
 cohorts = Metadata.Cohorts(format = "csv") # Download all available cohorts
 cancer.Type = cohorts[grep("head", cohorts$description, ignore.case = T), 1]
-print(cancer.Type) #"HNSC"
+print(cancer.Type) #"HNSC", n=528
 
-HNSCC.clinical.Fire <- Samples.Clinical(cohort = cancer.Type, format="csv") # csv or tsv? n=150? yes page one
+HNSCC.clinical.Fire <- Samples.Clinical(cohort = cancer.Type, format="csv") # csv or tsv? n=150; yes page one
 # [HNSCC.....Fire is our source .Rda file]
 #colnames(HNSCC.clinical.Fire)
 #TCGA_05_5420 <- HNSCC.clinical.Fire[HNSCC.clinical.Fire$tcga_participant_barcode == "TCGA-05-5420",]
@@ -77,717 +81,829 @@ while(all.Found == F){
 HNSCC.clinical.Fire <- do.call(rbind, HNSCC.clinical.Fire)
 #}
 save(HNSCC.clinical.Fire, file="HNSCC.clinical.Fire.Rda")
-
-
-
-
-
-
-# skip
+# 
 # x inner join: merging 2D tables # NOT by "patient_id"
-# HNSCC.clinical.Fire.Rda and HNSCC.mRNA.Exp.Fire.Rda
-# # set path on google drive
-
-load(file="HNSCC.clinical.Fire.Rda")
-load(file="HNSCC.mRNA.Exp.Fire.Rda")
-HNSCC.clinico_mRNA.Fire <- merge(HNSCC.clinical.Fire, HNSCC.mRNA.Exp.Fire, by="tcga_participant_barcode") #n=576 with sample "TP" or "TR", excluding "NT normal tissue"
-# without duplicated ID
-save(HNSCC.clinico_mRNA.Fire, file=paste("HNSCC.clinico_mRNA.", diff.Exp.Genes, ".Fire.Rda", sep=""))
-
-# its name will be "HNSCC.clinico_mRNA.ZZZ3.Fire.Rda"
-
-
-save(HNSCC, file="HNSCC_TCGA2STAT.Rda")
-load(file="HNSCC_TCGA2STAT.Rda")
-# 20501 genes have been imported (RNASeqV2 data)! Clinical data (n=515) will be imported.
-# The returned object rnaseq.ov will be a list containing three elements:
-#   
-#   dat - The omics-profiles data matrix with genes in rows and patients in columns; in this example, this is a matrix of RPKM values.
-# clinical - Clinical data matrix; in this example, NULL is returned as the clinical data is not specified (default).
-# merged.dat - If clinical data is imported, a data matrix with both omics-profiles and clinical covariates (overall survival by default); patients are in the rows with the sample ID in the first column, followed by clinical covariates, and then the omics-profiles.
-View(HNSCC)
-dim(HNSCC$merged.dat) # n=515, genes=20501, and clinical features=10
-# clinico.HNSCC <- HNSCC[["clinical"]] # HNSCC$merged.dat[,1:21]
-head(HNSCC$merged.dat[1:3, c(1:3, 4:5, 6,7:9, 10, 20510:20511)])
-# c(11:20509) for RNASeq2 by RSEM; gene profile start from col 11
-# colnames(HNSCC[["merged.dat"]])[1:21]
-# [1] "bcr"             "YEARSTOBIRTH"    "GENDER"          "VITALSTATUS"    
-# [5] "DAYSTODEATH"     "PATHOLOGICSTAGE" "PATHOLOGYTSTAGE" "PATHOLOGYNSTAGE"
-# [9] "PATHOLOGYMSTAGE" "RESIDUALTUMOR"   "A1BG"            "A1CF"           
-# ....
-# [20508] "ZZEF1"     "ZZZ3"      "psiTPTE22" "tAKR"
-
-head(HNSCC$merged.dat[1:3, c(1:3, 4:5, 6,7:9, 10, 20510:20511)])
-# rnaseq.HNSCC <- getTCGA(disease="HNSCC", data.type="RNASeq", type="RPKM", clinical=TRUE, 
-#                       cvars=c("yearstobirth","gender","vitalstatus","daystodeath","pathologicstage","pathologyTstage","pathologyNstage","pathologyMstage"))
-# list of clinical features: http://www.liuzlab.org/TCGA2STAT/ClinicalVariables.pdf
-# colnames(clinico.HNSCC[,1:21]) # full features
-# I want to pick up c(11,2:4,7:10,19)
-# [1] "Composite Element REF"           
-# [2] "yearstobirth"                    
-# [3] "vitalstatus"                     
-# [4] "daystodeath"                     
-# [5] "daystolastfollowup"              
-# [6] "tumortissuesite"                 
-# [7] "pathologicstage"                 
-# [8] "pathologyTstage"                 
-# [9] "pathologyNstage"                 
-# [10] "pathologyMstage"                 
-# [11] "gender"                          
-# [12] "dateofinitialpathologicdiagnosis"
-# [13] "daystolastknownalive"            
-# [14] "radiationtherapy"                
-# [15] "karnofskyperformancescore"       
-# [16] "histologicaltype"                
-# [17] "numberpackyearssmoked"           
-# [18] "yearoftobaccosmokingonset"       
-# [19] "residualtumor"                   
-# [20] "race"                            
-# [21] "ethnicity" 
-
-# col1: bcr = barcode "TCGA-05-4244"
-clinico.HNSCC <- HNSCC$merged.dat[, c(1:3, 4:5, 6,7:9, 10, 20510:20511)] #n=515; no RNASeq2
-save(clinico.HNSCC, file="clinico_HNSCC.Rda") # clinical features only
-#
-RNASeq2.HNSCC <- HNSCC$merged.dat[, c(1,11:20509)] # [, 11:] for RNASeq2 by RSEM (20499 genes) only
-save(RNASeq2.HNSCC, file="RNASeq2_HNSCC.Rda")
-
-load(file="RNASeq2_HNSCC.Rda") # dim 515 x 20500
-# > colnames(RNASeq2.HNSCC)[1:10]
-# [1] "bcr"    "A1BG"   "A1CF"   "A2BP1"  "A2LD1"  "A2ML1"  "A2M"    "A4GALT" "A4GNT" 
-# [10] "AAA1" ...
-whole_genome <- colnames(RNASeq2.HNSCC)[(1+1):(20499+1)]
-save(whole_genome, file="whole_genome.Rda")
-## paused ###
-## 
-## 
-## 
-
-
-# split whole cohort in the clinical and expresions of each gene, by gene Symbol, from Peter ###
-
-# whole_genome <- unique(as.character(TA51_HSCORE$Symbol))
-whole_genome <- as.character(TA51_HSCORE$Symbol[1:20499])
-# save(whole_genome, file="whole_genome.Rda")
-# or
-load(file="whole_genome.Rda")
-LUAD_n <- length(whole_genome) # n=16907, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
-
-
-# nodata <- as.data.frame(setNames(replicate(5,numeric(0), simplify = F), letters[1:5]))
-# a=data.frame(matrix(NA, nrow=100, ncol=2)) ; names(a) <- c("SNP","P_value")
-
-beginning <- 1
-# keep going from "RASL11A" at 5640
-# beginning <- 5640
-for (i in beginning:LUAD_n) {
-  #  HNSCC <- data.frame(matrix(NA, nrow=1, ncol= ncol((TA51_HSCORE)))) # reset
-  #  names(HNSCC) <- colnames(TA51_HSCORE) # reset
-  HNSCC <- data.frame()
-  attach(TA51_HSCORE)
-  # https://www.statmethods.net/management/subset.html
-  #  HNSCC <- subset(TA51_HSCORE, select=c("Unique.ID", "H.score_N", "H.score_T", "Gender")) # subset by variables
-  HNSCC <- TA51_HSCORE[which(Symbol == whole_genome[i]), ] # filtering by observations
-  detach(TA51_HSCORE)
-  
-  duplicated(HNSCC$patient_ID) # passed [all should be FALSE], n = 100
-  
-  save(HNSCC, file = paste("TCGA_HNSCC_100_clinical_fullFeatures10_", whole_genome[i], ".Rda", sep = ""))
-}
-
-
-
-
-#
-# [x Load HSCORE from Tableau] ####
-# transfer from A1-A4 B1-B4 ... to individual case N-T-T-T
+# p16 HPV status is present
 # 
-# install.packages("googledrive")
-# library("googledrive")
-library(readr)
-install.packages("xml2")
-library("xml2")
-
-#TA51_HSCORE <- read_xml("https://drive.google.com/open?id=0B16FrnckS21aUEZKNDExSUFrck0")
-
-# direct access google drive
-#drive_auth(cache=T)
-#drive_get(id="0B16FrnckS21aLThqZkRaRkZqXzg") # Enter authorization code: 4/zEhM0LaXwO8HjfT4QHNbJ438GmYs6tH_SDgoqWMYrMw
-
-##
-# split them into 3Mb chunk in BASH command: split
-# https://eikhart.com/blog/autosplit-csv
-# split -a a -l 50722 LUAD_survival_Tablau_raw.csv ALPS # split by line number
-# -p ZZZ3
-# retained their header by script https://gist.github.com/steezeburger/98114746b2e4c5fa1ad1
-
-# reCsvEdit is working to fix the hearder error from Tableau: LUAD_survival_Tablau_unicode.csv
-# http://recsveditor.sourceforge.net/
-
-# (OK) TA51_HSCORE_ALPS001 <- read.csv(file.choose(), header=T, nrows = -1, sep=",") # fileEncoding = "UTF-8", encoding= "UTF-8") # stdin()
-TA51_HSCORE <- read.csv(file.choose(), header=T, skip =0 , nrows = -1, sep="") # "tabs" seperated
-save(TA51_HSCORE, file="TCGA_HNSCC_100_clinical_fullFeatures10_gene16907.Rda")
-
-
-#
-# split whole cohort in the clinical and expresions of each gene, by gene Symbol ###
-load(file= "TCGA_HNSCC_100_clinical_fullFeatures10_gene16907.Rda")
-
-# whole_genome <- unique(as.character(TA51_HSCORE$Symbol)) # n= 42652 ?? why ??
-whole_genome <- as.character(TA51_HSCORE$Symbol[1:16907])
+# 
+# 
+# 
+# 
+# 
+#> 2.get all RNAseq by FirebrowseR ####
+# #LUAD.mRNA.Exp.Fire <- Samples.mRNASeq()
 # save(whole_genome, file="whole_genome.Rda")
 # or
-load(file="whole_genome.Rda")
-LUAD_n <- length(whole_genome) # n=16907, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
-
-
-# nodata <- as.data.frame(setNames(replicate(5,numeric(0), simplify = F), letters[1:5]))
-# a=data.frame(matrix(NA, nrow=100, ncol=2)) ; names(a) <- c("SNP","P_value")
-
-beginning <- 1
-# keep going from "RASL11A" at 5640
-# beginning <- 5640
-for (i in beginning:LUAD_n) {
-  #  HNSCC <- data.frame(matrix(NA, nrow=1, ncol= ncol((TA51_HSCORE)))) # reset
-  #  names(HNSCC) <- colnames(TA51_HSCORE) # reset
-  HNSCC <- data.frame()
-  attach(TA51_HSCORE)
-  # https://www.statmethods.net/management/subset.html
-  #  HNSCC <- subset(TA51_HSCORE, select=c("Unique.ID", "H.score_N", "H.score_T", "Gender")) # subset by variables
-  HNSCC <- TA51_HSCORE[which(Symbol == whole_genome[i]), ] # filtering by observations
-  detach(TA51_HSCORE)
-  
-  duplicated(HNSCC$patient_ID) # passed [all should be FALSE], n = 100
-  
-  save(HNSCC, file = paste("TCGA_HNSCC_100_clinical_fullFeatures10_", whole_genome[i], ".Rda", sep = ""))
-}
-
-
-
-#
-H <- unlist(TA51_HSCORE)
-HB <- as.data.frame(matrix(H, ncol = 4, byrow=T))
-colnames(HB) <- c("N","T_a","T_b","T_c")
-#write.csv(HB, stdout(), row.names=FALSE) # => paste into clinicopathological tables
-#
-#
-#
-# Read table from .csv ##
-## TMU HNSCC TA51BCDE dataset, n=82 (Jan 2017)
-# check Uniqueness of ID
-#ID_HSCORE <- read.csv(stdin(),header=T)
-# or
-# # > colnames(ID_HSCORE_clinico) # N-TTT 4 cores as one case
-# [1] "TMA" (core name)                   "Unique.ID"              
-# [3] "H.score_N"               "H.score_Ta"             
-# [5] "H.score_Tb"              "H.score_Tc"             
-# [7] "H.score_T"               "Patho_Diagnosis"        
-# [9] "primary.site"            "patho"                  
-# [11] "Differ"                  "margin"                 
-# [13] "LVI"                     "PNI"                    
-# [15] "ECM"                     "X"                      
-# [17] "Gender"                  "age.at.diagnosis"       
-# [19] "T"                       "N"                      
-# [21] "M"                       "stage"                  
-# [23] "stage_2"                 "surgery"                
-# [25] "procedure"               "R.T"                    
-# [27] "C.T"                     "dead"                   
-# [29] "death.related.to.SCCHN." "death.date"             
-# [31] "latest.F.U"              "cencored.date"          
-# [33] "OS..months._from.biopsy" "OS.from.op"             
-# [35] "RFS..months._from.op"    "recurrence"             
-# [37] "date.of.recurrence"      "recurrent.site"         
-# [39] "X_Censored"              "Last_FU_date"           
-# [41] "surgery.date"            "X1st.R.T.date"          
-# [43] "X1st.R.T.total.dose"     "X1st.C.T.date"          
-# [45] "date.of.recurrence.1"    "date.of.death"          
-# [47] "cause.of.death"
-
-
-
-
-
-#==
-#x Process HNSCC cohort into individual gene ####
-load(file="HNSCC_TCGA2STAT.Rda")   # as HNSCC
+beginning <- 1 # = 1 first gene: "A1BG"
 load(file="whole_genome.Rda") # the name list of protein coding genome
+LUAD_n <- length(whole_genome) # n=20499, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
 
-ID_clinico <- HNSCC$merged.dat[, c(1:3, 4:5, 6,7:9, 10, 20510:20511)] # dim 515 x 12
-colnames(ID_clinico)[1] <- "Unique.ID" # rename it
-len_ID_clinico <- length(ID_clinico) # e.x. 12
+# tryCatch.Rscript -- experiments with tryCatch ### 
+#for error handling during Samples.mRNASeq (missing genes)
+# Get any arguments
+arguments <- commandArgs(trailingOnly=TRUE)
+a <- arguments[1]
 
-# HNSCC$merged.dat[, c(1,11:20509)] # RNAseqV2
-
-i <- beginning <- 11 # gene: "A1BG"
-LUAD_n <- 20509 # ending, last gene: "ZZZ3"
-
-while (i<= LUAD_n)  # for (i in beginning:LUAD_n)
-{
-  geneName <- colnames(HNSCC$merged.dat)[i] # e.g. "A1BG" or "PMM1"
-  ID_HSCORE_clinico <- cbind(ID_clinico, HNSCC$merged.dat[, i]) # dim 515 x 13
-  colnames(ID_HSCORE_clinico)[len_ID_clinico+1] <- geneName
-  save(ID_HSCORE_clinico, file=paste("TCGA_HNSCC_515_clinical_fullFeatures11_", geneName, ".Rda", sep=""))
-  i <- i + 1
-}
-# done
-
-
-
-
-
-
-
-## Peter's .xlsx ## archived
-# colname processing
-# > colnames(ID_HSCORE_clinico)
-# [1] "X_INTEGRATION"    "Unique.ID"       "Symbol"           "X_OS"            
-# [5] "X_OS_IND"         "X_RFS"            "X_RFS_IND"        "Expression"      
-# [9] "gender.M.F."      "N.T"   [1:T;0:N]           "pathologic_M"     "pathologic_N"    
-# [13] "pathologic_stage" "pathologic_T" 
-# 
-# as.data.frame(table(ID_HSCORE_clinico$N.T)) # frequency table
-# Var1 Freq
-# 1    0    7 => paired normal
-# 2    1   60 => tumour :-)
-# 3    2    6
-# 4    3    5
-# 
-# ID_HSCORE_clinico <- read.csv("/Users/Apple/Documents/Tex_proposal_MHlab/TissueMicroarray_HNSCC_TA51/TA51_OSCC_clinicopathological_dataset_PMM1_IHC/clinical_clean-Table 1.csv", header=T) 
-duplicated(ID_HSCORE_clinico$Unique.ID) # passed [all should be FALSE]
-
-# NT_B <- ID_HSCORE_clinico[complete.cases(ID_HSCORE_clinico[, c(2,3,7)]), c(2,3,7)] # Id and HSCORE NTTT
-# # n=70 (TA51BCDE), there is NO censored cases in TA51 cohort
-
-#osccT <- ID_HSCORE_clinico[complete.cases(ID_HSCORE_clinico[, c(2,7)]), c(2,3,7,17,18,19:21,23,26,27,33,35,36)]
-# or
-# # %%% # includes [12] surgical_margin (+) as c(0.5, 1, 2) to DO survival curve again !
-osccT <- ID_HSCORE_clinico[complete.cases(ID_HSCORE_clinico[, c(2,8)]), c(2,9,8,4,5,6,7,14,12,11,13)]
-osccT[, 1] <- sapply(osccT[, 1], as.character) # convert from factor to character
-
-save(osccT, file="TMU_TA51BCDE_T70_clinical_fullFeatures13.Rda")
-# or
-save(osccT, file="TMU_TA51BCDE_T70_clinical_fullFeatures14_margin.Rda")
-
-
-#
-#
-#
-#
-#
-#
-# [matched N-T pair, n=35] Analysis of Matched Tumor and Normal tissues
-# ex. "For PMM1 gene, we found expression to be higher in adjacent normal samples than
-# tumors in most cases (p-value???=???0.007, paired t-test)"
-TA51B_HSCORE <- read.csv(stdin(), header=T)
-TA51B_HSCORE <- cbind(TA51B_HSCORE, read.csv(stdin(), header=T))
-TA51B_HSCORE <- cbind(read.csv(stdin(), header=T), TA51B_HSCORE)
-
-NT_B <- TA51B_HSCORE[complete.cases(TA51B_HSCORE), ]
-
-# to identify normal and tumor samples. this is done using the TCGA barcode (https://wiki.nci.nih.gov/display/TCGA/TCGA+barcode). 
-# The two digits at position 14-15 of the barcode will indicate teh sample type, from the link:
-# Sample barcode: TCGA-02-0001-01
-#   "Tumor types range from 01 - 09, normal types from 10 - 19 and control samples from 20 - 29."
-
-
-
-# [2.(optional)Prepareing NT pair]  ####
-# NT pair plot ---------------------Using graphs to display matched pairs data ####
-### osccNT: NT pair ###
-## matched N T statistics: Using the paired t-test
-#library(MASS)
-t.test(NT_B$H.score_N, NT_B$H.score_T, paired=T) 
-# Result: p-value = 0.6024,
-# N minus T by mean of the differences as -3.257143 with 95%CI [-15.843704, 9.329419]
-#  # scatter plot
-plot(NT_B$H.score_N, NT_B$H.score_T, xlab="Adjacent Normal", ylab="Tumour")
-abline(lm(NT_B$H.score_N ~ NT_B$H.score_T))
-## The expression levels of PMM1 mRNAs in OSCC patients and controls were compared using Mann-hitney U-test
-# The Wilcoxon-Matt-Whitney test (or Wilcoxon rank sum test, or Mann-Whitney U-test) is used when is asked to compare the means of two groups that do not follow a normal distribution: it is a non-parametrical test. 
-# is the equivalent of the t test, applied for independent samples.
-# wilcox.test(mtcars$mpg, mtcars$am, correct=FALSE)
-# wilcox.test(mpg ~ am, data=mtcars) 
-#we conclude by accepting the hypothesis H0 of equality of means, if p-value > 0.05
-#
-#
-install.packages("PairedData")
-library(PairedData)
-#data(PrisonStress)
-#paired.plotProfiles(PrisonStress,"PSSbefore","PSSafter", subjects="Subject",groups="Group")
-#paired.plotMcNeil(PrisonStress,"PSSbefore","PSSafter", subjects="Subject")
-
-paired.plotProfiles(NT_B, "H.score_N", "H.score_T")
-paired.plotMcNeil(NT_B, "H.score_N", "H.score_T", subjects="Unique.ID")
-
-
-# TCGABiolinks - A R/Bioconductor package to search, download and prepare relevant data for analysis in R. Very powerful and well documented.
-
-
-
-
-
-# [3.prepare T] OS and RFS
-# by CDE: https://gdc.cancer.gov/clinical-data-elements
-# or https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=follow_up
-# [3.prepare T] Binary/binomial of clinicalMatrix (clinicopathological features) ####
-# or categorize, or factorize or dichotomize by recoding
-# osccT_fileName <- load(file.choose()) # HNSCC, "TCGA_HNSCC_515_clinical_fullFeatures11_ZZZ3.Rda" with residual tumour status
-# or transfer from HNSCC
-
-load(file.choose()) # HNSCC.clinical.Fire.Rda
-# or
-load(file="HNSCC.clinical.Fire.Rda")
-osccT <- HNSCC.clinical.Fire # n=522; #HNSCC.clinico_mRNA.Fire
-
-# ignore patient_ID (it is NOT true)
-# https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/ data schema
-# https://wiki.nci.nih.gov/display/TCGA/TCGA+barcode
-# ID_table <- as.data.frame(table(HNSCC.clinico_mRNA.Fire[,c(1,54, 86)]))
-# TCGA HNSCC n=576
-# 
-# #https://www.biostars.org/p/153013/ a step-by-step tutorial,
-# Survival analysis of TCGA patients integrating gene expression (RNASeq) data 
-source("https://bioconductor.org/biocLite.R")
-biocLite("curatedTCGAData") # utf8 and pillar and tibble
-library("curatedTCGAData")
-biocLite("TCGAWorkflow") #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5302158/
-# GenomicDataCommons - A R/Bioconductor package for querying, accessing, and mining genomic datasets available from the GDC.
-options(repos="http://cran.csie.ntu.edu.tw/") # or http://cran.ism.ac.jp/; yzu is working :-)
-biocLite("GenomicDataCommons") # tibble, https://github.com/Bioconductor/GenomicDataCommons
-
-# UCSC Xena: https://genome-cancer.ucsc.edu/proj/site/composite/datapages/?dataset=TCGA.HNSCC.sampleMap/HNSCC_clinicalMatrix&host=https://tcga.xenahubs.net
-# list of all Phenotypes CDE of the HNSCC dataset=>
-# https://genome-cancer.ucsc.edu/proj/site/composite/datapages/?host=https%3A%2F%2Ftcga.xenahubs.net&dataset=TCGA.HNSCC.sampleMap%2FLUAD_clinicalMatrix&label=Phenotypes&allIdentifiers=true
-# _OS
-# _OS_IND
-# _OS_UNIT
-#_RFS
-# _RFS_IND
-# _RFS_UNIT
-#primary_therapy_outcome_success
-# progression_determined_by
-# person_neoplasm_cancer_status => yes we have it in HNSCC of TCGA
-# new_neoplasm_event_type
-# new_tumor_event_after_initial_treatment
-# days_to_new_tumor_event_after_initial_treatment
-# days_to_additional_surgery_locoregional_procedure
-# days_to_additional_surgery_metastatic_procedure
-
-# days from the end of observation to ...
-# [18] "days_to_index"  ??                            
-# [19] "days_to_initial_pathologic_diagnosis" 
-# (baseline: the date of initial pathologic diagnosis)    
-# [20] "days_to_last_followup"                      
-# [21] "days_to_last_known_alive"  
-# [32] "followup_treatment_success"
-# [56] "person_neoplasm_cancer_status" # : "tumor free" or "with tumor"
-# [61] "primary_therapy_outcome_success" 
-
-
-#
-# https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/sample-type-codes; GDC Sample Type Codes (data schema)
-# # > colnames(HNSCC.clinico_mRNA.Fire)
-# https://www.bioconductor.org/packages/devel/data/experiment/manuals/curatedOvarianData/man/curatedOvarianData.pdf (data schema)
-# In the "Available sample meta-data" sections:
-# [1] "tcga_participant_barcode"                   
-# [2] "age_at_initial_pathologic_diagnosis"        
-#...                    
-# [13] "date"                                       
-# [14] "day_of_dcc_upload"                          
-# [15] "day_of_form_completion"                     
-# [16] "days_to_birth"                              
-# [17] "days_to_death"                              
-#...
-# [20] "days_to_last_followup"         # alive      
-# => Days To Recurrence = RFS time        
-# [21] "days_to_last_known_alive"                   
-#..     
-# [29] "ethnicity"                                  
-# [30] "file_uuid"                                  
-# ..
-# [32] "followup_treatment_success"                 
-# [33] "gender"                                     
-# [34] "histological_type"                          
-# [35] "history_of_neoadjuvant_treatment"           
-# [36] "icd_10"                                     
-# ...                
-# [45] "lost_follow_up"                             
-# [46] "month_of_dcc_upload"                        
-# [47] "month_of_form_completion"                   
-# [48] "number_pack_years_smoked"                   
-# [49] "other_dx"                # co-morbility                   
-# [50] "pathologic_m"                               
-# [51] "pathologic_n"                               
-# [52] "pathologic_stage"                           
-# [53] "pathologic_t"                               
-# [54] "patient_id" #???      # four digital     , n=516                     
-# [55] "performance_status_scale_timing"            
-# [56] "person_neoplasm_cancer_status"         # tumour free or with tumour  (RFS index)   
-# ...         
-# [61] "primary_therapy_outcome_success": completeresponse|partialresponse|progressivedisease|stabledisease:
-#response to any kind of therapy (including radiation only).        
-# [62] "progression_determined_by.3"        # positive biomarker(s)        
-# [63] "pulmonary_function_test_performed"          
-# [64] "race"                                       
-# [65] "radiation_therapy"                          
-# [66] "residual_tumor"           # residual tumor, or residual tumour     
-# # (in detail:  http://www.ilincs.org/GenomicsPortals/differentialExpressionSetup.do?data_set=TCGA_HNSCC_RNASeqV2&db=tcgaIlluminaHiSeq)
-
-# [67] "stopped_smoking_year"                       
-# ...                         
-# [73] "tobacco_smoking_history"                    
-# ...                         
-# [76] "vital_status"      # 363 alive or 213 dead  # > table(HNSCC.clinico_mRNA.Fire[,76]) # for this summary                       
-# ...                         
-# [79] "year_of_form_completion"                    
-# [80] "year_of_initial_pathologic_diagnosis"       
-# [81] "year_of_tobacco_smoking_onset"   
-# 
-# belowing is mRNA.Fire:           
-# [82] "gene"     # ZZZ3                                  
-# [83] "expression_log2"                            
-# [84] "z.score"                                    
-# [85] "cohort.y"           #= HNSCC                        
-# [86] "sample_type"          # 59 NT(Solid Tissue Normal) 515 TP(Primary Solid Tumor) or 2 TR(Recurrent Solid Tumor)
-# [87] "protocol"                       # RSEM                                
-# [88] "geneID"   # 26009 for ZZZ3
-# 
-# 
-
-
-
-
-# [categorizing the survival data from clinical features] ####
-# from osccT to oscc
-# i= from 20499(ZZZ3) to 1(A1BG)
-oscc <- data.frame()
-oscc <- subset(osccT, select=c("tcga_participant_barcode", "gender")) # gender: male as 1, female as 2
-# H_score as ZZZ3 RNAseq level
-oscc$gender[oscc$gender == "male"] <- 1 # male as 1, recoding
-oscc$gender[oscc$gender == "female"] <- 2 # female as 2
-# oscc <- cbind(oscc, subset(osccT, select= c("OS..months._from.biopsy", "OS..months._from.biopsy_IND", "X_RFS", "X_RFS_IND")))
-#
-oscc$ageDx[osccT$age_at_initial_pathologic_diagnosis <= 65] <- 1 # younger
-oscc$ageDx[osccT$age_at_initial_pathologic_diagnosis > 65] <- 2 # older#
-# or create 2 age categories  by
-# mydata$agecat <- ifelse(mydata$age > 65, 
-#                        c("older"), c("younger")) 
-# mydata$Agecat4<-cut(mydata$Age, seq(0,30,5), right=FALSE, labels=c(1:6))
-
-
-
-# keep grouping and Recoding variable by Factor
-# https://stackoverflow.com/questions/3875608/grouping-recoding-factors-in-the-same-data-frame
-# > levels(as.factor(osccT$PATHOLOGYTSTAGE))
-# [1] "t1"  "t1a" "t1b" "t2"  "t2a" "t2b" "t3"  "t4"  "tx"
-# %in% is "within"
-oscc$pathologic_T[osccT$pathologic_t %in% c("t1",  "t1a", "t1b", "t2",  "t2a", "t2b")] <- 1 # T1 T2
-oscc$pathologic_T[osccT$pathologic_t %in% c("t3",  "t4")] <- 2 # T3 T4
-oscc$pathologic_T[osccT$pathologic_t %in% c("tx", NA)] <- NA # unknown T
-#
-#> levels(as.factor(osccT$PATHOLOGYNSTAGE))
-# [1] "n0" "n1" "n2" "n3" "nx"
-oscc$pathologic_N[osccT$pathologic_n == "n0"] <- 0 # N0
-oscc$pathologic_N[osccT$pathologic_n %in% c("n1", "n2", "n3")] <- 1 # N+ (N1,2,3)
-oscc$pathologic_N[osccT$pathologic_n %in% c("nx", NA)] <- NA # unknown N
-
-#> levels(as.factor(osccT$PATHOLOGYMSTAGE))
-# [1] "m0"  "m1"  "m1a" "m1b" "mx" in HNSCC
-# M as 0 or 2 in TMU TA51 (why M2 instead of M1?)
-oscc$pathologic_M[osccT$pathologic_m == "m0"] <- 0 # M0
-oscc$pathologic_M[osccT$pathologic_m %in% c("m1",  "m1a", "m1b")] <- 1 # M+
-oscc$pathologic_M[osccT$pathologic_m %in% c("mx", NA)] <- NA # unknown M
-#
-#> levels(as.factor(osccT$PATHOLOGICSTAGE))
-# [1] "stage i"    "stage ia"   "stage ib"   "stage ii"   "stage iia"  "stage iib" 
-# [7] "stage iiia" "stage iiib" "stage iv"
-oscc$stage[osccT$pathologic_stage %in% c("stage i",    "stage ia",   "stage ib",   "stage ii",   "stage iia",  "stage iib")] <- 1 # stage 1 2
-oscc$stage[osccT$pathologic_stage %in% c("stage iiia", "stage iiib", "stage iv")] <- 2 # stage 3 4
-#
-
-
-# ** margin issue: 0 or 1 or NaN ####
-# with r1 or r2 (residual tumor) => person_neoplasm_cancer_status (with tumor) is NOT recurrence
-# while clincal "tumor free" cases with r1 or r2 => Amazing ! selflimited :-)
-# residual_tumor in HNSCC: The status of a tissue margin following surgical resection:
-#=> r0, 無殘留，tumor free from margin (就是有 「開乾淨」的意思)
-#=> r1 (micro) r2 (macro) 有殘留，
-#=> rx 是 unknown status。
-# r0  r1  r2  rx 
-# 371  15   4  27 
-# [12] surgical_margin (+) in HNSCC; definition as c(0, 0.5, 1) [0.5 is close margin]; there is NO NaN.
-oscc$margin[osccT$residual_tumor %in% c("r0")] <- 0 # margin free from tumour 0, n=348 
-# NO close margin 0.5
-oscc$margin[osccT$residual_tumor %in% c("r1", "r2")] <- 1 # positive surgical margin 1, n=18
-# rx => NaN, n=156
-
-
-
-# X NaN was impuated by oscc[17,9]<- 1; oscc[22,9] <- "1" in TA51 HNSCC
-
-# censoring data: Since we want to do censored analysis, we need to have
-# something to censor the data with. For example, if a patient has no death data
-# BUT there is a date to last followup it means that after that day we know
-# nothing about the patient, therefore after that day it cannot be used for
-# calculations/Kaplan Meier plot anymore, therefore we censor it. so now we need
-# to create vectors for both 'time to new tumor' and 'time to death' that
-# contain also the data from censored individuals.
-# https://www.biostars.org/p/153013/
-
-
-# [OS] overall survival ####
-# # OS and RFS 
-# (at birth [16] -> healthy -> cancer diagnosed [19] -> therapies -> [recurrence event] -> death event)
-# GDC data dictionary viewer for CDE: https://cdebrowser.nci.nih.gov/cdebrowserClient/cdeBrowser.html#/search
-# rule and definition by colnames number [1:81] of HNSCC.clinical.Fire `: 
-# OS: OS_IND Event <- death or alive [76] "vital_status"
-# "vital_status" == 1 as death; == 0 as alive
-oscc$OS_IND[osccT$vital_status == "dead"] <- 1 # 1==death event (dead), n=213
-oscc$OS_IND[osccT$vital_status == "alive"] <- 0 # 0==no event (alive), 363 (censored)
-
-# [19] "days_to_initial_pathologic_diagnosis" 
-# (baseline: the date of initial pathologic diagnosis) => all are NA or zero :-)
-# OS Time to event <- days to death [17] or Max of (last followup [20]/ last known alive [21]); 
-oscc <- cbind(oscc, subset(osccT, select=c("days_to_death")))
-# max of case c(15,412,455)
-osccT_2021 <- osccT[c(20,21)]
-#OS_live_time_ind <- apply(osccT_2021, 1, which.max) # 1: in a row-wise matter
-#osccT_2021[OS_live_time_ind] 
-# ifelse function: ifelse(test, yes, no)
-# => try to pick up max(osccT[c(20,21)], na.rm=T) by row-wise matter
-OS_live_days <- apply(osccT_2021, 1, function(x) ifelse(all(is.na(x)), NA, max(x, na.rm=T)))
-OS_live_days <- as.data.frame(OS_live_days) # R help from Jorge I Velez
-
-# at data cleaning stage: removal of 3-(NAs or 0) # OStime <- (HNSCC.clinical.Fire[c(76,17,19, 20,21)])
-# to calculate overall survival time (months) of TCGA HNSCC? months until death
-oscc$OS_months <- oscc$days_to_death / 30
-oscc$OS_live_months <- OS_live_days /30 # derived from last followup [20]/ last known alive [21])
-#=> if there is no event (alive) => censored (status 0)
-# "OS_live_months" with label.var as "OS_live_days"
-names(oscc$OS_live_months) <- ""
-
-# OS Censoring: create vector time_to_death containing values to censor (oscc$OS_live_months) for death
-# oscc$censored_OS[!is.na(osccT$OS..months._from.biopsy)] <- 0 # censored -
-# oscc$censored_OS[is.na(osccT$OS..months._from.biopsy)] <- 1 # censored +
-# ifelse(test, yes, no):
-for (i in (1:nrow(oscc))){ # for (i in beginning:LUAD_n)
-  oscc[i,11] <- ifelse (is.na(oscc[i,11]),
-                        oscc[i,12], oscc[i,11])
-  # 11: oscc$OS_months
-  # 12: oscc$OS_live_months
-  # as.numeric(as.character())
+# Define a division function that can issue warnings and errors
+# dummy function :-)
+myDivide <- function(d, a) {
+  if (a == 'warning') {
+    return_value <- 'myDivide warning result'
+    warning("myDivide warning message")
+  } else if (a == 'error') {
+    return_value <- 'myDivide error result'
+    stop("myDivide error message")
+  } else {
+    return_value = d / as.numeric(a)
+  }
+  return(return_value)
 }
 
-# data("mgus2") # https://cran.r-project.org/web/packages/survival/survival.pdf
-# etime <- with(mgus2, ifelse(pstat==0, futime, ptime)) #pstat=PCM: 0=no (OStime) or 1=yes (RFStime)
-# event <- with(mgus2, ifelse(pstat==0, 2*death, 1)) #0:PCM 0+2*alive(0); 2:PCM 0+2*death(1); 1:PCM 1
-# event <- factor(event, 0:2, labels=c("censor", "pcm", "death")) # level 0:censor 2:death 1:PCM
-# View(Surv(etime, event)) # censoring status= 0 or "censor"; while 1 as "event"
-# # ptime=RFStime
-# time until progression to a plasma cell myeloma (PCM) or last contact, in months
-# pstat=tumor event
-# occurrence of PCM: 0=no, 1=yes
-# futime=OStime
-# time until death or last contact, in months
-# death=death event
-# occurrence of death: 0=no, 1=yes
+# save whole_genome in each .Rda
+for (i in seq(LUAD_n, beginning, by=-1) )  
+
+  {
+  # Evalute the desired series of expressions inside of tryCatch
+  result <- tryCatch({
+    
+diff.Exp.Genes <- whole_genome[i]
+all.Found = F
+page.Counter = 1
+mRNA.Exp = list()
+page.Size = 2000 # using a bigger page size is faster
+while(all.Found == F){
+  mRNA.Exp[[page.Counter]] = Samples.mRNASeq(format = "csv",
+                                             gene = diff.Exp.Genes,
+                                             cohort = cancer.Type,
+                                             tcga_participant_barcode =
+                                               HNSCC.clinical.Fire$tcga_participant_barcode,
+                                             page_size = page.Size,
+                                             page = page.Counter)
+  if(nrow(mRNA.Exp[[page.Counter]]) < page.Size)
+    all.Found = T
+  else
+    page.Counter = page.Counter + 1
+}
+
+HNSCC.mRNA.Exp.Fire = do.call(rbind, mRNA.Exp)
+save(HNSCC.mRNA.Exp.Fire, file=paste("HNSCC.mRNA.Exp.", diff.Exp.Genes, ".Fire.Rda", sep=""))
+#save(HNSCC.mRNA.Exp.Fire, file="HNSCC.mRNA.Exp.Fire.Rda")
+
+
+b <- 2
+c <- b^2
+d <- c+2
+# if (a == 'suppress-warnings') {
+#   e <- suppressWarnings(myDivide(d,a))
+# } else {
+#   e <- myDivide(d,a) # 6/a
+# }
+e <- d
+f <- e + 100
+
+  }, warning = function(war) {
+    
+    # warning handler picks up where error was generated
+    print(paste("MY_WARNING:  ",war))
+    b <- "changing 'b' inside the warning handler has no effect"
+    e <- myDivide(d,0.1) # =60
+    f <- e + 100
+    print(b)
+    return(f)
+    
+  }, error = function(err) {
+    
+    # error handler picks up where error was generated
+    print(paste("MY_ERROR:  ",err))
+    b <- "changing 'b' inside the error handler has no effect"
+    e <- myDivide(d,0.01) # =600
+    f <- e + 100
+    print(b)
+    return(f)
+    
+  }, finally = {
+    
+    print(paste("a =",a))
+    print(paste("b =",b))
+    print(paste("c =",c))
+    print(paste("d =",d))
+    # NOTE:  Finally is evaluated in the context of of the inital
+    # NOTE:  tryCatch block and 'e' will not exist if a warning
+    # NOTE:  or error occurred.
+    #print(paste("e =",e))
+    
+  }) # END tryCatch
+  
+  print(paste(i, " (out of ", LUAD_n, " =>", whole_genome[i]))
+  
+} # end of for loop
+# HNSCC.clinical.Fire.Rda x1 and HNSCC.mRNA.Exp.Fire.Rda x20499
+
+
+
+
+
+#x # process clinical and RNAseq data ####
+# load(file="HNSCC.clinical.Fire.Rda")
+# load(file="HNSCC.mRNA.Exp.Fire.Rda")
+# HNSCC.clinico_mRNA.Fire <- merge(HNSCC.clinical.Fire, HNSCC.mRNA.Exp.Fire, by="tcga_participant_barcode") #n=576 with sample "TP" or "TR", excluding "NT normal tissue"
+# # without duplicated ID
+# save(HNSCC.clinico_mRNA.Fire, file=paste("HNSCC.clinico_mRNA.", diff.Exp.Genes, ".Fire.Rda", sep=""))
 # 
-# within function: calculate a new variable
-# mgus2 <- within(mgus2, {delta <- abs(death - 1) }) # In the “mgus2” data, we want to define a new censoring variable
-# "delta" which takes the values 1 for a censored variable and 0 for an death event
+# # its name will be "HNSCC.clinico_mRNA.ZZZ3.Fire.Rda"
 # 
-# # assiging labels to variable name:
-names(oscc$OS_live_months) <- ""
-library(Hmisc)
-label(oscc$OS_live_months) <- ""
-# >OS_live_days 
-# set.seed(22)
-# data <- data.frame(age = floor(rnorm(6,25,10)), 
-#                    sex = gl(2,1,6, labels = c("f","m")))
-# var.labels <- c(age = "Age in Years", 
-#                 sex = "Sex of the participant")
-# dplyr::as.tbl(data)
-# data <- Hmisc::upData(data, labels = var.labels)
-# Hmisc::label(data)
-# Hmisc::contents(data)
-## end of OS ##
-
-
-
-
-
-#
-# [RFS]: ####
-# # (os vs rfs) there is no RFS time in HNSCC [2018/01/27]
-# however, we must to duplicate OS to RFS for convinence of code running :-)
-oscc$RFS_IND <- oscc$OS_IND
-oscc$RFS_months <- oscc$OS_months
-# jumpt to [preparedT]
-
-# or There is true RFS calculation below:
-# impute missing RFS by OS time; OS RFS Interpretation
-# https://www.biostars.org/p/153013/
-# https://groups.google.com/forum/m/#!msg/ucsc-cancer-genomics-browser/YvKnWZSsw1Q/3IAkkEMyFa4J
-
-# => A notice that this is a competitive risk problem, where, although a patient can recur and then die, if a patient is dead, it will not recur, therefore is more accurate to censor for death events.
-# {
-RFStime <- (HNSCC.clinical.Fire[c(76,17,20,21,66,56)])
-# months of tumour free and alive by using "person_neoplasm_cancer_status": n=330 "tumor free" or n=191 "with tumor"
-# https://www.researchgate.net/post/Are_there_differences_between_progression-free_survival_relapse-free_survival_and_recurrence-free_survival2
-# Recurrence-free survival (RFS) includes (1) any recurrence (local or regional
-# [including invasive ipsilateral tumor and invasive locoregional tumor], or
-# distant) and (2) death due to any cause (both HNSCC and non-HNSCC causes of death).
-# to consider death to be one of your outcomes. So your event becomes "Event OR All-cause Mortality". 
-
-# (tumour free or new tumor event = residual[66]/progression, recurrence or new/second primary malignacies)
-# RFS: RFS_IND Event by "tumor free" or "with tumor" [56]
-# RFS Time to event = "Days To Recurrence", Time interval from the date of disease recurrence to the date of initial pathologic diagnosis, represented as a calculated number of days.
-# (https://cdebrowser.nci.nih.gov/cdebrowserClient/cdeBrowser.html#/search?publicId=3008295&version=1.0)
-# = Max of (known a tumour even alive / days to tumour recurrence); no event => censored as OS time 
-
-#Calculation of RFS (recurrence): between 6 months and 5 years in HNSC
-# DFS is not the same with RFS
-#Residual tumor [66] => in HNSC tumors patients
-#re-diagnosed with a tumor ("with tumor") within 6 months of treatment completion it is
-#considered part of the original tumor, not a new tumor, so it is residual tumor [66] and not a recurrence.
-# (or pathologic report: margin is NOT free) [66]
-#
-#For HNSC at least a re-diagnosed patient is considered to have a recurrence of the original tumor
-#if it's between 6 months and 5 years, and 5 years post-treatment it is considered a new primary tumor.
+# # 
+# # save(HNSCC, file="HNSCC_TCGA2STAT.Rda")
+# # load(file="HNSCC_TCGA2STAT.Rda")
+# # # 20501 genes have been imported (RNASeqV2 data)! Clinical data (n=515) will be imported.
+# # # The returned object rnaseq.ov will be a list containing three elements:
+# # #   
+# # #   dat - The omics-profiles data matrix with genes in rows and patients in columns; in this example, this is a matrix of RPKM values.
+# # # clinical - Clinical data matrix; in this example, NULL is returned as the clinical data is not specified (default).
+# # # merged.dat - If clinical data is imported, a data matrix with both omics-profiles and clinical covariates (overall survival by default); patients are in the rows with the sample ID in the first column, followed by clinical covariates, and then the omics-profiles.
+# # View(HNSCC)
+# # dim(HNSCC$merged.dat) # n=515, genes=20501, and clinical features=10
+# # # clinico.HNSCC <- HNSCC[["clinical"]] # HNSCC$merged.dat[,1:21]
+# # head(HNSCC$merged.dat[1:3, c(1:3, 4:5, 6,7:9, 10, 20510:20511)])
+# # # c(11:20509) for RNASeq2 by RSEM; gene profile start from col 11
+# # # colnames(HNSCC[["merged.dat"]])[1:21]
+# # # [1] "bcr"             "YEARSTOBIRTH"    "GENDER"          "VITALSTATUS"    
+# # # [5] "DAYSTODEATH"     "PATHOLOGICSTAGE" "PATHOLOGYTSTAGE" "PATHOLOGYNSTAGE"
+# # # [9] "PATHOLOGYMSTAGE" "RESIDUALTUMOR"   "A1BG"            "A1CF"           
+# # # ....
+# # # [20508] "ZZEF1"     "ZZZ3"      "psiTPTE22" "tAKR"
+# # 
+# # head(HNSCC$merged.dat[1:3, c(1:3, 4:5, 6,7:9, 10, 20510:20511)])
+# # # rnaseq.HNSCC <- getTCGA(disease="HNSCC", data.type="RNASeq", type="RPKM", clinical=TRUE, 
+# # #                       cvars=c("yearstobirth","gender","vitalstatus","daystodeath","pathologicstage","pathologyTstage","pathologyNstage","pathologyMstage"))
+# # # list of clinical features: http://www.liuzlab.org/TCGA2STAT/ClinicalVariables.pdf
+# # # colnames(clinico.HNSCC[,1:21]) # full features
+# # # I want to pick up c(11,2:4,7:10,19)
+# # # [1] "Composite Element REF"           
+# # # [2] "yearstobirth"                    
+# # # [3] "vitalstatus"                     
+# # # [4] "daystodeath"                     
+# # # [5] "daystolastfollowup"              
+# # # [6] "tumortissuesite"                 
+# # # [7] "pathologicstage"                 
+# # # [8] "pathologyTstage"                 
+# # # [9] "pathologyNstage"                 
+# # # [10] "pathologyMstage"                 
+# # # [11] "gender"                          
+# # # [12] "dateofinitialpathologicdiagnosis"
+# # # [13] "daystolastknownalive"            
+# # # [14] "radiationtherapy"                
+# # # [15] "karnofskyperformancescore"       
+# # # [16] "histologicaltype"                
+# # # [17] "numberpackyearssmoked"           
+# # # [18] "yearoftobaccosmokingonset"       
+# # # [19] "residualtumor"                   
+# # # [20] "race"                            
+# # # [21] "ethnicity" 
+# # 
+# # # col1: bcr = barcode "TCGA-05-4244"
+# # clinico.HNSCC <- HNSCC$merged.dat[, c(1:3, 4:5, 6,7:9, 10, 20510:20511)] #n=515; no RNASeq2
+# # save(clinico.HNSCC, file="clinico_HNSCC.Rda") # clinical features only
+# # #
+# # RNASeq2.HNSCC <- HNSCC$merged.dat[, c(1,11:20509)] # [, 11:] for RNASeq2 by RSEM (20499 genes) only
+# # save(RNASeq2.HNSCC, file="RNASeq2_HNSCC.Rda")
+# # 
+# # load(file="RNASeq2_HNSCC.Rda") # dim 515 x 20500
+# # # > colnames(RNASeq2.HNSCC)[1:10]
+# # # [1] "bcr"    "A1BG"   "A1CF"   "A2BP1"  "A2LD1"  "A2ML1"  "A2M"    "A4GALT" "A4GNT" 
+# # # [10] "AAA1" ...
+# # whole_genome <- colnames(RNASeq2.HNSCC)[(1+1):(20499+1)]
+# # save(whole_genome, file="whole_genome.Rda")
+# # ## paused ###
+# # ## 
+# # ## 
+# # ## 
+# # 
+# # 
+# # # split whole cohort in the clinical and expresions of each gene, by gene Symbol, from Peter ###
+# # 
+# # # whole_genome <- unique(as.character(TA51_HSCORE$Symbol))
+# # whole_genome <- as.character(TA51_HSCORE$Symbol[1:20499])
+# # # save(whole_genome, file="whole_genome.Rda")
+# # # or
+# # load(file="whole_genome.Rda")
+# # LUAD_n <- length(whole_genome) # n=16907, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
+# # 
+# # 
+# # # nodata <- as.data.frame(setNames(replicate(5,numeric(0), simplify = F), letters[1:5]))
+# # # a=data.frame(matrix(NA, nrow=100, ncol=2)) ; names(a) <- c("SNP","P_value")
+# # 
+# # beginning <- 1
+# # # keep going from "RASL11A" at 5640
+# # # beginning <- 5640
+# # for (i in beginning:LUAD_n) {
+# #   #  HNSCC <- data.frame(matrix(NA, nrow=1, ncol= ncol((TA51_HSCORE)))) # reset
+# #   #  names(HNSCC) <- colnames(TA51_HSCORE) # reset
+# #   HNSCC <- data.frame()
+# #   attach(TA51_HSCORE)
+# #   # https://www.statmethods.net/management/subset.html
+# #   #  HNSCC <- subset(TA51_HSCORE, select=c("Unique.ID", "H.score_N", "H.score_T", "Gender")) # subset by variables
+# #   HNSCC <- TA51_HSCORE[which(Symbol == whole_genome[i]), ] # filtering by observations
+# #   detach(TA51_HSCORE)
+# #   
+# #   duplicated(HNSCC$patient_ID) # passed [all should be FALSE], n = 100
+# #   
+# #   save(HNSCC, file = paste("TCGA_HNSCC_100_clinical_fullFeatures10_", whole_genome[i], ".Rda", sep = ""))
+# # }
+# # 
+# # 
+# 
+# 
+# #
+# # [x Load HSCORE from Tableau] ####
+# # transfer from A1-A4 B1-B4 ... to individual case N-T-T-T
+# # 
+# # # install.packages("googledrive")
+# # # library("googledrive")
+# # library(readr)
+# # install.packages("xml2")
+# # library("xml2")
+# 
+# #TA51_HSCORE <- read_xml("https://drive.google.com/open?id=0B16FrnckS21aUEZKNDExSUFrck0")
+# 
+# # direct access google drive
+# #drive_auth(cache=T)
+# #drive_get(id="0B16FrnckS21aLThqZkRaRkZqXzg") # Enter authorization code: 4/zEhM0LaXwO8HjfT4QHNbJ438GmYs6tH_SDgoqWMYrMw
+# 
+# ##
+# # split them into 3Mb chunk in BASH command: split
+# # https://eikhart.com/blog/autosplit-csv
+# # split -a a -l 50722 LUAD_survival_Tablau_raw.csv ALPS # split by line number
+# # -p ZZZ3
+# # retained their header by script https://gist.github.com/steezeburger/98114746b2e4c5fa1ad1
+# 
+# # reCsvEdit is working to fix the hearder error from Tableau: LUAD_survival_Tablau_unicode.csv
+# # http://recsveditor.sourceforge.net/
+# # 
+# # # (OK) TA51_HSCORE_ALPS001 <- read.csv(file.choose(), header=T, nrows = -1, sep=",") # fileEncoding = "UTF-8", encoding= "UTF-8") # stdin()
+# # TA51_HSCORE <- read.csv(file.choose(), header=T, skip =0 , nrows = -1, sep="") # "tabs" seperated
+# # save(TA51_HSCORE, file="TCGA_HNSCC_100_clinical_fullFeatures10_gene16907.Rda")
+# # 
+# # 
+# # #
+# # # split whole cohort in the clinical and expresions of each gene, by gene Symbol ###
+# # load(file= "TCGA_HNSCC_100_clinical_fullFeatures10_gene16907.Rda")
+# # 
+# # # whole_genome <- unique(as.character(TA51_HSCORE$Symbol)) # n= 42652 ?? why ??
+# # whole_genome <- as.character(TA51_HSCORE$Symbol[1:16907])
+# # # save(whole_genome, file="whole_genome.Rda")
+# # # or
+# # load(file="whole_genome.Rda")
+# # LUAD_n <- length(whole_genome) # n=16907, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
+# # 
+# # 
+# # # nodata <- as.data.frame(setNames(replicate(5,numeric(0), simplify = F), letters[1:5]))
+# # # a=data.frame(matrix(NA, nrow=100, ncol=2)) ; names(a) <- c("SNP","P_value")
+# # 
+# # beginning <- 1
+# # # keep going from "RASL11A" at 5640
+# # # beginning <- 5640
+# # for (i in beginning:LUAD_n) {
+# #   #  HNSCC <- data.frame(matrix(NA, nrow=1, ncol= ncol((TA51_HSCORE)))) # reset
+# #   #  names(HNSCC) <- colnames(TA51_HSCORE) # reset
+# #   HNSCC <- data.frame()
+# #   attach(TA51_HSCORE)
+# #   # https://www.statmethods.net/management/subset.html
+# #   #  HNSCC <- subset(TA51_HSCORE, select=c("Unique.ID", "H.score_N", "H.score_T", "Gender")) # subset by variables
+# #   HNSCC <- TA51_HSCORE[which(Symbol == whole_genome[i]), ] # filtering by observations
+# #   detach(TA51_HSCORE)
+# #   
+# #   duplicated(HNSCC$patient_ID) # passed [all should be FALSE], n = 100
+# #   
+# #   save(HNSCC, file = paste("TCGA_HNSCC_100_clinical_fullFeatures10_", whole_genome[i], ".Rda", sep = ""))
+# # }
+# # 
+# # 
+# # 
+# # #
+# # H <- unlist(TA51_HSCORE)
+# # HB <- as.data.frame(matrix(H, ncol = 4, byrow=T))
+# # colnames(HB) <- c("N","T_a","T_b","T_c")
+# # #write.csv(HB, stdout(), row.names=FALSE) # => paste into clinicopathological tables
+# # #
+# #
+# #
+# # Read table from .csv ##
+# ## TMU HNSCC TA51BCDE dataset, n=82 (Jan 2017)
+# # check Uniqueness of ID
+# #ID_HSCORE <- read.csv(stdin(),header=T)
+# # or
+# # # > colnames(ID_HSCORE_clinico) # N-TTT 4 cores as one case
+# # [1] "TMA" (core name)                   "Unique.ID"              
+# # [3] "H.score_N"               "H.score_Ta"             
+# # [5] "H.score_Tb"              "H.score_Tc"             
+# # [7] "H.score_T"               "Patho_Diagnosis"        
+# # [9] "primary.site"            "patho"                  
+# # [11] "Differ"                  "margin"                 
+# # [13] "LVI"                     "PNI"                    
+# # [15] "ECM"                     "X"                      
+# # [17] "Gender"                  "age.at.diagnosis"       
+# # [19] "T"                       "N"                      
+# # [21] "M"                       "stage"                  
+# # [23] "stage_2"                 "surgery"                
+# # [25] "procedure"               "R.T"                    
+# # [27] "C.T"                     "dead"                   
+# # [29] "death.related.to.SCCHN." "death.date"             
+# # [31] "latest.F.U"              "cencored.date"          
+# # [33] "OS..months._from.biopsy" "OS.from.op"             
+# # [35] "RFS..months._from.op"    "recurrence"             
+# # [37] "date.of.recurrence"      "recurrent.site"         
+# # [39] "X_Censored"              "Last_FU_date"           
+# # [41] "surgery.date"            "X1st.R.T.date"          
+# # [43] "X1st.R.T.total.dose"     "X1st.C.T.date"          
+# # [45] "date.of.recurrence.1"    "date.of.death"          
+# # [47] "cause.of.death"
+# 
+# 
+# 
+# 
+# 
+# # #==
+# # #x TCGA2STAT Process HNSCC cohort into individual gene ####
+# # load(file="HNSCC_TCGA2STAT.Rda")   # as HNSCC
+# # load(file="whole_genome.Rda") # the name list of protein coding genome
+# # 
+# # ID_clinico <- HNSCC$merged.dat[, c(1:3, 4:5, 6,7:9, 10, 20510:20511)] # dim 515 x 12
+# # colnames(ID_clinico)[1] <- "Unique.ID" # rename it
+# # len_ID_clinico <- length(ID_clinico) # e.x. 12
+# # 
+# # # HNSCC$merged.dat[, c(1,11:20509)] # RNAseqV2
+# # 
+# # i <- beginning <- 11 # gene: "A1BG"
+# # LUAD_n <- 20509 # ending, last gene: "ZZZ3"
+# # 
+# # while (i<= LUAD_n)  # for (i in beginning:LUAD_n)
+# # {
+# #   geneName <- colnames(HNSCC$merged.dat)[i] # e.g. "A1BG" or "PMM1"
+# #   ID_HSCORE_clinico <- cbind(ID_clinico, HNSCC$merged.dat[, i]) # dim 515 x 13
+# #   colnames(ID_HSCORE_clinico)[len_ID_clinico+1] <- geneName
+# #   save(ID_HSCORE_clinico, file=paste("TCGA_HNSCC_515_clinical_fullFeatures11_", geneName, ".Rda", sep=""))
+# #   i <- i + 1
+# # }
+# # # done
+# # 
+# # 
+# # 
+# # 
+# # 
+# # 
+# # 
+# # ## Peter's .xlsx ## archived
+# # # colname processing
+# # # > colnames(ID_HSCORE_clinico)
+# # # [1] "X_INTEGRATION"    "Unique.ID"       "Symbol"           "X_OS"            
+# # # [5] "X_OS_IND"         "X_RFS"            "X_RFS_IND"        "Expression"      
+# # # [9] "gender.M.F."      "N.T"   [1:T;0:N]           "pathologic_M"     "pathologic_N"    
+# # # [13] "pathologic_stage" "pathologic_T" 
+# # # 
+# # # as.data.frame(table(ID_HSCORE_clinico$N.T)) # frequency table
+# # # Var1 Freq
+# # # 1    0    7 => paired normal
+# # # 2    1   60 => tumour :-)
+# # # 3    2    6
+# # # 4    3    5
+# # # 
+# # # ID_HSCORE_clinico <- read.csv("/Users/Apple/Documents/Tex_proposal_MHlab/TissueMicroarray_HNSCC_TA51/TA51_OSCC_clinicopathological_dataset_PMM1_IHC/clinical_clean-Table 1.csv", header=T) 
+# # duplicated(ID_HSCORE_clinico$Unique.ID) # passed [all should be FALSE]
+# # 
+# # # NT_B <- ID_HSCORE_clinico[complete.cases(ID_HSCORE_clinico[, c(2,3,7)]), c(2,3,7)] # Id and HSCORE NTTT
+# # # # n=70 (TA51BCDE), there is NO censored cases in TA51 cohort
+# # 
+# # #osccT <- ID_HSCORE_clinico[complete.cases(ID_HSCORE_clinico[, c(2,7)]), c(2,3,7,17,18,19:21,23,26,27,33,35,36)]
+# # # or
+# # # # %%% # includes [12] surgical_margin (+) as c(0.5, 1, 2) to DO survival curve again !
+# # osccT <- ID_HSCORE_clinico[complete.cases(ID_HSCORE_clinico[, c(2,8)]), c(2,9,8,4,5,6,7,14,12,11,13)]
+# # osccT[, 1] <- sapply(osccT[, 1], as.character) # convert from factor to character
+# # 
+# # save(osccT, file="TMU_TA51BCDE_T70_clinical_fullFeatures13.Rda")
+# # # or
+# # save(osccT, file="TMU_TA51BCDE_T70_clinical_fullFeatures14_margin.Rda")
+# # 
+# # 
+# # #
+# # #
+# # #
+# # #
+# # #
+# # #
+# # # [matched N-T pair, n=35] Analysis of Matched Tumor and Normal tissues
+# # # ex. "For PMM1 gene, we found expression to be higher in adjacent normal samples than
+# # # tumors in most cases (p-value???=???0.007, paired t-test)"
+# # TA51B_HSCORE <- read.csv(stdin(), header=T)
+# # TA51B_HSCORE <- cbind(TA51B_HSCORE, read.csv(stdin(), header=T))
+# # TA51B_HSCORE <- cbind(read.csv(stdin(), header=T), TA51B_HSCORE)
+# # 
+# # NT_B <- TA51B_HSCORE[complete.cases(TA51B_HSCORE), ]
+# # 
+# # # to identify normal and tumor samples. this is done using the TCGA barcode (https://wiki.nci.nih.gov/display/TCGA/TCGA+barcode). 
+# # # The two digits at position 14-15 of the barcode will indicate teh sample type, from the link:
+# # # Sample barcode: TCGA-02-0001-01
+# # #   "Tumor types range from 01 - 09, normal types from 10 - 19 and control samples from 20 - 29."
+# # 
+# 
+# # 
+#x# # [x2.(optional)Prepareing NT pair]  ####
+#x # # NT pair plot ---------------------Using graphs to display matched pairs data ####
+# # ### osccNT: NT pair ###
+# # ## matched N T statistics: Using the paired t-test
+# # #library(MASS)
+# # t.test(NT_B$H.score_N, NT_B$H.score_T, paired=T) 
+# # # Result: p-value = 0.6024,
+# # # N minus T by mean of the differences as -3.257143 with 95%CI [-15.843704, 9.329419]
+# # #  # scatter plot
+# # plot(NT_B$H.score_N, NT_B$H.score_T, xlab="Adjacent Normal", ylab="Tumour")
+# # abline(lm(NT_B$H.score_N ~ NT_B$H.score_T))
+# # ## The expression levels of PMM1 mRNAs in OSCC patients and controls were compared using Mann-hitney U-test
+# # # The Wilcoxon-Matt-Whitney test (or Wilcoxon rank sum test, or Mann-Whitney U-test) is used when is asked to compare the means of two groups that do not follow a normal distribution: it is a non-parametrical test. 
+# # # is the equivalent of the t test, applied for independent samples.
+# # # wilcox.test(mtcars$mpg, mtcars$am, correct=FALSE)
+# # # wilcox.test(mpg ~ am, data=mtcars) 
+# # #we conclude by accepting the hypothesis H0 of equality of means, if p-value > 0.05
+# # #
+# # #
+# # install.packages("PairedData")
+# # library(PairedData)
+# # #data(PrisonStress)
+# # #paired.plotProfiles(PrisonStress,"PSSbefore","PSSafter", subjects="Subject",groups="Group")
+# # #paired.plotMcNeil(PrisonStress,"PSSbefore","PSSafter", subjects="Subject")
+# # 
+# # paired.plotProfiles(NT_B, "H.score_N", "H.score_T")
+# # paired.plotMcNeil(NT_B, "H.score_N", "H.score_T", subjects="Unique.ID")
+# # 
+# # 
+# # # TCGABiolinks - A R/Bioconductor package to search, download and prepare relevant data for analysis in R. Very powerful and well documented.
+# # 
+# # 
+# # 
+# # 
+# # 
+# # # [3.prepare T] OS and RFS
+# # # by CDE: https://gdc.cancer.gov/clinical-data-elements
+# # # or https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=follow_pu
+# # # [x.prepare T] Binary/binomial of clinicalMatrix (clinicopathological features) ####
+# # # or categorize, or factorize or dichotomize by recoding
+# # # osccT_fileName <- load(file.choose()) # HNSCC, "TCGA_HNSCC_515_clinical_fullFeatures11_ZZZ3.Rda" with residual tumour status
+# # # or transfer from HNSCC
+# # 
+# # load(file.choose()) # HNSCC.clinical.Fire.Rda
+# # # or
+# # load(file="HNSCC.clinical.Fire.Rda")
+# # osccT <- HNSCC.clinical.Fire # n=522; #HNSCC.clinico_mRNA.Fire
+# # 
+# # # ignore patient_ID (it is NOT true)
+# # # https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/ data schema
+# # # https://wiki.nci.nih.gov/display/TCGA/TCGA+barcode
+# # # ID_table <- as.data.frame(table(HNSCC.clinico_mRNA.Fire[,c(1,54, 86)]))
+# # # TCGA HNSCC n=576
+# # # 
+# # # #https://www.biostars.org/p/153013/ a step-by-step tutorial,
+# # # Survival analysis of TCGA patients integrating gene expression (RNASeq) data 
+# # source("https://bioconductor.org/biocLite.R")
+# # biocLite("curatedTCGAData") # utf8 and pillar and tibble
+# # library("curatedTCGAData")
+# # biocLite("TCGAWorkflow") #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5302158/
+# # # GenomicDataCommons - A R/Bioconductor package for querying, accessing, and mining genomic datasets available from the GDC.
+# # options(repos="http://cran.csie.ntu.edu.tw/") # or http://cran.ism.ac.jp/; yzu is working :-)
+# # biocLite("GenomicDataCommons") # tibble, https://github.com/Bioconductor/GenomicDataCommons
+# # 
+# # # UCSC Xena: https://genome-cancer.ucsc.edu/proj/site/composite/datapages/?dataset=TCGA.HNSCC.sampleMap/HNSCC_clinicalMatrix&host=https://tcga.xenahubs.net
+# # # list of all Phenotypes CDE of the HNSCC dataset=>
+# # # https://genome-cancer.ucsc.edu/proj/site/composite/datapages/?host=https%3A%2F%2Ftcga.xenahubs.net&dataset=TCGA.HNSCC.sampleMap%2FLUAD_clinicalMatrix&label=Phenotypes&allIdentifiers=true
+# # # _OS
+# # # _OS_IND
+# # # _OS_UNIT
+# # #_RFS
+# # # _RFS_IND
+# # # _RFS_UNIT
+# # #primary_therapy_outcome_success
+# # # progression_determined_by
+# # # person_neoplasm_cancer_status => yes we have it in HNSCC of TCGA
+# # # new_neoplasm_event_type
+# # # new_tumor_event_after_initial_treatment
+# # # days_to_new_tumor_event_after_initial_treatment
+# # # days_to_additional_surgery_locoregional_procedure
+# # # days_to_additional_surgery_metastatic_procedure
+# # 
+# # # days from the end of observation to ...
+# # # [18] "days_to_index"  ??                            
+# # # [19] "days_to_initial_pathologic_diagnosis" 
+# # # (baseline: the date of initial pathologic diagnosis)    
+# # # [20] "days_to_last_followup"                      
+# # # [21] "days_to_last_known_alive"  
+# # # [32] "followup_treatment_success"
+# # # [56] "person_neoplasm_cancer_status" # : "tumor free" or "with tumor"
+# # # [61] "primary_therapy_outcome_success" 
+# # 
+# # 
+# # #
+# # # https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/sample-type-codes; GDC Sample Type Codes (data schema)
+# # # # > colnames(HNSCC.clinico_mRNA.Fire)
+# # # https://www.bioconductor.org/packages/devel/data/experiment/manuals/curatedOvarianData/man/curatedOvarianData.pdf (data schema)
+# # # In the "Available sample meta-data" sections:
+# # # [1] "tcga_participant_barcode"                   
+# # # [2] "age_at_initial_pathologic_diagnosis"        
+# # #...                    
+# # # [13] "date"                                       
+# # # [14] "day_of_dcc_upload"                          
+# # # [15] "day_of_form_completion"                     
+# # # [16] "days_to_birth"                              
+# # # [17] "days_to_death"                              
+# # #...
+# # # [20] "days_to_last_followup"         # alive      
+# # # => Days To Recurrence = RFS time        
+# # # [21] "days_to_last_known_alive"                   
+# # #..     
+# # # [29] "ethnicity"                                  
+# # # [30] "file_uuid"                                  
+# # # ..
+# # # [32] "followup_treatment_success"                 
+# # # [33] "gender"                                     
+# # # [34] "histological_type"                          
+# # # [35] "history_of_neoadjuvant_treatment"           
+# # # [36] "icd_10"                                     
+# # # ...                
+# # # [45] "lost_follow_up"                             
+# # # [46] "month_of_dcc_upload"                        
+# # # [47] "month_of_form_completion"                   
+# # # [48] "number_pack_years_smoked"                   
+# # # [49] "other_dx"                # co-morbility                   
+# # # [50] "pathologic_m"                               
+# # # [51] "pathologic_n"                               
+# # # [52] "pathologic_stage"                           
+# # # [53] "pathologic_t"                               
+# # # [54] "patient_id" #???      # four digital     , n=516                     
+# # # [55] "performance_status_scale_timing"            
+# # # [56] "person_neoplasm_cancer_status"         # tumour free or with tumour  (RFS index)   
+# # # ...         
+# # # [61] "primary_therapy_outcome_success": completeresponse|partialresponse|progressivedisease|stabledisease:
+# # #response to any kind of therapy (including radiation only).        
+# # # [62] "progression_determined_by.3"        # positive biomarker(s)        
+# # # [63] "pulmonary_function_test_performed"          
+# # # [64] "race"                                       
+# # # [65] "radiation_therapy"                          
+# # # [66] "residual_tumor"           # residual tumor, or residual tumour     
+# # # # (in detail:  http://www.ilincs.org/GenomicsPortals/differentialExpressionSetup.do?data_set=TCGA_HNSCC_RNASeqV2&db=tcgaIlluminaHiSeq)
+# # 
+# # # [67] "stopped_smoking_year"                       
+# # # ...                         
+# # # [73] "tobacco_smoking_history"                    
+# # # ...                         
+# # # [76] "vital_status"      # 363 alive or 213 dead  # > table(HNSCC.clinico_mRNA.Fire[,76]) # for this summary                       
+# # # ...                         
+# # # [79] "year_of_form_completion"                    
+# # # [80] "year_of_initial_pathologic_diagnosis"       
+# # # [81] "year_of_tobacco_smoking_onset"   
+# # # 
+# # # belowing is mRNA.Fire:           
+# # # [82] "gene"     # ZZZ3                                  
+# # # [83] "expression_log2"                            
+# # # [84] "z.score"                                    
+# # # [85] "cohort.y"           #= HNSCC                        
+# # # [86] "sample_type"          # 59 NT(Solid Tissue Normal) 515 TP(Primary Solid Tumor) or 2 TR(Recurrent Solid Tumor)
+# # # [87] "protocol"                       # RSEM                                
+# # # [88] "geneID"   # 26009 for ZZZ3
+# # # 
+# # # 
+# 
+# 
+# 
+# 
+# # [categorizing the survival data from clinical features] ####
+# # from osccT to oscc
+# # i= from 20499(ZZZ3) to 1(A1BG)
+# oscc <- data.frame()
+# oscc <- subset(osccT, select=c("tcga_participant_barcode", "gender")) # gender: male as 1, female as 2
+# # H_score as ZZZ3 RNAseq level
+# oscc$gender[oscc$gender == "male"] <- 1 # male as 1, recoding
+# oscc$gender[oscc$gender == "female"] <- 2 # female as 2
+# # oscc <- cbind(oscc, subset(osccT, select= c("OS..months._from.biopsy", "OS..months._from.biopsy_IND", "X_RFS", "X_RFS_IND")))
+# #
+# oscc$ageDx[osccT$age_at_initial_pathologic_diagnosis <= 65] <- 1 # younger
+# oscc$ageDx[osccT$age_at_initial_pathologic_diagnosis > 65] <- 2 # older#
+# # or create 2 age categories  by
+# # mydata$agecat <- ifelse(mydata$age > 65, 
+# #                        c("older"), c("younger")) 
+# # mydata$Agecat4<-cut(mydata$Age, seq(0,30,5), right=FALSE, labels=c(1:6))
+# 
+# 
+# 
+# # keep grouping and Recoding variable by Factor
+# # https://stackoverflow.com/questions/3875608/grouping-recoding-factors-in-the-same-data-frame
+# # > levels(as.factor(osccT$PATHOLOGYTSTAGE))
+# # [1] "t1"  "t1a" "t1b" "t2"  "t2a" "t2b" "t3"  "t4"  "tx"
+# # %in% is "within"
+# oscc$pathologic_T[osccT$pathologic_t %in% c("t1",  "t1a", "t1b", "t2",  "t2a", "t2b")] <- 1 # T1 T2
+# oscc$pathologic_T[osccT$pathologic_t %in% c("t3",  "t4")] <- 2 # T3 T4
+# oscc$pathologic_T[osccT$pathologic_t %in% c("tx", NA)] <- NA # unknown T
+# #
+# #> levels(as.factor(osccT$PATHOLOGYNSTAGE))
+# # [1] "n0" "n1" "n2" "n3" "nx"
+# oscc$pathologic_N[osccT$pathologic_n == "n0"] <- 0 # N0
+# oscc$pathologic_N[osccT$pathologic_n %in% c("n1", "n2", "n3")] <- 1 # N+ (N1,2,3)
+# oscc$pathologic_N[osccT$pathologic_n %in% c("nx", NA)] <- NA # unknown N
+# 
+# #> levels(as.factor(osccT$PATHOLOGYMSTAGE))
+# # [1] "m0"  "m1"  "m1a" "m1b" "mx" in HNSCC
+# # M as 0 or 2 in TMU TA51 (why M2 instead of M1?)
+# oscc$pathologic_M[osccT$pathologic_m == "m0"] <- 0 # M0
+# oscc$pathologic_M[osccT$pathologic_m %in% c("m1",  "m1a", "m1b")] <- 1 # M+
+# oscc$pathologic_M[osccT$pathologic_m %in% c("mx", NA)] <- NA # unknown M
+# #
+# #> levels(as.factor(osccT$PATHOLOGICSTAGE))
+# # [1] "stage i"    "stage ia"   "stage ib"   "stage ii"   "stage iia"  "stage iib" 
+# # [7] "stage iiia" "stage iiib" "stage iv"
+# oscc$stage[osccT$pathologic_stage %in% c("stage i",    "stage ia",   "stage ib",   "stage ii",   "stage iia",  "stage iib")] <- 1 # stage 1 2
+# oscc$stage[osccT$pathologic_stage %in% c("stage iiia", "stage iiib", "stage iv")] <- 2 # stage 3 4
+# #
+# 
+# 
+# # ** margin issue: 0 or 1 or NaN ####
+# # with r1 or r2 (residual tumor) => person_neoplasm_cancer_status (with tumor) is NOT recurrence
+# # while clincal "tumor free" cases with r1 or r2 => Amazing ! selflimited :-)
+# # residual_tumor in HNSCC: The status of a tissue margin following surgical resection:
+# #=> r0, 無殘留，tumor free from margin (就是有 「開乾淨」的意思)
+# #=> r1 (micro) r2 (macro) 有殘留，
+# #=> rx 是 unknown status。
+# # r0  r1  r2  rx 
+# # 371  15   4  27 
+# # [12] surgical_margin (+) in HNSCC; definition as c(0, 0.5, 1) [0.5 is close margin]; there is NO NaN.
+# oscc$margin[osccT$residual_tumor %in% c("r0")] <- 0 # margin free from tumour 0, n=348 
+# # NO close margin 0.5
+# oscc$margin[osccT$residual_tumor %in% c("r1", "r2")] <- 1 # positive surgical margin 1, n=18
+# # rx => NaN, n=156
+# 
+# 
+# 
+# # X NaN was impuated by oscc[17,9]<- 1; oscc[22,9] <- "1" in TA51 HNSCC
+# 
+# # censoring data: Since we want to do censored analysis, we need to have
+# # something to censor the data with. For example, if a patient has no death data
+# # BUT there is a date to last followup it means that after that day we know
+# # nothing about the patient, therefore after that day it cannot be used for
+# # calculations/Kaplan Meier plot anymore, therefore we censor it. so now we need
+# # to create vectors for both 'time to new tumor' and 'time to death' that
+# # contain also the data from censored individuals.
+# # https://www.biostars.org/p/153013/
+# 
+# 
+# x# [OS] overall survival ####
+# # # OS and RFS 
+# # (at birth [16] -> healthy -> cancer diagnosed [19] -> therapies -> [recurrence event] -> death event)
+# # GDC data dictionary viewer for CDE: https://cdebrowser.nci.nih.gov/cdebrowserClient/cdeBrowser.html#/search
+# # rule and definition by colnames number [1:81] of HNSCC.clinical.Fire `: 
+# # OS: OS_IND Event <- death or alive [76] "vital_status"
+# # "vital_status" == 1 as death; == 0 as alive
+# oscc$OS_IND[osccT$vital_status == "dead"] <- 1 # 1==death event (dead), n=213
+# oscc$OS_IND[osccT$vital_status == "alive"] <- 0 # 0==no event (alive), 363 (censored)
+# 
+# # x[19] "days_to_initial_pathologic_diagnosis" 
+# # x(baseline: the date of initial pathologic diagnosis) => all are NA or zero :-)
+# # OS Time to event <- days to death [17] or Max of (last followup [20]/ last known alive [21]); 
+# oscc <- cbind(oscc, subset(osccT, select=c("days_to_death")))
+# # max of case c(15,412,455)
+# osccT_2021 <- osccT[c(20,21)]
+# #OS_live_time_ind <- apply(osccT_2021, 1, which.max) # 1: in a row-wise matter
+# #osccT_2021[OS_live_time_ind] 
+# # ifelse function: ifelse(test, yes, no)
+# # => try to pick up max(osccT[c(20,21)], na.rm=T) by row-wise matter
+# OS_live_days <- apply(osccT_2021, 1, function(x) ifelse(all(is.na(x)), NA, max(x, na.rm=T)))
+# OS_live_days <- as.data.frame(OS_live_days) # R help from Jorge I Velez
+# 
+# # at data cleaning stage: removal of 3-(NAs or 0) # OStime <- (HNSCC.clinical.Fire[c(76,17,19, 20,21)])
+# # to calculate overall survival time (months) of TCGA HNSCC? months until death
+# oscc$OS_months <- oscc$days_to_death / 30
+# oscc$OS_live_months <- OS_live_days /30 # derived from last followup [20]/ last known alive [21])
+# #=> if there is no event (alive) => censored (status 0)
+# # "OS_live_months" with label.var as "OS_live_days"
+# names(oscc$OS_live_months) <- ""
+# 
+# # OS Censoring: create vector time_to_death containing values to censor (oscc$OS_live_months) for death
+# # oscc$censored_OS[!is.na(osccT$OS..months._from.biopsy)] <- 0 # censored -
+# # oscc$censored_OS[is.na(osccT$OS..months._from.biopsy)] <- 1 # censored +
+# # ifelse(test, yes, no):
+# for (i in (1:nrow(oscc))){ # for (i in beginning:LUAD_n)
+#   oscc[i,11] <- ifelse (is.na(oscc[i,11]),
+#                         oscc[i,12], oscc[i,11])
+#   # 11: oscc$OS_months
+#   # 12: oscc$OS_live_months
+#   # as.numeric(as.character())
 # }
 # 
-
-
-# [19] "days_to_initial_pathologic_diagnosis" 
-# (baseline: the date of initial pathologic diagnosis)  => all are NA or zero :-)
-# > View(as.data.frame(osccT[,c(16:17,20, 56, 76)])) 
-# View(oscc[(oscc$OS_IND == 1 & oscc$months_alive >0), c(1,11,13)])
-oscc$RFS_months <- osccT$days_to_last_followup / 30 # days_to_last_followup > 0 => all are alive => RFS time
-
-oscc$RFS_IND[osccT$person_neoplasm_cancer_status == "with tumor"] <- 1 # 1==tumour recurrency, event
-oscc$RFS_IND[osccT$person_neoplasm_cancer_status == "tumor free"] <- 0 # 0==NO recurrency
+# # data("mgus2") # https://cran.r-project.org/web/packages/survival/survival.pdf
+# # etime <- with(mgus2, ifelse(pstat==0, futime, ptime)) #pstat=PCM: 0=no (OStime) or 1=yes (RFStime)
+# # event <- with(mgus2, ifelse(pstat==0, 2*death, 1)) #0:PCM 0+2*alive(0); 2:PCM 0+2*death(1); 1:PCM 1
+# # event <- factor(event, 0:2, labels=c("censor", "pcm", "death")) # level 0:censor 2:death 1:PCM
+# # View(Surv(etime, event)) # censoring status= 0 or "censor"; while 1 as "event"
+# # # ptime=RFStime
+# # time until progression to a plasma cell myeloma (PCM) or last contact, in months
+# # pstat=tumor event
+# # occurrence of PCM: 0=no, 1=yes
+# # futime=OStime
+# # time until death or last contact, in months
+# # death=death event
+# # occurrence of death: 0=no, 1=yes
+# # 
+# # within function: calculate a new variable
+# # mgus2 <- within(mgus2, {delta <- abs(death - 1) }) # In the “mgus2” data, we want to define a new censoring variable
+# # "delta" which takes the values 1 for a censored variable and 0 for an death event
+# # 
+# # # assiging labels to variable name:
+# names(oscc$OS_live_months) <- ""
+# library(Hmisc)
+# label(oscc$OS_live_months) <- ""
+# # >OS_live_days 
+# # set.seed(22)
+# # data <- data.frame(age = floor(rnorm(6,25,10)), 
+# #                    sex = gl(2,1,6, labels = c("f","m")))
+# # var.labels <- c(age = "Age in Years", 
+# #                 sex = "Sex of the participant")
+# # dplyr::as.tbl(data)
+# # data <- Hmisc::upData(data, labels = var.labels)
+# # Hmisc::label(data)
+# # Hmisc::contents(data)
+# ## end of OS ##
 # 
-#In R, the operators "|" and "&" indicate the logical operations OR and AND.
-#
-# RFS Censoring: create vector with time to new tumor containing data to censor for new_tumor
-# oscc$censored_RFS[!is.na(osccT$RFS..months._from.op)] <- 0 # censored -
-# oscc$censored_RFS[is.na(osccT$RFS..months._from.op)] <- 1 # censored +
-# end of RFS
+# 
+# 
+# 
+# 
+# #
+# x# [RFS]: ####
+# # # (os vs rfs) there is no RFS time in LUAD; HNSCC [2018/01/27]
+# # however, we must to duplicate OS to RFS for convinence of code running :-)
+# oscc$RFS_IND <- oscc$OS_IND
+# oscc$RFS_months <- oscc$OS_months
+# # jumpt to [preparedT]
+# 
+# # or There is true RFS calculation below:
+# # impute missing RFS by OS time; OS RFS Interpretation
+# # https://www.biostars.org/p/153013/
+# # https://groups.google.com/forum/m/#!msg/ucsc-cancer-genomics-browser/YvKnWZSsw1Q/3IAkkEMyFa4J
+# 
+# # => A notice that this is a competitive risk problem, where, although a patient can recur and then die, if a patient is dead, it will not recur, therefore is more accurate to censor for death events.
+# # {
+# RFStime <- (HNSCC.clinical.Fire[c(76,17,20,21,66,56)])
+# # months of tumour free and alive by using "person_neoplasm_cancer_status": n=330 "tumor free" or n=191 "with tumor"
+# # https://www.researchgate.net/post/Are_there_differences_between_progression-free_survival_relapse-free_survival_and_recurrence-free_survival2
+# # Recurrence-free survival (RFS) includes (1) any recurrence (local or regional
+# # [including invasive ipsilateral tumor and invasive locoregional tumor], or
+# # distant) and (2) death due to any cause (both HNSCC and non-HNSCC causes of death).
+# # to consider death to be one of your outcomes. So your event becomes "Event OR All-cause Mortality". 
+# 
+# # (tumour free or new tumor event = residual[66]/progression, recurrence or new/second primary malignacies)
+# # RFS: RFS_IND Event by "tumor free" or "with tumor" [56]
+# # RFS Time to event = "Days To Recurrence", Time interval from the date of disease recurrence to the date of initial pathologic diagnosis, represented as a calculated number of days.
+# # (https://cdebrowser.nci.nih.gov/cdebrowserClient/cdeBrowser.html#/search?publicId=3008295&version=1.0)
+# # = Max of (known a tumour even alive / days to tumour recurrence); no event => censored as OS time 
+# 
+# #Calculation of RFS (recurrence): between 6 months and 5 years in HNSC
+# # DFS is not the same with RFS
+# #Residual tumor [66] => in HNSC tumors patients
+# #re-diagnosed with a tumor ("with tumor") within 6 months of treatment completion it is
+# #considered part of the original tumor, not a new tumor, so it is residual tumor [66] and not a recurrence.
+# # (or pathologic report: margin is NOT free) [66]
+# #
+# #For HNSC at least a re-diagnosed patient is considered to have a recurrence of the original tumor
+# #if it's between 6 months and 5 years, and 5 years post-treatment it is considered a new primary tumor.
+# # }
+# # 
+# 
+# 
+# # [19] "days_to_initial_pathologic_diagnosis" 
+# # (baseline: the date of initial pathologic diagnosis)  => all are NA or zero :-)
+# # > View(as.data.frame(osccT[,c(16:17,20, 56, 76)])) 
+# # View(oscc[(oscc$OS_IND == 1 & oscc$months_alive >0), c(1,11,13)])
+# oscc$RFS_months <- osccT$days_to_last_followup / 30 # days_to_last_followup > 0 => all are alive => RFS time
+# 
+# oscc$RFS_IND[osccT$person_neoplasm_cancer_status == "with tumor"] <- 1 # 1==tumour recurrency, event
+# oscc$RFS_IND[osccT$person_neoplasm_cancer_status == "tumor free"] <- 0 # 0==NO recurrency
+# # 
+# #In R, the operators "|" and "&" indicate the logical operations OR and AND.
+# #
+# # RFS Censoring: create vector with time to new tumor containing data to censor for new_tumor
+# # oscc$censored_RFS[!is.na(osccT$RFS..months._from.op)] <- 0 # censored -
+# # oscc$censored_RFS[is.na(osccT$RFS..months._from.op)] <- 1 # censored +
+# # end of RFS
+# # 
+# # 
+# 
+# # to [preparedT] here ##
+# # oscc <- cbind(oscc, subset(osccT, select=c("expression_log2", "z.score")))
+# # save(oscc, file="HNSCC_T576_clinical_fullFeatures13_dichotomized.Rda") # with "margin"
+# # 
+# oscc <- oscc[,!(colnames(oscc) %in% c("days_to_death", "OS_live_months"))] # removal of junk columns
+# 
+# save(oscc, file="HNSCC_T522_clinical_fullFeatures11_dichotomized.Rda") # with "margin" at column 8
 # 
 # 
 
-# to [preparedT] here ####
-# oscc <- cbind(oscc, subset(osccT, select=c("expression_log2", "z.score")))
-# save(oscc, file="HNSCC_T576_clinical_fullFeatures13_dichotomized.Rda") # with "margin"
-# 
-oscc <- oscc[,!(colnames(oscc) %in% c("days_to_death", "OS_live_months"))] # removal of junk columns
 
-save(oscc, file="HNSCC_T522_clinical_fullFeatures11_dichotomized.Rda") # with "margin" at column 8
-
-
-
-
-# [4] get all RNAseq by FirebrowseR ####
+# x[4] get all RNAseq by FirebrowseR ####
 #HNSCC.mRNA.Exp.Fire <- Samples.mRNASeq()
 ## # set path on google drive
 library(FirebrowseR)
@@ -978,7 +1094,398 @@ while (i>= beginning)  # for (i in beginning:LUAD_n) , start from last one ZZZ3
   # 
   i <- i - 1
 }
+
+
+#x merge all RNAseq.Fire.Rda ####
+# https://stackoverflow.com/questions/17499013/how-do-i-make-a-list-of-data-frames
+# https://stackoverflow.com/questions/38364745/add-a-data-frame-to-an-existing-rdata-file
+add_object_to_rda <- function(obj, rda_file, overwrite = FALSE) {
+  .dummy <- NULL
+  if (!file.exists(rda_file)) save(.dummy, file = rda_file)
+  
+  old_e <- new.env()
+  new_e <- new.env()
+  
+  load(file = rda_file, envir = old_e)
+  
+  name_obj <- deparse(substitute(obj))   
+  # get the name of the object
+  
+  # new_e[[name_obj]] <- get(name_obj)     
+  # # use above only outside a function
+  new_e[[name_obj]] <- obj
+  
+  # merge object from old environment with the new environment
+  # ls(old_e) is a character vector of the object names
+  if (overwrite) {
+    # the old variables take precedence over the new ones
+    invisible(sapply(ls(new_e), function(x)
+      assign(x, get(x, envir = new_e), envir = old_e)))
+    # And finally we save the variables in the environment
+    save(list = ls(old_e), file = rda_file, envir = old_e)
+  }
+  else {
+    invisible(sapply(ls(old_e), function(x)
+      assign(x, get(x, envir = old_e), envir = new_e)))
+    # And finally we save the variables in the environment
+    save(list = ls(new_e), file = rda_file, envir = new_e)
+  }
+}
+#my.list <- do.call(rbind, mget(ls(pattern="^data_")))
+#my_data <- lapply(my_files, read.csv)
+RNAseq_geneNum <- list.files(path=path_cohort, pattern = "HNSCC.mRNA{1}")
+#RNAseq_geneNum <- lapply(my_files, load) # there is no LOAD; from 1 to 20238
+HNSCC.mRNA.Exp.Fire <- list()
+mergedRda <- "HNSCC.mRNA.Fire.Rda"
+save(HNSCC.mRNA.Exp.Fire, file=mergedRda)
+
+for (i in c(1:length(RNAseq_geneNum)))
+{
+  load(RNAseq_geneNum[[i]]) #dataframe name HNSCC.mRNA.Exp.Fire
+
+  e <- new.env(parent = emptyenv())
+  load(mergedRda, envir = e)
+  e$myFile <- HNSCC.mRNA.Exp.Fire
+  do.call("save", c(ls(envir = e), list(envir = e, file = mergedRda)))
+  
+  #df[[i]] <- HNSCC.mRNA.Exp.Fire
+  #add_object_to_rda(HNSCC.mRNA.Exp.Fire, mergedRda)
+}
+#  HNSCC.mRNA.Fire <- df
+
+
+#> [3a.prepare T] Binary/binomial of clinicalMatrix (clinicopathological features) ####
+# or categorize, or factorize or dichotomize by recoding
+# osccT_fileName <- load(file.choose()) # HNSCC, "TCGA_HNSCC_515_clinical_fullFeatures11_ZZZ3.Rda" with residual tumour status
+# or transfer from HNSCC
+
+#load(file.choose()) # self choice
+load(file="HNSCC.clinical.Fire.Rda")
+osccT <- HNSCC.clinical.Fire # n=528; #HNSCC.clinical.Fire.Rda
+
+# ignore patient_ID (it is NOT true; anonymous)
+# https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/ data schema
+# https://wiki.nci.nih.gov/display/TCGA/TCGA+barcode
+# ID_table <- as.data.frame(table(HNSCC.clinico_mRNA.Fire[,c(1,54, 86)]))
+# TCGA HNSCC n=528
+# 
+# #https://www.biostars.org/p/153013/ a step-by-step tutorial,
+# Survival analysis of TCGA patients integrating gene expression (RNASeq) data 
+source("https://bioconductor.org/biocLite.R")
+biocLite("curatedTCGAData") # utf8 and pillar and tibble
+library("curatedTCGAData")
+# Old packages: 'git2r', 'multcomp',mvtnorm :-)
+biocLite("TCGAWorkflow") #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5302158/
+# GenomicDataCommons - A R/Bioconductor package for querying, accessing, and mining genomic datasets available from the GDC.
+options(repos="http://cran.csie.ntu.edu.tw/") # or http://cran.ism.ac.jp/; yzu is working :-)
+biocLite("GenomicDataCommons") # tibble, https://github.com/Bioconductor/GenomicDataCommons
+
+# [categorizing the survival data from clinical features] ####
+# from osccT to oscc
+# i= from 20499(ZZZ3) to 1(A1BG)
+oscc <- data.frame()
+oscc <- subset(osccT, select=c("tcga_participant_barcode", "gender")) # gender: male as 1, female as 2
+# H_score as ZZZ3 RNAseq level
+oscc$gender[oscc$gender == "male"] <- 1 # male as 1, recoding
+oscc$gender[oscc$gender == "female"] <- 2 # female as 2
+# oscc <- cbind(oscc, subset(osccT, select= c("OS..months._from.biopsy", "OS..months._from.biopsy_IND", "X_RFS", "X_RFS_IND")))
+#
+oscc$ageDx[osccT$age_at_initial_pathologic_diagnosis <= 65] <- 1 # younger
+oscc$ageDx[osccT$age_at_initial_pathologic_diagnosis > 65] <- 2 # older#
+# or create 2 age categories  by
+# mydata$agecat <- ifelse(mydata$age > 65, 
+#                        c("older"), c("younger")) 
+# mydata$Agecat4<-cut(mydata$Age, seq(0,30,5), right=FALSE, labels=c(1:6))
+
+
+
+# keep grouping and Recoding variable by Factor
+# https://stackoverflow.com/questions/3875608/grouping-recoding-factors-in-the-same-data-frame
+# > levels(as.factor(osccT$pathologic_t))
+# [1] "t0"  "t1"  "t2"  "t3"  "t4"  "t4a" "t4b" "tx" 
+# %in% is "within"
+oscc$pathologic_T[osccT$pathologic_t %in% c("t1", "t2")] <- 1 # T1 T2
+oscc$pathologic_T[osccT$pathologic_t %in% c("t3", "t4", "t4a", "t4b")] <- 2 # T3 T4
+oscc$pathologic_T[osccT$pathologic_t %in% c("tx", NA)] <- NA # unknown T
+#
+#> levels(as.factor(osccT$pathologic_n))
+# [1] "n0"  "n1"  "n2"  "n2a" "n2b" "n2c" "n3"  "nx" 
+oscc$pathologic_N[osccT$pathologic_n == "n0"] <- 0 # N0
+oscc$pathologic_N[osccT$pathologic_n %in% c("n1", "n2", "n2a", "n2b", "n2c", "n3")] <- 1 # N+ (N1,2,3)
+oscc$pathologic_N[osccT$pathologic_n %in% c("nx", NA)] <- NA # unknown N
+
+#> levels(as.factor(osccT$pathologic_m))
+# [1] "m0"  "m1"  "mx" in HNSCC
+# M as 0 or 2 in TMU TA51 (why M2 instead of M1?)
+oscc$pathologic_M[osccT$pathologic_m == "m0"] <- 0 # M0
+oscc$pathologic_M[osccT$pathologic_m %in% c("m1")] <- 1 # M+
+oscc$pathologic_M[osccT$pathologic_m %in% c("mx", NA)] <- NA # unknown M
+#
+#> levels(as.factor(osccT$pathologic_stage))
+# [1] "stage i"   "stage ii"  "stage iii" "stage iva" "stage ivb" "stage ivc"
+oscc$stage[osccT$pathologic_stage %in% c("stage i", "stage ii")] <- 1 # stage 1 2
+oscc$stage[osccT$pathologic_stage %in% c("stage iii", "stage iva", "stage ivb", "stage ivc")] <- 2 # stage 3 4
+#
+
+#[2019/05/29]
+# ** margin issue: 0 or 1 or NaN ####
+# with r1 or r2 (residual tumor) => person_neoplasm_cancer_status (with tumor) is NOT recurrence
+# while clincal "tumor free" cases with r1 or r2 => Amazing ! selflimited :-)
+# margin_status (residual_tumor) in HNSCC: The status of a tissue margin following surgical resection:
+#=> r0, 無殘留，tumor free from margin (就是有 「開乾淨」的意思)
+#=> r1 (micro) r2 (macro) 有殘留，
+#=> rx 是 unknown status。
+# r0  r1  r2  rx in LUAD
+# 371  15   4  27 
+# [12] surgical_margin (+) in HNSCC; definition as c(0, 0.5, 1) [0.5 is close margin]; there is NO NaN.
+# > levels(as.factor(osccT$margin_status))
+# [1] "close"    "negative" "positive"
+oscc$margin[osccT$margin_status %in% c("negative")] <- 0 # margin free from tumour 0, n=357 
+oscc$margin[osccT$margin_status %in% c("close", "positive")] <- 1 # positive surgical margin 1, n=110
+# rx => NaN, n=0
+# R4> table(oscc$margin)
+#   0   1 NaN
+# 357 110  61 (23.5% cut through tumour??)
+
+# censoring data: Since we want to do censored analysis, we need to have
+# something to censor the data with. For example, if a patient has no death data
+# BUT there is a date to last followup it means that after that day we know
+# nothing about the patient, therefore after that day it cannot be used for
+# calculations/Kaplan Meier plot anymore, therefore we censor it. so now we need
+# to create vectors for both 'time to new tumor' (recurrence) and 'time to death' (overall survival) that
+# contain also the data from censored individuals.
+# https://www.biostars.org/p/153013/
+
+
+# [OS] overall survival ####
+# # OS and RFS, time course: 
+# (at birth [16] -> healthy -> cancer diagnosed [19] -> therapies/intervention -> [recurrence event] -> death event)
+# GDC data dictionary viewer for CDE: https://cdebrowser.nci.nih.gov/cdebrowserClient/cdeBrowser.html#/search
+# rule and definition by colnames number [1:81] of HNSCC.clinical.Fire: 
+# OS: OS_IND Event <- death or alive [76] "vital_status"
+# "vital_status" == 1 as dead; == 0 as alive
+oscc$OS_IND[osccT$vital_status == "dead"] <- 1 # 1==death event (dead), n=224
+oscc$OS_IND[osccT$vital_status == "alive"] <- 0 # 0==no event (alive), 304 (censored)
+
+# [29] "days_to_initial_pathologic_diagnosis" 
+# (baseline: the date of initial pathologic diagnosis) => all are NA or zero :-)
+# OS Time to event <- days to death [27] or Max of (last followup [30]/ last known alive [31]); 
+# {
+#   [21] "day_of_dcc_upload"                                  
+#   [22] "day_of_form_completion"                             
+#   [23] "days_to_additional_surgery_locoregional_procedure"  
+#   [24] "days_to_additional_surgery_metastatic_procedure"    
+#   [25] "days_to_birth"                                      
+#   [26] "days_to_completion_of_curative_tx"                  
+#   [27] "days_to_death"                                      
+#   [28] "days_to_index"                                      
+#   x[29] "days_to_initial_pathologic_diagnosis"               
+#   [30] "days_to_last_followup"                              
+#   [31] "days_to_last_known_alive"  
+# }
+
+oscc <- cbind(oscc, subset(osccT, select=c("days_to_death")))
+# max of case c(15,412,455)
+osccT_2021 <- osccT[c(30,31)] # [30] "days_to_last_followup", [31] "days_to_last_known_alive" 
+#OS_live_time_ind <- apply(osccT_2021, 1, which.max) # 1: in a row-wise matter
+#osccT_2021[OS_live_time_ind] 
+# ifelse function: ifelse(test, yes, no)
+# => try to pick up max(osccT[c(20,21)], na.rm=T) by row-wise matter
+OS_live_days <- apply(osccT_2021, 1, function(x) ifelse(all(is.na(x)), NA, max(x, na.rm=T)))
+OS_live_days <- as.data.frame(OS_live_days) # R help from Jorge I Velez
+
+# at data cleaning stage: removal of 3-(NAs or 0) # OStime <- (HNSCC.clinical.Fire[c(76,17,19, 20,21)])
+# to calculate overall survival time (months) of TCGA HNSCC, months until death
+oscc$OS_months <- oscc$days_to_death / 30
+oscc$OS_live_months <- OS_live_days /30 # derived from last followup [30]/ last known alive [31])
+#=> if there is no event (alive) => censored (status 0)
+# "OS_live_months" with label.var as "OS_live_days"
+names(oscc$OS_live_months) <- ""
+
+# OS Censoring: create vector time_to_death containing values to censor (oscc$OS_live_months) for death
+# oscc$censored_OS[!is.na(osccT$OS..months._from.biopsy)] <- 0 # censored -
+# oscc$censored_OS[is.na(osccT$OS..months._from.biopsy)] <- 1 # censored +
+# ifelse(test, yes, no):
+for (i in (1:nrow(oscc))){ # for (i in beginning:LUAD_n)
+  oscc[i,11] <- ifelse (is.na(oscc[i,11]),
+                        oscc[i,12], oscc[i,11])
+  # 11: oscc$OS_months
+  # 12: oscc$OS_live_months
+  # as.numeric(as.character())
+} # OS_months imputed
+
+# data("mgus2") # https://cran.r-project.org/web/packages/survival/survival.pdf
+# etime <- with(mgus2, ifelse(pstat==0, futime, ptime)) #pstat=PCM: 0=no (OStime) or 1=yes (RFStime)
+# event <- with(mgus2, ifelse(pstat==0, 2*death, 1)) #0:PCM 0+2*alive(0); 2:PCM 0+2*death(1); 1:PCM 1
+# event <- factor(event, 0:2, labels=c("censor", "pcm", "death")) # level 0:censor 2:death 1:PCM
+# View(Surv(etime, event)) # censoring status= 0 or "censor"; while 1 as "event"
+# # ptime=RFStime
+# time until progression to a plasma cell myeloma (PCM) or last contact, in months
+# pstat=tumor event
+# occurrence of PCM: 0=no, 1=yes
+# futime=OStime
+# time until death or last contact, in months
+# death=death event
+# occurrence of death: 0=no, 1=yes
+# 
+# within function: calculate a new variable
+# mgus2 <- within(mgus2, {delta <- abs(death - 1) }) # In the “mgus2” data, we want to define a new censoring variable
+# "delta" which takes the values 1 for a censored variable and 0 for an death event
+# 
+# # assiging labels to variable name:
+names(oscc$OS_live_months) <- ""
+library(Hmisc)
+label(oscc$OS_live_months) <- ""
+# >OS_live_days 
+# set.seed(22)
+# data <- data.frame(age = floor(rnorm(6,25,10)), 
+#                    sex = gl(2,1,6, labels = c("f","m")))
+# var.labels <- c(age = "Age in Years", 
+#                 sex = "Sex of the participant")
+# dplyr::as.tbl(data)
+# data <- Hmisc::upData(data, labels = var.labels)
+# Hmisc::label(data)
+# Hmisc::contents(data)
+## end of OS ##
+
+
+
+
+
+#
+# [RFS]: duplicated from OS ####
+# there is no RFS time in LUAD [2018/01/27] nor in HNSCC [2019/05/29]
+# however, we must to duplicate OS to RFS for convinence of code running :-)
+# x[2] "additional_surgery_locoregional_procedure"          
+# x[3] "additional_surgery_metastatic_procedure"  
+#  x [23] "days_to_additional_surgery_locoregional_procedure"  
+#   x[24] "days_to_additional_surgery_metastatic_procedure"   
+oscc$RFS_IND <- oscc$OS_IND
+oscc$RFS_months <- oscc$OS_months
+# jumpt to [3b. preparedT]
+
+# # or There is true RFS calculation below:
+# # impute missing RFS by OS time; OS RFS Interpretation
+# # https://www.biostars.org/p/153013/
+# # https://groups.google.com/forum/m/#!msg/ucsc-cancer-genomics-browser/YvKnWZSsw1Q/3IAkkEMyFa4J
+# 
+# # => A notice that this is a competitive risk problem, where, although a patient can recur and then die, if a patient is dead, it will not recur, therefore is more accurate to censor for death events.
+# # {
+# RFStime <- (HNSCC.clinical.Fire[c(76,17,20,21,66,56)])
+# # months of tumour free and alive by using "person_neoplasm_cancer_status": n=330 "tumor free" or n=191 "with tumor"
+# # https://www.researchgate.net/post/Are_there_differences_between_progression-free_survival_relapse-free_survival_and_recurrence-free_survival2
+# # Recurrence-free survival (RFS) includes (1) any recurrence (local or regional
+# # [including invasive ipsilateral tumor and invasive locoregional tumor], or
+# # distant) and (2) death due to any cause (both HNSCC and non-HNSCC causes of death).
+# # to consider death to be one of your outcomes. So your event becomes "Event OR All-cause Mortality". 
+# 
+# # (tumour free or new tumor event = residual[66]/progression, recurrence or new/second primary malignacies)
+# # RFS: RFS_IND Event by "tumor free" or "with tumor" [56]
+# # RFS Time to event = "Days To Recurrence", Time interval from the date of disease recurrence to the date of initial pathologic diagnosis, represented as a calculated number of days.
+# # (https://cdebrowser.nci.nih.gov/cdebrowserClient/cdeBrowser.html#/search?publicId=3008295&version=1.0)
+# # = Max of (known a tumour even alive / days to tumour recurrence); no event => censored as OS time 
+# 
+# #Calculation of RFS (recurrence): between 6 months and 5 years in HNSC
+# # DFS is not the same with RFS
+# #Residual tumor [66] => in HNSC tumors patients
+# #re-diagnosed with a tumor ("with tumor") within 6 months of treatment completion it is
+# #considered part of the original tumor, not a new tumor, so it is residual tumor [66] and not a recurrence.
+# # (or pathologic report: margin is NOT free) [66]
+# #
+# #For HNSC at least a re-diagnosed patient is considered to have a recurrence of the original tumor
+# #if it's between 6 months and 5 years, and 5 years post-treatment it is considered a new primary tumor.
+# # }
+# # 
+# 
+# 
+# # x[19] "days_to_initial_pathologic_diagnosis" 
+# # (baseline: the date of initial pathologic diagnosis)  => all are NA or zero :-)
+# # > View(as.data.frame(osccT[,c(16:17,20, 56, 76)])) 
+# # View(oscc[(oscc$OS_IND == 1 & oscc$months_alive >0), c(1,11,13)])
+# oscc$RFS_months <- osccT$days_to_last_followup / 30 # days_to_last_followup > 0 => all are alive => RFS time
+# 
+# oscc$RFS_IND[osccT$person_neoplasm_cancer_status == "with tumor"] <- 1 # 1==tumour recurrency, event
+# oscc$RFS_IND[osccT$person_neoplasm_cancer_status == "tumor free"] <- 0 # 0==NO recurrency
+# # 
+# #In R, the operators "|" and "&" indicate the logical operations OR and AND.
+# #
+# # RFS Censoring: create vector with time to new tumor containing data to censor for new_tumor
+# # oscc$censored_RFS[!is.na(osccT$RFS..months._from.op)] <- 0 # censored -
+# # oscc$censored_RFS[is.na(osccT$RFS..months._from.op)] <- 1 # censored +
+# # end of RFS
+# # 
+# # 
+
+# 97.5% smoker (skipped this feature)
+# (smoking/smokeless, alcohol, egfr_amplication_status, HPV) status ####
+# [66] "number_pack_years_smoked" # from 0.0167 to 300 pack per year; NaN n=230 
+#x [83] "smokeless_tobacco_use_age_at_quit"  # snuff, dip and chewing tobacco. The product is chewed or sucked and any juice is spit out making it a very unattractive habit.                
+#x [84] "smokeless_tobacco_use_age_at_start"                 
+#x [85] "smokeless_tobacco_use_at_diag"                      
+#x [86] "smokeless_tobacco_use_per_day"                      
+#x [87] "smokeless_tobacco_use_regularly"     # n=20 yes               
+# [88] "stopped_smoking_year" 
+# ***[95] "tobacco_smoking_history" => Category describing current smoking status and smoking history
+# n=515 (smoker), NaN n=13 (never smoker)
+#1   2   3   4   5 
+#122 178  73 140   2 
+# https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=exposure&anchor=tobacco_smoking_status
+# CDE: 2181650 - caDSR
+# [103] "year_of_tobacco_smoking_onset" 
+
+#> # [3b.prepare T: RNAseq] ####
+# n=528, features 5, OS, RFS, RNAseq(z.score) of gene 1......20499
+# a dataframe as 528 * 20609 (the best solution)
+# read HNSCC.mRNA.Exp.*.Fire.Rda # RNAseq dataset
+#library(dplyr)
+table(duplicated(oscc$tcga_participant_barcode)) # passed [all n=528 should be FALSE]
+save(oscc, file="HNSCC.clinical.RNAseq.Fire.Rda")
+
+#osccR <- data.frame(matrix(NaN, nrow=1000, ncol=20519))
+load(file="HNSCC.clinical.RNAseq.Fire.Rda") # as oscc
+osccR <- oscc # preserve it
+#offset <- 10
+#for (i in c((1+offset):(10+offset))) #LUAD_n
+
+  for (i in 1:LUAD_n) #LUAD_n
+  {
+    tryCatch(
+      {
+      load(file=paste("HNSCC.mRNA.Exp.", whole_genome[i], ".Fire.Rda", sep=""))
+    # as HNSCC.mRNA.Exp.Fire; sample_type TP vs NP (NT pair data):  
+    # NT  TM  TP 
+    # 44   2 520
+      osccR <- merge(x=osccR, y=HNSCC.mRNA.Exp.Fire[HNSCC.mRNA.Exp.Fire$sample_type == "TP", c(1, 4)], by="tcga_participant_barcode", all.x=T) # left outer join
+      colnames(osccR)[length(osccR)] <- paste("z.score_", HNSCC.mRNA.Exp.Fire[1, 2], sep="")
+      #save(osccR, file="HNSCC.osccR.Fire.Rda")
+      print(paste("RNAseq: ", i, ", ", whole_genome[i], sep=""))
+      }, error = function(e) return(NA))
+    # cannot open compressed file 'HNSCC.mRNA.Exp.ANKHD1.EIF4EBP3.Fire.Rda', i = 645
+  }
+# warnings() # duplicated colname?
+#offset <- offset + 10
+## https://stackoverflow.com/questions/1299871/how-to-join-merge-data-frames-inner-outer-left-right
+oscc <- osccR
+save(oscc, file="HNSCC.clinical.RNAseq.Fire.Rda") # size: 176Mb
+# git large file storage (>100Mb)
+# https://git-lfs.github.com
+# https://github.com/git-lfs/git-lfs/blob/master/docs/howto/release-git-lfs.md
+# git -a -m "RNAseq merged" # [2019/06/02]
+# git pull
+# git push
+
+# there is duplicated participant
+load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # as oscc
+
 ## Preparation finished (for each cancer type or cohort) ###
+# archiving 20499 RNAseq files: 	
+#$ find HNSCC.mRNA.Exp.*.Fire.Rda -print > mRNA_files
+#$ tar -c -v -z --remove-files -T mRNA_files -f HNSCC.mRNA.Exp.20499.Fire.Rda.tgz
+# n= 20238, size 215Mb
+
+
+
+
 
 
 
@@ -997,6 +1504,7 @@ while (i>= beginning)  # for (i in beginning:LUAD_n) , start from last one ZZZ3
 
 # 
 #{
+
 # => (install packages (must)) ####
 # make from the source "curl" and its libcurl, compiling under shell
 # $ wget https://github.com/curl/curl/releases/download/curl-7_59_0/curl-7.59.0.tar.gz
