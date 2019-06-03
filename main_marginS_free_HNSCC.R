@@ -1462,21 +1462,42 @@ osccR <- oscc # preserve it
       }, error = function(e) return(NA))
     # cannot open compressed file 'HNSCC.mRNA.Exp.ANKHD1.EIF4EBP3.Fire.Rda', i = 645
   }
-# warnings() # duplicated colname?
 #offset <- offset + 10
 ## https://stackoverflow.com/questions/1299871/how-to-join-merge-data-frames-inner-outer-left-right
 oscc <- osccR
 save(oscc, file="HNSCC.clinical.RNAseq.Fire.Rda") # size: 176Mb
-# git large file storage (>100Mb)
+# git large file storage (>100Mb) or > 50Mb
 # https://git-lfs.github.com
 # https://github.com/git-lfs/git-lfs/blob/master/docs/howto/release-git-lfs.md
 # git -a -m "RNAseq merged" # [2019/06/02]
 # git pull
 # git push
 
-# there is duplicated participant
-load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # as oscc
-
+# > clean duplicated participant; # warnings() # duplicated colname? ####
+load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # as oscc, n=1048 x col 20896
+install.packages("prodlim")
+library("prodlim")
+#row.match(oscc[1, ], oscc)
+row_match <- data.frame(matrix(data=NA, nrow=20896, ncol=1))
+for (i in 1:20896)
+{
+  print(paste("i=", i))
+  row_match[i, 1] <- (oscc[1, i] == oscc[2, i])
+  if (!is.na(oscc[1, i]) & !is.na(oscc[2, i])) # if both are is.na, skip
+  {
+  if (oscc[1, i] != oscc[2, i]) {print(paste(i, ") it is different!", oscc[1, i], " vs ", oscc[2, i]), sep="")}
+  }
+}
+!isTRUE(row_match) #	test if there is at least one False in row_match
+which(row_match[,1]==F)
+# [1] 16789 # SLC35E2
+# -rw-r--r-- 1 tex tex    101144 May 17 11:18 HNSCC.mRNA.Exp.SLC35E2.Fire.Rda
+load(file="~/R/HNSCC.mRNA.Exp.SLC35E2.Fire.Rda") # as HNSCC.mRNA.Exp.Fire 
+#tcga_participant_barcode    gene    z.score cohort sample_type
+#509              TCGA-4P-AA8J SLC35E2 -0.7744932   HNSC          TP
+#1004             TCGA-4P-AA8J SLC35E2 -0.2516549   HNSC          TP
+#
+#checking 3rd and 4th participants: z.score
 ## Preparation finished (for each cancer type or cohort) ###
 # archiving 20499 RNAseq files: 	
 #$ find HNSCC.mRNA.Exp.*.Fire.Rda -print > mRNA_files
