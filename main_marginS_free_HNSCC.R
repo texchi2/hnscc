@@ -1505,10 +1505,32 @@ coln_oscc <- colnames(oscc)
 dup_index <- duplicated(coln_oscc) # passed [all should be FALSE] => there is 644 duplicated RNAseq z.score
 #unique(ccoln_oscc)
 clean_oscc <- oscc[, !dup_index] # column as 20252 (14 clinical features, 20238 RNAseq z.score)
-View(clean_oscc[1:4, c(1:14, 15)])
 View(clean_oscc$z.score_SLC35E2[1:4])
+which(colnames(clean_oscc)=="z.score_SLC35E2") # at 16145
+View(clean_oscc[1:4, c(1:15, 16145)])
+clean2_oscc <- clean_oscc[, c(1:16145)] #16145 included "z.score_SLC35E2" as index
+#R4> clean_oscc[1:4, 16145]
+#[1] -0.2516549 -0.7744932 -1.1429253 -1.3035567 => different gene ID
+# osccR <- merge(x=osccR, y=HNSCC.mRNA.Exp.Fire[HNSCC.mRNA.Exp.Fire$sample_type == "TP", c(1, 4)], by="tcga_participant_barcode", all.x=T) # left outer join
 
-clean2_oscc <- 
+clean_oscc <- merge(clean_oscc, HNSCC.mRNA.Exp.Fire[, c(4, 8)], by.x="z.score_SLC35E2", by.y="z.score", all.x=T)
+# View(clean_oscc[c(244,516), c(1,2,20253)]) # to see tcga_participant_barcode=="TCGA-4P-AA8J"
+clean_y=data.frame("z.score_SLC35E2A"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==9906])
+#colnames(clean_y)[1]
+clean2_oscc <- merge(x=clean2_oscc, y=clean_y, by.x="z.score_SLC35E2", by.y="z.score_SLC35E2A", all.y=T) # right outer join
+# dim(clean2_oscc) => 584 x 16145
+colnames(clean2_oscc)[1] <- "z.score_SLC35E2A"
+
+#clean2_oscc <- cbind(clean2_oscc, "z.score_SLC35E2B"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==728661])
+clean_y=data.frame("z.score_SLC35E2B"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==728661])
+clean2_oscc <- merge(x=clean2_oscc, y=clean_oscc[, c(1)], by="z.score_SLC35E2") # z.score_SLC35E2
+clean2_oscc <- merge(x=clean2_oscc, y=clean_y, by.x="z.score_SLC35E2", by.y="z.score_SLC35E2B", all.y=T) # right outer join
+# dim(clean2_oscc) => 584 x 16145
+colnames(clean2_oscc)[1] <- "z.score_SLC35E2B"
+
+clean2_oscc <- unique(clean2_oscc) # removal half of observation, n= 1048/2
+
+
 for (i in 1:LUAD_n) 
 {
   
