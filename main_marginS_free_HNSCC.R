@@ -1500,7 +1500,19 @@ load(file="~/R/HNSCC.mRNA.Exp.SLC35E2.Fire.Rda") # as HNSCC.mRNA.Exp.Fire
 # SLC35E2A: 9906
 # SLC35E2B: 728661
 #checking 3rd and 4th participants: z.score, 5th and 6th => ditto
-# whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
+# oscc why 20896 columns? checking unique of column name
+coln_oscc <- colnames(oscc)
+dup_index <- duplicated(coln_oscc) # passed [all should be FALSE] => there is 644 duplicated RNAseq z.score
+#unique(ccoln_oscc)
+clean_oscc <- oscc[, !dup_index] # column as 20252 (14 clinical features, 20238 RNAseq z.score)
+View(clean_oscc[1:4, c(1:14, 15)])
+View(clean_oscc$z.score_)
+              clean2_oscc <- 
+for (i in 1:LUAD_n) 
+{
+  
+}
+# whole_genome and LUAD_n: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
 
 #
 ## Preparation finished (for each cancer type or cohort) ###
