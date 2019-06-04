@@ -1506,8 +1506,9 @@ dup_index <- duplicated(coln_oscc) # passed [all should be FALSE] => there is 64
 #unique(ccoln_oscc)
 clean_oscc <- oscc[, !dup_index] # column as 20252 (14 clinical features, 20238 RNAseq z.score)
 View(clean_oscc[1:4, c(1:14, 15)])
-View(clean_oscc$z.score_)
-              clean2_oscc <- 
+View(clean_oscc$z.score_SLC35E2[1:4])
+
+clean2_oscc <- 
 for (i in 1:LUAD_n) 
 {
   
