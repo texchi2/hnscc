@@ -1496,8 +1496,13 @@ load(file="~/R/HNSCC.mRNA.Exp.SLC35E2.Fire.Rda") # as HNSCC.mRNA.Exp.Fire
 #tcga_participant_barcode    gene    z.score cohort sample_type
 #509              TCGA-4P-AA8J SLC35E2 -0.7744932   HNSC          TP
 #1004             TCGA-4P-AA8J SLC35E2 -0.2516549   HNSC          TP
+# there is two genes: SLC35E2A and SLC35E2B: geneID(Entrez Gene)   9906 728661
+# SLC35E2A: 9906
+# SLC35E2B: 728661
+#checking 3rd and 4th participants: z.score, 5th and 6th => ditto
+# whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
+
 #
-#checking 3rd and 4th participants: z.score
 ## Preparation finished (for each cancer type or cohort) ###
 # archiving 20499 RNAseq files: 	
 #$ find HNSCC.mRNA.Exp.*.Fire.Rda -print > mRNA_files
