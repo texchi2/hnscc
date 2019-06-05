@@ -76,6 +76,7 @@ LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3", keep it LUAD_n as gene n
 margin issue
 16789 # SLC35E2 RNAseq has two measurement for each participants => there is two genes: SLC35E2A and SLC35E2B
 whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
+clean and rearrange by geneID => whole_genome has 20500.
 
 introduce R scripts: TCGA_HNSCC_marginFree.R  TCGA_HNSCC_marginS.R  cutofFinder_func_HNSCC.R  main_marginS_free_HNSCC.R
 https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0

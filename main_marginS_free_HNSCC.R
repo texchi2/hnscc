@@ -44,7 +44,7 @@ TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
 path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
 setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GCP
 load(file="whole_genome.Rda") # the name list of protein coding genome
-LUAD_n <- length(whole_genome) # n=20499, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
+LUAD_n <- length(whole_genome) # n=20499 -> now is 20500, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
 
 
 #
@@ -1475,8 +1475,8 @@ save(oscc, file="HNSCC.clinical.RNAseq.Fire.Rda") # size: 176Mb
 
 # > clean duplicated participant; # warnings() # duplicated colname? ####
 load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # as oscc, n=1048 x col 20896
-install.packages("prodlim")
-library("prodlim")
+#install.packages("prodlim")
+#library("prodlim")
 #row.match(oscc[1, ], oscc)
 row_match <- data.frame(matrix(data=NA, nrow=20896, ncol=1))
 for (i in 1:20896)
@@ -1508,36 +1508,95 @@ clean_oscc <- oscc[, !dup_index] # column as 20252 (14 clinical features, 20238 
 View(clean_oscc$z.score_SLC35E2[1:4])
 which(colnames(clean_oscc)=="z.score_SLC35E2") # at 16145
 View(clean_oscc[1:4, c(1:15, 16145)])
-clean2_oscc <- clean_oscc[, c(1:16145)] #16145 included "z.score_SLC35E2" as index
-#R4> clean_oscc[1:4, 16145]
+table(duplicated(clean2_oscc$z.score_SLC35E2)) #=> 
+#FALSE  TRUE 
+#1041     7  => at [1] 250 251 312 835 886 887 912 => they are NA
+clean2_oscc <- clean2_oscc[!duplicated(clean2_oscc$z.score_SLC35E2), ] # 1041 x 16145
+# now it is unique at z.score_SLC35E2 of both clean_oscc and clean2_oscc
+clean_oscc <- clean_oscc[!duplicated(clean_oscc$z.score_SLC35E2), ] # 1041 x 20252
+
+#clean2_oscc <- clean_oscc[, c(1:16145)] #16145 included "z.score_SLC35E2" as index
+#R4> clean_oscc[1:4, 16145] # clean2_oscc[1:4, 16145] # z.score_SLC35E2
 #[1] -0.2516549 -0.7744932 -1.1429253 -1.3035567 => different gene ID
 # osccR <- merge(x=osccR, y=HNSCC.mRNA.Exp.Fire[HNSCC.mRNA.Exp.Fire$sample_type == "TP", c(1, 4)], by="tcga_participant_barcode", all.x=T) # left outer join
 
-clean_oscc <- merge(clean_oscc, HNSCC.mRNA.Exp.Fire[, c(4, 8)], by.x="z.score_SLC35E2", by.y="z.score", all.x=T)
+clean_oscc <- merge(clean_oscc, HNSCC.mRNA.Exp.Fire[, c(4,8)], by.x="z.score_SLC35E2", by.y="z.score", all.x=T) # left outer join
+#View(clean_oscc[1:10, c(1,2,20253)])
+#z.score_SLC35E2 at col1, geneID at col20253
 # View(clean_oscc[c(244,516), c(1,2,20253)]) # to see tcga_participant_barcode=="TCGA-4P-AA8J"
-clean_y=data.frame("z.score_SLC35E2A"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==9906])
-#colnames(clean_y)[1]
-clean2_oscc <- merge(x=clean2_oscc, y=clean_y, by.x="z.score_SLC35E2", by.y="z.score_SLC35E2A", all.y=T) # right outer join
-# dim(clean2_oscc) => 584 x 16145
-colnames(clean2_oscc)[1] <- "z.score_SLC35E2A"
+clean2_oscc <- merge(clean2_oscc, clean_oscc[, c(1, 20253)], by="z.score_SLC35E2", all.x=T) # left outer join 
+# View(clean2_oscc[c(244,516), c(1,2,16146)]) # geneID at 16146
+
+clean_yA <- data.frame("z.score_SLC35E2A"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==9906]) # n=521
+clean_yA <- cbind(clean_yA, clean_yA)
+colnames(clean_yA)[1] <- "z.score_SLC35E2"
+clean2_oscc <- merge(x=clean2_oscc, y=clean_yA, by="z.score_SLC35E2", all.x=T) # left outer join
+# dim(clean2_oscc) => 1041 x 16147
 
 #clean2_oscc <- cbind(clean2_oscc, "z.score_SLC35E2B"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==728661])
-clean_y=data.frame("z.score_SLC35E2B"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==728661])
-clean2_oscc <- merge(x=clean2_oscc, y=clean_oscc[, c(1)], by="z.score_SLC35E2") # z.score_SLC35E2
-clean2_oscc <- merge(x=clean2_oscc, y=clean_y, by.x="z.score_SLC35E2", by.y="z.score_SLC35E2B", all.y=T) # right outer join
-# dim(clean2_oscc) => 584 x 16145
-colnames(clean2_oscc)[1] <- "z.score_SLC35E2B"
+clean_yB=data.frame("z.score_SLC35E2B"=clean_oscc$z.score_SLC35E2[clean_oscc$geneID==728661])
+clean_yB <- cbind(clean_yB, clean_yB)
+colnames(clean_yB)[1] <- "z.score_SLC35E2"
 
-clean2_oscc <- unique(clean2_oscc) # removal half of observation, n= 1048/2
+#clean2_oscc <- merge(x=clean2_oscc, y=clean_oscc[, c(1)], by="z.score_SLC35E2") # z.score_SLC35E2
+clean2_oscc <- merge(x=clean2_oscc, y=clean_yB, by="z.score_SLC35E2", all.x=T) # left outer join
+# dim(clean2_oscc) => 1041 x 16148
+#  View(clean_oscc[, c(1,2,16146,20252)])
+clean2_oscc <- merge(x=clean2_oscc, y=clean_oscc[, c(1,16146:20252)], by="z.score_SLC35E2", all.x=T) # append the rest of RNAseq
+# dim 1041 x 20255; geneID at col16146
+# View(clean2_oscc[, c(1,2,16145,16146,16147,16148,16149,20254,20255)])
 
+#x clean2_oscc <- unique(clean2_oscc) # removal half of observation, n= 1041/2
+# could not in this way above
+# 
 
-for (i in 1:LUAD_n) 
+clean3_oscc <- clean2_oscc[order(clean2_oscc$tcga_participant_barcode), ] # sorted
+# jumpt to try 3
+
+# xx
+for (i in seq(1, 1039, +2)) # participant 1041: NaN RNAseq 
 {
-  
+tryCatch(
+  {
+    if(clean3_oscc$geneID[i]==9906) {clean3_oscc$z.score_SLC35E2B[i] <- clean3_oscc$z.score_SLC35E2B[i+1]}
+    if(clean3_oscc$geneID[i]==728661) {clean3_oscc$z.score_SLC35E2A[i] <- clean3_oscc$z.score_SLC35E2A[i+1]} 
+  }, error = function(e) return(NA))
 }
-# whole_genome and LUAD_n: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
+clean4_oscc <- clean3_oscc[!is.na(clean3_oscc$z.score_SLC35E2A) & !is.na(clean3_oscc$z.score_SLC35E2B), c(2:16145, 16147:20255)]
+# View(clean3_oscc[, c(1,2,16145,16146,16147,16148,16149,20254,20255)])
+# View(clean4_oscc[, c(1,2,16145,16146,16147,16148,20252,20253)]) # duplicated removed, n=294, why?
+# there is missing valuse on z.score_SLC35E2A, z.score_SLC35E2B
 
-#
+#x try the other way (2)
+clean5_oscc <- data.frame((matrix(NaN, nrow = 1, ncol= 20253)))
+for (i in seq(1, 1039, +2)) # participant 1041: NaN RNAseq 
+{
+  #tryCatch(
+   # {
+      clean5_oscc <- rbind(clean5_oscc, clean3_oscc[i, c(2:16145, 16147:20255)])
+    #}, error = function(e) return(NA))
+}
+
+#> try 3 ####
+index_clean5 <- rep(TRUE:FALSE, 1040/2) # 520 vs 520 of 1 and 0
+# rep(1:4, c(2,1,2,1)) # the repeat pattern as 11 2 33 4
+index_clean5 <- as.logical(index_clean5) # become T F T F T F.....
+clean5_oscc <- clean3_oscc[index_clean5, c(2:16145, 16147:20255)]
+# View(clean5_oscc[, c(1,2,16145,16146,16147,16148,20252,20253)]) # duplicated removed, n=294, why?
+# n=521
+# check unique of patient bar code: 521 x 20253
+duplicated(clean5_oscc$tcga_participant_barcode) # all 521 are FALSE
+# whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
+# gene RNAseq from col15 to col20253: 20239
+# LUAD_n <- 20253-14 # 20239 instead of 20499 => do not need to be altered
+which(whole_genome=="SLC35E2") # at 16272
+#which(whole_genome=="SLC35E2B") # NaN
+whole_genome2 <- whole_genome[1:16271]
+whole_genome2 <- c(whole_genome2, "SLC35E2A", "SLC35E2B", whole_genome[16273:LUAD_n]) # n=20500
+# R4> whole_genome2[16271:16274]
+#[1] "SLC35E1"  "SLC35E2A" "SLC35E2B" "SLC35E3" 
+whole_genome <- whole_genome2 # updated as 20500 genes
+save(whole_genome, file="whole_genome.Rda") # updated since [2019/06/05]
 ## Preparation finished (for each cancer type or cohort) ###
 # archiving 20499 RNAseq files: 	
 #$ find HNSCC.mRNA.Exp.*.Fire.Rda -print > mRNA_files
