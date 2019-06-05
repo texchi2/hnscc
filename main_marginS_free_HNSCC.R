@@ -1597,8 +1597,9 @@ whole_genome2 <- c(whole_genome2, "SLC35E2A", "SLC35E2B", whole_genome[16273:LUA
 #[1] "SLC35E1"  "SLC35E2A" "SLC35E2B" "SLC35E3" 
 whole_genome <- whole_genome2 # updated as 20500 genes
 save(whole_genome, file="whole_genome.Rda") # updated since [2019/06/05]
-## Preparation finished (for each cancer type or cohort) ###
-# archiving 20499 RNAseq files: 	
+## Preparation finished (for HNSCC cancer type or cohort) ###
+
+# archiving 20500 RNAseq files: 	
 #$ find HNSCC.mRNA.Exp.*.Fire.Rda -print > mRNA_files
 #$ tar -c -v -z --remove-files -T mRNA_files -f HNSCC.mRNA.Exp.20499.Fire.Rda.tgz
 # n= 20238, size 215Mb
