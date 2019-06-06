@@ -61,9 +61,18 @@ https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 # FirebrowseR - Paper describing the R FirebrowseR package.
 # GenomicDataCommons - Paper describing the R GenomicDataCommons package.
 # 
+# https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
+# or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
+# FirebrowseR - Paper describing the R FirebrowseR package.
+# GenomicDataCommons - Paper describing the R GenomicDataCommons package.
+# 
+
 ## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
 # FirebrowseR - An R package to download directly the results of the analyses performed by Firehose in R.
 #go to FireBrowse ( http://gdac.broadinstitute.org/ ):
+# install.packages("devtools")
+# library("devtools")
+# devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
 
 
 #[Survival analysis] {#sec:2}
@@ -77,16 +86,30 @@ margin issue
 16789 # SLC35E2 RNAseq has two measurement for each participants => there is two genes: SLC35E2A and SLC35E2B
 whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
 clean and rearrange by geneID => whole_genome has 20500.
+# z-score calculation = [(value gene X in tumor Y)-(mean gene X in normal)]/(standard deviation X in normal)
 
-introduce R scripts: TCGA_HNSCC_marginFree.R  TCGA_HNSCC_marginS.R  cutofFinder_func_HNSCC.R  main_marginS_free_HNSCC.R
+
+introduce R scripts: 
+TCGA_HNSCC_marginFree.R  
+TCGA_HNSCC_marginS.R  
+cutofFinder_func_HNSCC.R  
+main_marginS_free_HNSCC.R
 https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0
 Features selection:
 pathologic_T => clinical_T of coln_osccT
 in table 3 and table 4: featuresUni
 run mainA (marginS)
-call function(survival_marginS) on TCGA_HNSCC_marginS.R, 122 rename LUAD.mRNA.Exp., 139 load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda")
+ [mainA process #part A] 
+# genome-wide scan for margin 0 or 1 cohort ##
+# TCGA_HNSCC_marginS.R
+call function(survival_marginS) on TCGA_HNSCC_marginS.R, 
+
+
+
 core engine: cutofFinder_func_HNSCC.R, call, run100
-{
+{  cutoffReturn <- cutofFinder_func(geneName, marginTag) 
+rename LUAD.mRNA.Exp., 139 load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, as clean6_oscc
+
 7)[COXPH modelling] with OS, RFS; HNSCC features: pathologic to clinical TNM
 rename LUAD.mRNA.Exp.
 export to .Rda and .XLS (appending is better) HNSCC_survivalAnalysis_marginS_
@@ -104,7 +127,21 @@ core engine: cutofFinder_func_HNSCC.R, call, run100
 {
 7)[COXPH modelling] with OS, RFS; ; HNSCC features: pathologic to clinical TNM
 rename LUAD.mRNA.Exp.
-export to .Rda and .XLS (appending is better)
+export to .XLS (it could not be appended)
+export part I:
+# P-value notes:
+# Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
+# if <0.001 => mark as "***"
+export part II: R2Excel export
+{
+ Table 2: clinical correlation tables (tableChi1)
+ table 3 and table 4 
+ plot: Kaplan-Meier survival estimate with optimized Cutoff
+}
+save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+
+
+
 HNSCC_survivalAnalysis_marginFree_
 # append.Rda <- function(x, file) {
 #   old.objects <- load(file, new.env())

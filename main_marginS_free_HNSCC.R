@@ -2119,10 +2119,10 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   # #               featuresUni-1   freq$Features    osccCleanNA_conBin(osccCleanNA)
   # 1                 Gender           Gender       Gender
   # 2       Age at diagnosis age.at.diagnosis        age.at.diagnosis
-  # 3    Pathologic T status                T         T
-  # 4    Pathologic N status                N         N
-  # 5    Pathologic M status                M         M
-  # 6       Pathologic Stage          stage_2        stage_2
+  # 3    Clinical T status                T         T
+  # 4    Clinical N status                N         N
+  # 5    Clinical M status                M         M
+  # 6       Clinical Stage          stage_2        stage_2
   # 7 Surgical Margin status           margin       margin
   # #
   # rownames(tableChi1) <- featuresUni
@@ -2252,7 +2252,7 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
 
 
 #### [mainA process #part A] { ####
-# genome-wide scan for margin 0 and 1 cohort ##
+# genome-wide scan for margin 0 or 1 cohort ##
 # TCGA_HNSCC_marginS.R
 # added tryCatch for Survdiff.fit error
 
