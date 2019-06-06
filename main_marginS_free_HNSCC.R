@@ -673,7 +673,7 @@ f <- e + 100
 # 
 # 
 # 
-# # [categorizing the survival data from clinical features] ####
+# # [categorizing the survival data from clinical features] ###
 # # from osccT to oscc
 # # i= from 20499(ZZZ3) to 1(A1BG)
 # oscc <- data.frame()
@@ -1180,7 +1180,7 @@ biocLite("TCGAWorkflow") #https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5302158/
 options(repos="http://cran.csie.ntu.edu.tw/") # or http://cran.ism.ac.jp/; yzu is working :-)
 biocLite("GenomicDataCommons") # tibble, https://github.com/Bioconductor/GenomicDataCommons
 
-# [categorizing the survival data from clinical features] ####
+# >[categorizing the survival data from clinical features] ####
 # from osccT to oscc
 # i= from 20499(ZZZ3) to 1(A1BG)
 oscc <- data.frame()
@@ -1627,12 +1627,15 @@ save(whole_genome, file="whole_genome.Rda") # updated since [2019/06/05]
 #{
 
 # => (install packages (must)) ####
+# since [2019/06/06]
 # make from the source "curl" and its libcurl, compiling under shell
 # $ wget https://github.com/curl/curl/releases/download/curl-7_59_0/curl-7.59.0.tar.gz
 # $ tar -xzvf curl-7.59.0.tar.gz
 # $ cd curl-7.59.0/
 # $ ./configure # make  # sudo make install
 install.packages(c("git2r", "curl", "httr"), repos="https://cran.r-project.org", type="source")
+# sudo apt-get install libssh2-1-dev # for git2r
+# sudo apt-get install libgit2-dev
 # write something here; try jjj by :imap jjj <Esc>
 install.packages(c("R.utils", "compositions", "openssl"))
 install.packages(c("psych", "survival", "reshape", "data.table"))
@@ -1664,9 +1667,18 @@ devtools::install_github("r-lib/svglite", force=T)
 #$ sudo apt-get install libxml2
 devtools::install_github("r-lib/xml2", force=T)
 # }
-devtools::install_github("ismayc/rticles", force=T) # R Markdown "Reed Senior Thesis" template, https://www.r-bloggers.com/r-markdown-senior-thesis-template/
+install.packages("remotes", repos = "http://cran.rstudio.org")
+remotes::install_github("rstudio/rticles") # Latex R Markdown "Reed Senior Thesis" template, https://www.r-bloggers.com/r-markdown-senior-thesis-template/
+#x library(reedtemplates)
+remotes::install_github("ismayc/thesisdown", force=T) # R Markdown "Reed Senior Thesis" template
+# https://github.com/ismayc/thesisdown
 # https://www.r-bloggers.com/r-markdown-senior-thesis-template/
 # end of github packages installation
+#Error: package or namespace load failed for ‘git2r’ in dyn.load(file, DLLpath = DLLpath, ...):
+# unable to load shared object '/home/tex/R/x86_64-pc-linux-gnu-library/3.4/git2r/libs/git2r.so':
+#  /home/tex/R/x86_64-pc-linux-gnu-library/3.4/git2r/libs/git2r.so: undefined symbol: OPENSSL_sk_num
+#Error: loading failed
+
 
 install.packages(c("gmailr", "ggplot2", "rms", "xlsx", "r2excel", "tis"))
 # base: graphics, 
@@ -1709,25 +1721,20 @@ package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "comp
 # Filtering joins: #drops all observations in df1(L) that match in df2(R)
 # *** "right": which failed to be installed => we need to install them manually
 right <- anti_join(package_must, package_list, by="Package")
-# [2019/05/13] skip rticles and debugr so far
+# [2019/05/13] skip new git2r and debugr so far
 # }
 
 
 ## START: set path on GCP cloud drive ####
-#library(FirebrowseR)
+# since [2019/06/06]
 TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
-#path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
-# rename path_LUAD ad path_cohort
 path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
-# path_LUAD <- "~/R/LUAD_Peter_survival" # under rstudio-server on GCP
-#x path_LUAD <- "~/R/LUAD_Peter_survival/mount" # mount google drive to ubuntu@instances-4 at GCP
-#x it can’t read “mounted” directory from R
-#path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
 setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GCP
-
 load(file="whole_genome.Rda") # the name list of protein coding genome
-# below 2 lines: it needs to be modified for a function cal
-LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3"
+LUAD_n <- length(whole_genome) # n=20499 -> now is 20500, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
+#library(FirebrowseR)
+# rename path_LUAD ad path_cohort
+#path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
 # keep it LUAD_n as gene number
 
 # # source our functions; automatically source all of the functions in a directory, "/tmp", 
@@ -1776,27 +1783,38 @@ library("psych") # for describe()
 library(survival)
 
 # ***colnames of osccT
-# the clinical features should be modified:
-# cTNM alone (KM analysis); smoking (±)  smoking in TCGA HNSCC?
+# Michael: the clinical features should be modified =>
+# cTNM alone (KM analysis); smoking (±)  smoking in TCGA HNSCC? yes
 # instead of pTNM;
-# Clinicopathological features 不必多 (Joy's manuscript)
+# Clinicopathological features (follow Joy's manuscript)
 # {
 # age 65 year old
 # Gender
-# T stage T1 + T2 T13+ T4 (clinical)
-# N stage 1, 123
+# T stage T1 + T2 or T3+ T4 (clinical)
+# N stage N0, N+
 # M stage M0, M1
 # Clinical stage I II, III IV
 # Recurrence no yes
 # }
+# colnames(oscc)[1:15]
+#[1] "tcga_participant_barcode" "gender"                  
+#[3] "ageDx"                    "clinical_T"            
+#[5] "clinical_N"             "clinical_M"            
+#[7] "stage"                    "margin"                  
+#[9] "OS_IND"                   "days_to_death"           
+#[11] "OS_months"                "OS_live_months"          
+#[13] "RFS_IND"                  "RFS_months"              
+#[15] "z.score_A1BG"    ......        
 # 
 # The criteria of candidate genes:
 # {
-# n=500 要多一些
+# n=521
 # more than 2500 genes; gene of non-coding RNA ?
-# IHC
+# IHC, if available
 # <30 published articles in pubmed
-# not related with known HNSCC genes
+# not related with known HNSCC genes: there is a HNdb database
+# https://academic.oup.com/database/article/doi/10.1093/database/baw026/2630247
+# => ALL HNSCC RELATED GENES: http://www.gencapo.famerp.br/hndb/allgenes.php
 # }
 # # pathologic_T => clinical_T and so on...
 coln_osccT <- c("Unique.ID","Gender","ageDx",
@@ -1804,11 +1822,6 @@ coln_osccT <- c("Unique.ID","Gender","ageDx",
                 "clinical_M","stage", "margin",
                 "OS_IND","OS..months._from.biopsy",
                 "RFS_IND", "RFS..months._from.op", "H.score_T", paste("PMM1", "_median", sep=""))
-# # coln_osccT <- c("Unique.ID","Gender","ageDx",
-#                 "pathologic_T","pathologic_N",
-#                 "pathologic_M","stage", "margin",
-#                 "OS_IND","OS..months._from.biopsy",
-#                 "RFS_IND", "RFS..months._from.op", "H.score_T", paste("PMM1", "_median", sep=""))
 
 
 # for tableChi1 (table 2)
