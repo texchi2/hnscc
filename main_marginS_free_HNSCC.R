@@ -1201,31 +1201,35 @@ oscc$ageDx[osccT$age_at_initial_pathologic_diagnosis > 65] <- 2 # older#
 
 # keep grouping and Recoding variable by Factor
 # https://stackoverflow.com/questions/3875608/grouping-recoding-factors-in-the-same-data-frame
-# > levels(as.factor(osccT$pathologic_t))
-# [1] "t0"  "t1"  "t2"  "t3"  "t4"  "t4a" "t4b" "tx" 
+# [15] "clinical_m"                                         
+#[16] "clinical_n"                                         
+#[17] "clinical_stage"                                     
+#[18] "clinical_t"  
+# > levels(as.factor(osccT$clinical_t))
+#           "t1"  "t2"  "t3"  "t4"  "t4a" "t4b" "tx"  
 # %in% is "within"
-oscc$pathologic_T[osccT$pathologic_t %in% c("t1", "t2")] <- 1 # T1 T2
-oscc$pathologic_T[osccT$pathologic_t %in% c("t3", "t4", "t4a", "t4b")] <- 2 # T3 T4
-oscc$pathologic_T[osccT$pathologic_t %in% c("tx", NA)] <- NA # unknown T
+oscc$clinical_T[osccT$clinical_t %in% c("t1", "t2")] <- 1 # T1 T2
+oscc$clinical_T[osccT$clinical_t %in% c("t3", "t4", "t4a", "t4b")] <- 2 # T3 T4
+oscc$clinical_T[osccT$clinical_t %in% c("tx", NA)] <- NA # unknown T
 #
-#> levels(as.factor(osccT$pathologic_n))
+#> levels(as.factor(osccT$clinical_n))
 # [1] "n0"  "n1"  "n2"  "n2a" "n2b" "n2c" "n3"  "nx" 
-oscc$pathologic_N[osccT$pathologic_n == "n0"] <- 0 # N0
-oscc$pathologic_N[osccT$pathologic_n %in% c("n1", "n2", "n2a", "n2b", "n2c", "n3")] <- 1 # N+ (N1,2,3)
-oscc$pathologic_N[osccT$pathologic_n %in% c("nx", NA)] <- NA # unknown N
+oscc$clinical_N[osccT$clinical_n == "n0"] <- 0 # N0
+oscc$clinical_N[osccT$clinical_n %in% c("n1", "n2", "n2a", "n2b", "n2c", "n3")] <- 1 # N+ (N1,2,3)
+oscc$clinical_N[osccT$clinical_n %in% c("nx", NA)] <- NA # unknown N
 
-#> levels(as.factor(osccT$pathologic_m))
+#> levels(as.factor(osccT$clinical_m))
 # [1] "m0"  "m1"  "mx" in HNSCC
 # M as 0 or 2 in TMU TA51 (why M2 instead of M1?)
-oscc$pathologic_M[osccT$pathologic_m == "m0"] <- 0 # M0
-oscc$pathologic_M[osccT$pathologic_m %in% c("m1")] <- 1 # M+
-oscc$pathologic_M[osccT$pathologic_m %in% c("mx", NA)] <- NA # unknown M
+oscc$clinical_M[osccT$clinical_m == "m0"] <- 0 # M0
+oscc$clinical_M[osccT$clinical_m %in% c("m1")] <- 1 # M+
+oscc$clinical_M[osccT$clinical_m %in% c("mx", NA)] <- NA # unknown M
 #
-#> levels(as.factor(osccT$pathologic_stage))
+#> levels(as.factor(osccT$clinical_stage))
 # [1] "stage i"   "stage ii"  "stage iii" "stage iva" "stage ivb" "stage ivc"
-oscc$stage[osccT$pathologic_stage %in% c("stage i", "stage ii")] <- 1 # stage 1 2
-oscc$stage[osccT$pathologic_stage %in% c("stage iii", "stage iva", "stage ivb", "stage ivc")] <- 2 # stage 3 4
-#
+oscc$stage[osccT$clinical_stage %in% c("stage i", "stage ii")] <- 1 # stage 1 2
+oscc$stage[osccT$clinical_stage %in% c("stage iii", "stage iva", "stage ivb", "stage ivc")] <- 2 # stage 3 4
+# [2019/06/06] pathology_ => clinical_ (make a correction)
 
 #[2019/05/29]
 # ** margin issue: 0 or 1 or NaN ####
@@ -1477,15 +1481,17 @@ save(oscc, file="HNSCC.clinical.RNAseq.Fire.Rda") # size: 176Mb
 load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # as oscc, n=1048 x col 20896
 #install.packages("prodlim")
 #library("prodlim")
-#row.match(oscc[1, ], oscc)
+#row.match(oscc[1, ], oscc) # for comparison two row: failed
 row_match <- data.frame(matrix(data=NA, nrow=20896, ncol=1))
 for (i in 1:20896)
 {
   print(paste("i=", i))
-  row_match[i, 1] <- (oscc[1, i] == oscc[2, i])
-  if (!is.na(oscc[1, i]) & !is.na(oscc[2, i])) # if both are is.na, skip
+  aa <- oscc[1, i]
+  bb <- oscc[2, i]
+  row_match[i, 1] <- (aa == bb)
+  if (!is.na(aa) & !is.na(bb)) # if both are is.na, skip
   {
-  if (oscc[1, i] != oscc[2, i]) {print(paste(i, ") it is different!", oscc[1, i], " vs ", oscc[2, i]), sep="")}
+  if (aa != bb) {print(paste(i, ") it is different!", aa, " vs ", bb), sep="")}
   }
 }
 !isTRUE(row_match) #	test if there is at least one False in row_match
@@ -1550,7 +1556,8 @@ clean2_oscc <- merge(x=clean2_oscc, y=clean_oscc[, c(1,16146:20252)], by="z.scor
 # could not in this way above
 # 
 
-clean3_oscc <- clean2_oscc[order(clean2_oscc$tcga_participant_barcode), ] # sorted
+# sorting
+clean3_oscc <- clean2_oscc[order(clean2_oscc$tcga_participant_barcode), ]
 # jumpt to try 3
 
 # xx
@@ -1605,10 +1612,34 @@ save(whole_genome, file="whole_genome.Rda") # updated since [2019/06/05]
 # n= 20238, size 215Mb
 
 
+# correction of pathologic_ to clinical_ features
 
+# sorting
+osccClinical <- osccClinical[order(osccClinical$tcga_participant_barcode),]
 
+col_match <- data.frame(matrix(data=NA, nrow=528, ncol=1))
+j <- 1
+for (i in 1:528)
+{
+  print(paste("j=", j, "; i=", i, sep=""))
+  aa <- clean5_oscc[j, 3] # gender, ageDx
+  bb <- osccClinical[i, 3] # gender, ageDx
+  if (!is.na(aa) & !is.na(bb)) {
+  if (clean5_oscc$tcga_participant_barcode[j] == osccClinical$tcga_participant_barcode[i]) # identical ID
+    {
+    if (aa != bb) {print(paste(i, ") different!", aa, " vs ", bb), sep="")}
+    col_match[i, 1] <- (aa == bb)
+    j <- j + 1
+    }
+  } else {j <- j + 1 }# when aa==bb=NaN
+}
+!isTRUE(col_match) #	test if there is at least one False in col_match
+# 512 TRUE (matched) in gender, 520 TRUE (matched) in ageDx
+which(col_match[,1]==F)
 
-
+clean6_oscc <- merge(clean5_oscc[, c(1,2,3)], osccClinical[, c(1,4:7)], by="tcga_participant_barcode", all.x=T)
+clean6_oscc <- merge(clean6_oscc, clean5_oscc[, c(1,8:20253)], by="tcga_participant_barcode", all.x=T)
+save(clean6_oscc, file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, 85Mb [2019/06/06]
 
 
 #
