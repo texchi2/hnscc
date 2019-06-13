@@ -13,111 +13,118 @@ cutofFinder_func <- function(geneName, marginTag) {
 #load(file="TMU_TA51BCDE_T70_clinical_fullFeatures13_dichotomized.Rda") # as oscc (without margin feature)
 # or ***
 load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, as clean6_oscc
-load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda") # as oscc with "margin" features
+#load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda") # as oscc with "margin" features
 #, negative n=348 while positive n=18 and 156:NaN)
+oscc <- clean6_oscc
+# included $$.clinico_mRNA.Fire for survival analysis
+# #
+# *** (We don't need to load mRNA by each geneName)
+# if (is.na(tryCatch(load(file=paste("LUAD.mRNA.Exp.", geneName, ".Fire.Rda", sep="")), error = function(e) return(NA)))) {return(3)} # there is NO such file
+# # as LUAD.mRNA.Exp.Fire
+# # there is NO such file: "LUAD.mRNA.Exp.ZFP91.CNTF.Fire.Rda" %in% dir() => False
+# #
+# # "sample_type"          # 59 NT(Solid Tissue Normal) 515 TP(Primary Solid Tumor) or 2 TR(Recurrent Solid Tumor)
+# 
+# LUAD_T_mRNA.Fire <- LUAD.mRNA.Exp.Fire[LUAD.mRNA.Exp.Fire$sample_type %in% c("TP"), c("tcga_participant_barcode","z.score")] # n=517 -2 = 515
+# # removing duplicated ID %in%  c("TCGA-50-5066","TCGA-50-5946") => TR recurrent sample
+# # if NULL or more than 30% NA in RNAseq (z.score) => dischard this gene
+# if (length(LUAD_T_mRNA.Fire) == 0) {return(3)}
+# if (as.data.frame(colMeans(is.na(LUAD_T_mRNA.Fire)) > 0.3)[2,1] == T) {return(3)}
+# 
+# # inner join by merge
+# if (is.na(tryCatch(LUAD.clinico_mRNA.Fire <- merge(oscc, LUAD_T_mRNA.Fire, by="tcga_participant_barcode") , error = function(e) return(NA)))) {return(5)} # merge error
+# #n=515 with sample_type "TP", excluding "NT normal tissue" or "TR"
 
-# load and prepare $$.clinico_mRNA.Fire for survival analysis
-#
-if (is.na(tryCatch(load(file=paste("LUAD.mRNA.Exp.", geneName, ".Fire.Rda", sep="")), error = function(e) return(NA)))) {return(3)} # there is NO such file
-# as LUAD.mRNA.Exp.Fire
-# there is NO such file: "LUAD.mRNA.Exp.ZFP91.CNTF.Fire.Rda" %in% dir() => False
-#
-# "sample_type"          # 59 NT(Solid Tissue Normal) 515 TP(Primary Solid Tumor) or 2 TR(Recurrent Solid Tumor)
-
-LUAD_T_mRNA.Fire <- LUAD.mRNA.Exp.Fire[LUAD.mRNA.Exp.Fire$sample_type %in% c("TP"), c("tcga_participant_barcode","z.score")] # n=517 -2 = 515
-# removing duplicated ID %in%  c("TCGA-50-5066","TCGA-50-5946") => TR recurrent sample
-# if NULL or more than 30% NA in RNAseq (z.score) => dischard this gene
-if (length(LUAD_T_mRNA.Fire) == 0) {return(3)}
-if (as.data.frame(colMeans(is.na(LUAD_T_mRNA.Fire)) > 0.3)[2,1] == T) {return(3)}
-
-# inner join by merge
-if (is.na(tryCatch(LUAD.clinico_mRNA.Fire <- merge(oscc, LUAD_T_mRNA.Fire, by="tcga_participant_barcode") , error = function(e) return(NA)))) {return(5)} # merge error
-#n=515 with sample_type "TP", excluding "NT normal tissue" or "TR"
-
-
+# >generate HNSCC.clinico_mRNA.Fire ####
+colnumberRNA <- which(colnames(oscc)==paste("z.score_", geneName, sep=""))
+HNSCC.clinico_mRNA.Fire <- oscc[, c(1:8, 9, 11, 13, 14, colnumberRNA)] # append RNAseq data column
 # rename all of colnames as HNSCC's osccT
-colnames(LUAD.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
+colnames(HNSCC.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
                                       "T","N",
                                       "M","stage_2","margin",
                                       "OS_IND", "OS..months._from.biopsy",
                                       "RFS_IND", "RFS..months._from.op", "H.score_T")
-# n=515 in LUAD
-oscc <- LUAD.clinico_mRNA.Fire # starting analysis with "oscc"
+# n=521 in HNSCC
+oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
 # oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
 
 ## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
 oscc$PMM1_median <-(oscc$H.score_T >= median(oscc$H.score_T, na.rm=T)) +0 # higher 1 or lower 0
 osccM_pos <- which(colnames(oscc) == "PMM1_median") # at column 14
 #
+# [2019/06/11]
+# > check complete.cases, data cleaning ####
 osccClean <- oscc
-# commonFeatures <- c(4:9) # common features: gender, age, margin and TNM :-)
+# commonFeatures <- c(2:6, 8) # common features: gender, age, margin and TNM :-)
 commonFeatures <- which(colnames(oscc) %in% c("Gender", "age.at.diagnosis", "T", "N", "M", "margin")) #  6 essential features
-osccCleanNA <- osccClean[complete.cases(osccClean[, commonFeatures]), ] # copy all features but remove Na or NaN entities in 6 essential features for their "completeness"
+osccCleanNA <- osccClean[complete.cases(osccClean[, commonFeatures]), ] # copy all features but remove NaN entities in 6 essential features for their "completeness"
+# n=427
 
-# *** addNA for counting all NA (e.g. there is 0, no 1, in margin-free cohort) in "M" "stage_2" or "margin"
+# *** addNA for counting all NA (e.g. there is 0, no 1, in margin-free cohort) in "M" "stage_2" or "margin", as a level of factor
 # the “pathological” case of two different kinds of NAs which are treated differently: exclude = if (useNA == "no") c(NA, NaN)
 # "unusual NA comes from addNA() as factor
+# table(osccCleanNA$margin)
+#   0   1 (NaN) two level factor 
+#328  99   (0)
 osccCleanNA$margin <- addNA(osccCleanNA$margin, ifany=F) # ifany=="always" add NA as a factor
 #   0    1 <NA> => 3 levels of factor in "margin"
-# 245   11    0
+# str(osccCleanNA$margin)
+# Factor w/ 3 levels "0","1",NA: 1 2 2 1 1 2 1 2 1 1 ...
 
 
-oscc_n256 <- osccCleanNA # n=256; removal of NA cases
-# ***_marginS_: margin positive and negative cohort (n=256) ####
+oscc_n427 <- osccCleanNA # n=427; removal of NA cases; spare data
+# ***_marginS_: margin positive and negative cohort (n=427) ####
 
-osccCleanNA <- oscc_n256
+osccCleanNA <- oscc_n427
 
 # by marginTag
-if (marginTag == "_marginS_") {
-  
-  } else if (marginTag == "_marginFree_") {
+if (marginTag == "_marginS_") {}
+  else if (marginTag == "_marginFree_") {
   # surgical margin status: keeping 0 and excluding + margin (as 1; n=11)
   osccCleanNA_freeMargin <- osccCleanNA[osccCleanNA$margin == 0, ] # margin==0
   # margin free cohort (n=245): ### 
   osccCleanNA <- osccCleanNA_freeMargin
   }
 #
-## 5b. (repeat100) Cutoff finder [osccCleanNA] ###
+
+
+#
+#
+## >5b. (repeat100) Cutoff finder [osccCleanNA] ####
 oscc <- oscc0 <- osccCleanNA # syncrhonize them
 
-# checking the completeness
-which(complete.cases(oscc$H.score_T)==F) # no NaN -> 0
-which(complete.cases(oscc$OS_IND)==F) # no Nan -> 0
+# checking the completeness of each row: (i.e. rows without NaN)
+which(complete.cases(oscc$H.score_T)==F) # if no NaN -> 0
+# 24: there is one NaN on H.score_T (at TCGA-BA-A6DF)
+which(complete.cases(oscc$OS_IND)==F) # if no NaN -> 0
 
 # *** column 9 should be OS_IND
-which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead) => no NaN
+which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
 
 
 
-# # (skipped, if LUAD RFS is copied from OS)
+# # (skipped, if HNSCC RFS is copied from OS)
 # which(complete.cases(oscc$RFS_IND)==F) # RFS_IND
 # # which(complete.cases(oscc$RFS..months._from.op)==F) #n=103; it may be imputed from OS time (oscc$OS..months._from.biopsy)
 # osccCleanNA_RFS <- oscc[which(complete.cases(oscc$RFS..months._from.op)==F), ]
 # osccCleanNA_RFS$RFS..months._from.op <- osccCleanNA_RFS[osccCleanNA_RFS$RFS_IND==1, 9] # imputed from OS..months._from.biopsy
 #
 
-
-
-
-
-  
-
     
     # start 100 round ####
+    #     # 100 slicing is NOT right !
     # => find cutoff1, generate OS P-Value plot and KM plot.
     # oscc <- cbind(oscc0, osccCleanNA$H.score_T) # expression(IHC score) of PMM1
-    # debug
-    # 100 slicing is NOT right !
-    #find_repeat <- 100 # searching 100 slices in the interval
-    cohort_n <- nrow(oscc)
-    # debug
+    # {debug
+    # find_repeat <- 100 # searching 100 slices in the interval
+    cohort_n <- nrow(oscc) # n=427
+    # }debug
     oscc0_pos <- which(colnames(oscc0) == "H.score_T") # oscc0$H.score_T as colunm 13
-    
     
     exp_geneName <- t(oscc0[, oscc0_pos]) # horizontal vector of RNAseq, why t?
     #exp_geneName <- oscc0[, oscc0_pos] # vertical vector
     # $x is RNAseq be sorted, $x is its original position
-    # sorting issue ##
+    # sorting RNAseq for 100 slicing ##
     exp_geneName_sorted <- data.frame(sort(exp_geneName, decreasing = F, method="radix", index.return=T))
     #asc <- order(exp_geneName, method="radix")
     
@@ -133,9 +140,9 @@ which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead)
     # oscc[oscc_pos] <- exp_geneName
     #if (is.na(tryCatch(cutoff <- quantile(exp_geneName, c(0.30,0.70)), error = function(e) return(NA)))) {return(4)} # return to main by "XKRY"(19642)
     #xxx cutoff <- quantile(exp_geneName, c(0.30,0.70)) # by RNAseq value
-    # by cases
+    # slice by cases
     cutoff_n <- round(quantile(c(1:cohort_n), c(0.30,0.70))) # 30 percentile, 70 percentile
-    cutoff_n[2] <- cutoff_n[2] -1 # 78~179 in cases 256
+    cutoff_n[2] <- cutoff_n[2] -1 # from 129 to 298 in  427 cases
     # *debug, error and stop on "XKRY"(19642)#
     # (ok)Error in quantile.default(exp_geneName, c(0.3, 0.7)) : 
     #   missing values and NaN's not allowed if 'na.rm' is FALSE
@@ -146,25 +153,26 @@ which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead)
     #   install.packages(pkg) 
     # } # Install package automatically if not there
     # 
-    
-    
-    
     # https://cran.r-project.org/web/packages/survival/survival.pdf
     #for (i in seq(cutoff[1], cutoff[2], length.out = find_repeat)){
+
+    
     # (for run100) P-value according to KM survival analysis (alone) ####
     for (run100 in seq(cutoff_n[1], cutoff_n[2])){ 
-      
-      # sorted (by RNAseq) no.78~179 in cases 256 of LUAD
+      print(paste("run100=", run100, geneName, sep=" "))
+      # sorted (by RNAseq) from 129 to 298 in  427 cases of HNSCC
       # use oscc0 for "positioning"; 
-      # oscc is the dataset to be analysed here.
+      # oscc is the target dataset to be analysed here.
     
-      # Binominal H.Score_T (RNAseq) by exp_geneName_sorted$x[i]) #RNAseq cutoff
       # exp_geneName_sorted$x[i], cutoff100 is the cutoff value of RNAseq in rank i
-      cutoff100 <- exp_geneName_sorted$x[run100+1] #*** shift here
+      cutoff100 <- exp_geneName_sorted$x[run100+1] #*** shift here (column x, ix)
+      
+      # Binominal H.Score_T (RNAseq) by exp_geneName_sorted$x[i]) #RNAseq cutoff
       oscc[osccM_pos] <- (oscc0[oscc0_pos] >= cutoff100) +0 # oscc$PMM1_median <- (oscc0$PMM1 >= i) +0
-    #  R4> table(oscc$PMM1_median) # when run100 == 78
+    #  R4> table(oscc$PMM1_median) # when run100 == 129
     #  0   1 
-    #  78 178
+    #  129 297
+
     #  *** correction of cases_OS ####
       cases_OS[exp_geneName_sorted$ix[run100+1], 1] <- run100 # group 0 vs 1: 0 has 78 cases ...etc
       cases_RFS[exp_geneName_sorted$ix[run100+1], 1] <- run100 
@@ -228,9 +236,7 @@ which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead)
       #  legend("topright", legend=c(paste("low(",surv_RFS$n[1], ")"), paste("high(",surv_RFS$n[2], ")")), lty=1:2, col=c("blue","red"))
       #  dev.off()
       #  
-      #  
-    
-      
+
       # library(ggplot2)
       # ggplot(OS, aes(x=rank, y=p_OS)) + geom_point(size=2) +
       #   scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
@@ -242,7 +248,11 @@ which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead)
       # #  geom_vline(xintercept=300, color = "green", size=2, show.legend = T)
       # #
       
-      #  ++++ Beside KM P-value, contingency P-value is also important ! ++++++
+      
+      
+      
+      
+      #  ++++ Beside KM P-value, contingency P-value is also important ! ####
       # Calling for contingency table to find significant clinicopathological features
       # contingency P-value
       # **debug(contingencyTCGA) ###
@@ -427,7 +437,7 @@ which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead)
     
     
     
-    # 5d.[optimized Statistic procedure] [Option-Cmd + E] for running to the end ####
+    # >5d.[optimized Statistic procedure] [Option-Cmd + E] for running to the end ####
     # The features from column L to R; running to the end of R2Excel export +++++++++++
     # The correlation of gene expression and clinical features  ### contingency tables
     # if (!require(pkg)){ 
@@ -442,7 +452,7 @@ which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead)
     
     # Statistics for osccCleanNA by cutoff1
     # KM plot
-    ## (6) KM survival curves in a specific cohort ###
+    ## (6) KM survival curves in a specific cohort ####
     # right censored? yes
     # Kaplan-Meier curve + Log-rank test, + Cox proportional regression
     # textbook: David Kleinbaum???Survival analysis: A self-learning text

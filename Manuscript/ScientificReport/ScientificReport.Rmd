@@ -98,7 +98,10 @@ https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0
 Features selection:
 pathologic_T => clinical_T of coln_osccT
 in table 3 and table 4: featuresUni
-run mainA (marginS)
+
+
+
+run mainA (marginS) [since 2019/06/12]
  [mainA process #part A] 
 # genome-wide scan for margin 0 or 1 cohort ##
 # TCGA_HNSCC_marginS.R
@@ -109,6 +112,23 @@ call function(survival_marginS) on TCGA_HNSCC_marginS.R,
 core engine: cutofFinder_func_HNSCC.R, call, run100
 {  cutoffReturn <- cutofFinder_func(geneName, marginTag) 
 rename LUAD.mRNA.Exp., 139 load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, as clean6_oscc
+{
+marginS
+generate HNSCC.clinico_mRNA.Fire for each gene
+check complete.cases of margin, H.score_T and OS_IND, data cleaning 
+100 run:  # slice by cases, # 30 percentile, 70 percentile (cut from case 129 to case 298 in  427 cohort)
+to find lowest P-value according to KM survival analysis at optimized cutoff
+
+run survival analysis: OS by mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1)
+ [survfit] - Kaplan-Meier curve, KM P-value, or KM plot of OS
+contingency table to find significant clinicopathological features
+      # contingency P-value
+# Kaplan-Meier curve + Log-rank test, + Cox proportional regression
+    # textbook: David Kleinbaum???Survival analysis: A self-learning text
+...
+margin_Free
+ditto
+}
 
 7)[COXPH modelling] with OS, RFS; HNSCC features: pathologic to clinical TNM
 rename LUAD.mRNA.Exp.
@@ -118,8 +138,12 @@ export to .Rda and .XLS (appending is better) HNSCC_survivalAnalysis_marginS_
 #   save(list = c(old.objects, deparse(substitute(x))), file = file)
 # }
 }
+R2Excel export
+
 
 OR (marinS or marginFree on main_) on main_marginS_free_HNSCC.R 手動選擇:-O
+.....
+
 
 run mainB (marginFree)
 call function(survival_marginFree) on  TCGA_HNSCC_marginFree.R, rename LUAD.mRNA.Exp., load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda")

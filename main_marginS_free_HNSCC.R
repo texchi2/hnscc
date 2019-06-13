@@ -2023,7 +2023,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # with error # mdata <- melt(obs, id=c("Var2", "Var1")) # using the colnames of table t
     # id variables not found in data:" Var2, Var1 [2018/03/27] , only error on "Gene name = ZSWIM2"(20482)
     
-    #print(paste("Run", run100, geneName, "(", which(whole_genome==geneName)," ): obs", obs, t))
+    print(paste("Run", run100, geneName, "(", which(whole_genome==geneName)," ): obs", obs, t))
     # under cutoff finding 100
     
     # ***ZSWIM2 skip (?) 
@@ -2040,7 +2040,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # 5    0 <NA>    0
     # 6    1 <NA>    0
     # debug
-    if (is.na(tryCatch(mdata <- melt(obs, id.vars=c("Var2", "Var1")), error = function(e) return(NA)))) {return(list("skip", chiT, freq))} # back to marginS.R
+    if (is.na(tryCatch(mdata <- melt(obs, id.vars=c("Var2", "Var1")), error = function(e) return(NA)))) {print(paste("skip at ii= ", ii, sep=""));return(list("skip", chiT, freq))} # back to marginS.R
     # mdata <- melt(obs, id.vars=c("Var2", "Var1")) # error when there is only one group
     # debug for "ZSWIM2"(20482)
     
@@ -2068,6 +2068,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
   }
   freq <- freq[-1,] #removal of 1st row: NA
   name_freq <- colnames(osccCleanNA_conTCGA[L:R])
+  # debug
   name_freq <- t(name_freq) # "Gender" "age.at.diagnosis" "T"  "N"  "M"  "stage_2" and "margin"
   
   # array indexing https://cran.r-project.org/doc/manuals/r-release/R-intro.html#Array-indexing
@@ -2274,7 +2275,7 @@ aa <- LUAD_n; bb<- 1
 #  VANGL2(19297) (Rstudio down once) :-)
 # (:))Error on "TSNAX.DISC1", "TRIL"(18602) (P-value=0.0281) "hit" but rt=26????, and "TRILB3" rt=7, #
 
-#main_i loops ####
+#> main_i loops ####
 # #> start_time;end_time
 # [1] "2018-04-11 00:19:10 CST"
 # [1] "2018-04-17 02:56:45 CST"
@@ -2283,7 +2284,6 @@ aa <- LUAD_n; bb<- 1
 #bb<- 19508 #"WDR63"
 #xx ddply(whole_genome[main_i], , survival_marginS, failwith(NA, fun(x){...}, quiet = TRUE))
 #aa <- 18758-1 # [2019/05/17] HNSCC start to run01 done
-#bb<- 13666
 
 
 # # Best good: by mclapply,
@@ -2293,7 +2293,10 @@ aa <- LUAD_n; bb<- 1
 # apply(), MARGIN=c(1,2) # applys over rows and over columns
 # 
 # x#pforeach(main_i = aa:bb, .cores=2, .errorhandling = c("stop"))({
+# debug: [2019/06/13] [1] "run100= 129 ZFP91", stuck at 19867 "ZFP91.CNTF"
+# Error in names(x) <- value : 'names' attribute [13] must be the same length as the vector [12]
 # Second good: by for loop, for save the ZSWIM2 data
+aa <- 19867+1
 for (main_i in aa:bb) {
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
