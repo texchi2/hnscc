@@ -1672,6 +1672,8 @@ install.packages(c("R.utils", "compositions", "openssl"))
 install.packages(c("psych", "survival", "reshape", "data.table"))
 install.packages(c("scales", "dplyr", "magrittr"))
 install.packages(c("plyr")) #ddply()
+install.packages("AMR")
+install.packages("purrr")
 install.packages("ca")
 install.packages("spelling")
 # followings: for github
@@ -2293,11 +2295,12 @@ aa <- LUAD_n; bb<- 1
 # apply(), MARGIN=c(1,2) # applys over rows and over columns
 # 
 # x#pforeach(main_i = aa:bb, .cores=2, .errorhandling = c("stop"))({
-# debug: [2019/06/13] [1] "run100= 129 ZFP91", stuck at 19867 "ZFP91.CNTF"
-# Error in names(x) <- value : 'names' attribute [13] must be the same length as the vector [12]
+# debug: [2019/06/13] [1] "run100= 129 ZFP91", stuck at 19867 "ZFP91.CNTF" => missing RNAseq
+# debug: [2019/06/14] "run100= 129 XKRY"
 # Second good: by for loop, for save the ZSWIM2 data
-aa <- 19867+1
+aa <- 19643
 for (main_i in aa:bb) {
+  #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
   save(ZSWIM2, file=desti_ZSWIM2)

@@ -37,8 +37,11 @@ oscc <- clean6_oscc
 
 # >generate HNSCC.clinico_mRNA.Fire ####
 colnumberRNA <- which(colnames(oscc)==paste("z.score_", geneName, sep=""))
+if (identical(colnumberRNA, integer(0))) {return(3)} # there is no 19867 "ZFP91.CNTF" RNAseq data, skip to next gene
+
 HNSCC.clinico_mRNA.Fire <- oscc[, c(1:8, 9, 11, 13, 14, colnumberRNA)] # append RNAseq data column
 # rename all of colnames as HNSCC's osccT
+# Error in names(x) <- value : 
 colnames(HNSCC.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
                                       "T","N",
                                       "M","stage_2","margin",
@@ -47,7 +50,11 @@ colnames(HNSCC.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
 # n=521 in HNSCC
 oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
 # oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
-
+# *** check % RNAseq of a cohort is available in particular gene; e.x. XKRY, 100% is NaN
+# Pipes %>%
+library(dplyr); library(AMR); library(purrr)
+freq_oscc <- oscc %>% freq("H.score_T", header=F)
+#table(is.na(oscc$H.score_T))[2] >= nrow(oscc) * 0.7
 ## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
 oscc$PMM1_median <-(oscc$H.score_T >= median(oscc$H.score_T, na.rm=T)) +0 # higher 1 or lower 0
 osccM_pos <- which(colnames(oscc) == "PMM1_median") # at column 14
@@ -159,6 +166,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     
     # (for run100) P-value according to KM survival analysis (alone) ####
     for (run100 in seq(cutoff_n[1], cutoff_n[2])){ 
+      #browser()
       print(paste("run100=", run100, geneName, sep=" "))
       # sorted (by RNAseq) from 129 to 298 in  427 cases of HNSCC
       # use oscc0 for "positioning"; 

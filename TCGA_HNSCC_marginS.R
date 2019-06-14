@@ -80,12 +80,13 @@ survival_marginS <- function(geneName) {
 # 
 # [Option-Cmd + E] for running to the end
 # ***geneName<-"SLC2A9" # for debug
-# Resume:[5.START] ZZZ3 and TMSB4X ####
+# Resume:[5.START] ZZZ3 and TMSB4X ###
 # Start the survival analysis for each individual gene
 # TCGA_cohort <- "HNSCC" # cancer type
 
 # 6) call cutofFinder_func_HNSCC.R, run100; source defined on main ####
   marginTag <- "_marginS_" # with margin 0 or 1
+  #browser()
   cutoffReturn <- cutofFinder_func(geneName, marginTag) # with return cutoff1 at # of patient
 if (length(cutoffReturn) == 8) {
   
