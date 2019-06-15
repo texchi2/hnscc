@@ -1674,6 +1674,7 @@ install.packages(c("scales", "dplyr", "magrittr"))
 install.packages(c("plyr")) #ddply()
 install.packages("AMR")
 install.packages("purrr")
+install.packages("stringr")
 install.packages("ca")
 install.packages("spelling")
 # followings: for github
@@ -2250,7 +2251,7 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
 #   361    18     1 20119
 #   return(0) is OK
 #   error return(1)"ZSWIM2 skip", return(2)"survdiff", return(3)"no such file: HNSCC.mRNA.Exp.Fire"
-#   error return(4)"XKRY"quantile.default(exp_geneName, c(0.3, 0.7)); 
+#   error return(4 or 5)"XKRY"quantile.default(exp_geneName, c(0.3, 0.7)) => NaN% is greater than 70%; 
 #   
 
 

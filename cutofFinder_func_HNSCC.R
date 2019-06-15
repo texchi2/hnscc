@@ -51,10 +51,13 @@ colnames(HNSCC.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
 oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
 # oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
 # *** check % RNAseq of a cohort is available in particular gene; e.x. XKRY, 100% is NaN
-# Pipes %>%
-library(dplyr); library(AMR); library(purrr)
-freq_oscc <- oscc %>% freq("H.score_T", header=F)
+# Pipes %>%: df %>% map_dbl(mean)
+library(dplyr); library(AMR); library(purrr); library(stringr)
+freq_oscc <- oscc %>% freq("H.score_T", header=F) # https://www.dummies.com/programming/r/how-to-read-the-output-of-str-for-lists-in-r/
+n_freq_oscc <- as.numeric(strsplit(capture.output(str(freq_oscc))[11], " ")[[1]][12])
+if (n_freq_oscc/nrow(oscc)  <= 0.7) {return(5)}
 #table(is.na(oscc$H.score_T))[2] >= nrow(oscc) * 0.7
+
 ## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
 oscc$PMM1_median <-(oscc$H.score_T >= median(oscc$H.score_T, na.rm=T)) +0 # higher 1 or lower 0
 osccM_pos <- which(colnames(oscc) == "PMM1_median") # at column 14
