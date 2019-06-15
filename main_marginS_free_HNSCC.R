@@ -1748,7 +1748,7 @@ rownames(package_list) <- NULL
 package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE] # removal BASE and recommended packages
 # print(package_list, row.names=FALSE)
 # "survival" is the base package
-library(dplyr)
+library(dplyr); library(AMR); library(purrr); library(stringr)
 package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "compositions", "openssl","psych", "reshape", "data.table","scales", "dplyr", "magrittr","plyr","ca","devtools","debugr","pforeach","ggrough","gdtools","svglite","xml2","rticles","gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis","xlsx","r2excel","githubinstall","minpack.lm","gplots","VennDiagram","venn","binaryLogic","knitr"))
 #right <- right_join(package_list, package_must)
 #right <- select(right, Package)
@@ -2298,8 +2298,9 @@ aa <- LUAD_n; bb<- 1
 # x#pforeach(main_i = aa:bb, .cores=2, .errorhandling = c("stop"))({
 # debug: [2019/06/13] [1] "run100= 129 ZFP91", stuck at 19867 "ZFP91.CNTF" => missing RNAseq
 # debug: [2019/06/14] "run100= 129 XKRY"
+# debug: [2019/06/15] [1] "Run 129 XKRX ( 19641  ): obs c(1, 2, NA, 1, 2, NA) 96"   "Run 129 XKRX ( 19641  ): obs c(1, 1, 1, 2, 2, 2) 216"   
 # Second good: by for loop, for save the ZSWIM2 data
-aa <- 19643
+aa <- 19641
 for (main_i in aa:bb) {
   #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")

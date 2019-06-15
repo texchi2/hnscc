@@ -52,10 +52,11 @@ oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
 # oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
 # *** check % RNAseq of a cohort is available in particular gene; e.x. XKRY, 100% is NaN
 # Pipes %>%: df %>% map_dbl(mean)
-library(dplyr); library(AMR); library(purrr); library(stringr)
+# library(AMR) # for freq()
 freq_oscc <- oscc %>% freq("H.score_T", header=F) # https://www.dummies.com/programming/r/how-to-read-the-output-of-str-for-lists-in-r/
-n_freq_oscc <- as.numeric(strsplit(capture.output(str(freq_oscc))[11], " ")[[1]][12])
-if (n_freq_oscc/nrow(oscc)  <= 0.7) {return(5)}
+#if (is.na(freq_oscc)) {return(5)}
+n_freq_oscc <- as.numeric(strsplit(capture.output(str(freq_oscc))[11], " int ")[[1]][2])
+if (n_freq_oscc/nrow(oscc) >= 0.3) {return(5)} # NaN% > 30%
 #table(is.na(oscc$H.score_T))[2] >= nrow(oscc) * 0.7
 
 ## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
