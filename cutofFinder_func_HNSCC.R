@@ -171,7 +171,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # (for run100) P-value according to KM survival analysis (alone) ####
     for (run100 in seq(cutoff_n[1], cutoff_n[2])){ 
       #browser()
-      print(paste("run100=", run100, geneName, sep=" "))
+      print(paste("cutoff run100=", run100, geneName, sep=" "))
       # sorted (by RNAseq) from 129 to 298 in  427 cases of HNSCC
       # use oscc0 for "positioning"; 
       # oscc is the target dataset to be analysed here.
@@ -341,7 +341,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
       # sad, no hit, using default 50% cutoff in SORTED manner at n=128 around
       # [if multiple candidate, it will pickup the first hit]
       default50 <- 0.5
-      case50_n <- cohort_n * default50
+      case50_n <- round(cohort_n * default50)
       cutoff1 <- quantile(exp_geneName_sorted$x, c(default50))  # ?half of missingless LUAD cases
     } # cutoff1 submit for statistics export
     
@@ -380,7 +380,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # by auto pickup a cutoff1 point: case50, p_OS0
     g1<- subset(OS, cases_OS==case50_n) #(x=case50_n, y=p_OS0)
     
-    if (g1$p_OS<=0.05) {
+    if (g1$p_OS <= 0.05) {
       ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
     #  xlim(70, cutoff_n[2]) +
       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +

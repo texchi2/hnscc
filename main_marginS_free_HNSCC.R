@@ -1748,7 +1748,7 @@ rownames(package_list) <- NULL
 package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE] # removal BASE and recommended packages
 # print(package_list, row.names=FALSE)
 # "survival" is the base package
-library(dplyr); library(AMR); library(purrr); library(stringr)
+library(dplyr); library(AMR); library(purrr); library(stringr); library(scales)
 package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "compositions", "openssl","psych", "reshape", "data.table","scales", "dplyr", "magrittr","plyr","ca","devtools","debugr","pforeach","ggrough","gdtools","svglite","xml2","rticles","gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis","xlsx","r2excel","githubinstall","minpack.lm","gplots","VennDiagram","venn","binaryLogic","knitr"))
 #right <- right_join(package_list, package_must)
 #right <- select(right, Package)
@@ -1997,7 +1997,9 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     t<- NULL
     t <- table(osccCleanNA_conTCGA[,osccCleanNA_conTCGAM_pos], osccCleanNA_conTCGA[,ii], useNA = "ifany") #dnn=c(colnames(osccCleanNA_conTCGA[osccCleanNA_conTCGAM_pos])))  
     # useNA = "ifany"; "always" is for "margin" (with n=0 count)
-    chiT[ii,1] <- colnames(osccCleanNA_conTCGA[ii]) # name list of feature variables from L to R
+    chiT[ii,1] <- colnames(osccCleanNA_conTCGA[ii], do.NULL=T) # name list of feature variables from L to R
+    # x use.names='check' (default from v1.12.2) emits this message and proceeds
+    
     check_p <- chisq.test(t)$p.value # retrieved in chiT$X2
     if (is.na(check_p)==T) {check_p <- chisq.test(t[1:2,1:2])$p.value}
     chiT[ii,2] <- check_p
@@ -2026,7 +2028,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # with error # mdata <- melt(obs, id=c("Var2", "Var1")) # using the colnames of table t
     # id variables not found in data:" Var2, Var1 [2018/03/27] , only error on "Gene name = ZSWIM2"(20482)
     
-    print(paste("Run", run100, geneName, "(", which(whole_genome==geneName)," ): obs", obs, t))
+    #print(paste("Run", run100, geneName, "(", which(whole_genome==geneName)," ): obs", obs, t))
     # under cutoff finding 100
     
     # ***ZSWIM2 skip (?) 
@@ -2299,8 +2301,11 @@ aa <- LUAD_n; bb<- 1
 # debug: [2019/06/13] [1] "run100= 129 ZFP91", stuck at 19867 "ZFP91.CNTF" => missing RNAseq
 # debug: [2019/06/14] "run100= 129 XKRY"
 # debug: [2019/06/15] [1] "Run 129 XKRX ( 19641  ): obs c(1, 2, NA, 1, 2, NA) 96"   "Run 129 XKRX ( 19641  ): obs c(1, 1, 1, 2, 2, 2) 216"   
-# Second good: by for loop, for save the ZSWIM2 data
-aa <- 19641
+# debug: 19640; The following objects are masked _by_ .GlobalEnv: cases_OS, p_OS
+# if (g1$p_OS<=0.05) { : argument is of length zero => case50_n is 213.5 :-), just round it.
+# debug: 19632; object 'surv_OS1' not found
+## Second good: by for loop, for save the ZSWIM2 data
+aa <- 19632
 for (main_i in aa:bb) {
   #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
