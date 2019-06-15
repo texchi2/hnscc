@@ -324,7 +324,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     
     
     
-    # # {5c.Auto cutoff1 => surv_OS1} => select a cutoff=> please choice ONE from OS (in LUAD) or RFS ####
+    # # {5c.Auto cutoff1 => surv_OS1} => select a cutoff=> please choice ONE from OS or RFS ####
     # auto pickup a cutoff1, one out of cutoff, from OS/RFS tables, which has lowest P-value, to run directly then export
     OS_pvalue <- OS[OS$p_OS <= 0.05, ] # with rank registration
     # [1] cases_OS p_OS     rank     exp  

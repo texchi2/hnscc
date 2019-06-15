@@ -45,11 +45,13 @@ Your text comes here. Separate text sections with
 
 # Material and method {#sec:1}
 <!-- # since the date [2019/05/13] after -->
+it is also fine: 
 # [FirebrowseR] data preparation {#sec:2}
 manuscript and TCGA survival analysis Interpretation ##
 #https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
 #integrating gene expression (RNASeq) data Why would you want to do survival
-#analysis based on gene expression data? Well, let's say you have a number of
+#analysis based on gene expression data? Well, let's say you have a number of GDCRNATools;
+
 #genes that you are interested in and they are differentially expressed between
 #tumor and normal samples, it would be very powerful to show that alteration in
 #gene expression correlates with worse survival or earlier tumor recurrence.

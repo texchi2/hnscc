@@ -2303,7 +2303,9 @@ aa <- LUAD_n; bb<- 1
 # debug: [2019/06/15] [1] "Run 129 XKRX ( 19641  ): obs c(1, 2, NA, 1, 2, NA) 96"   "Run 129 XKRX ( 19641  ): obs c(1, 1, 1, 2, 2, 2) 216"   
 # debug: 19640; The following objects are masked _by_ .GlobalEnv: cases_OS, p_OS
 # if (g1$p_OS<=0.05) { : argument is of length zero => case50_n is 213.5 :-), just round it.
-# debug: 19632; object 'surv_OS1' not found
+# debug: 19632 XIRP2; object 'surv_OS1' not found
+#     tryCatch(surv_OS1 <- survdiff(mysurv ~ as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric"), data=osccCleanNA), error = function(e) return(NA)) # PMM1 high or low
+
 ## Second good: by for loop, for save the ZSWIM2 data
 aa <- 19632
 for (main_i in aa:bb) {
