@@ -1997,12 +1997,11 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     t<- NULL
     t <- table(osccCleanNA_conTCGA[,osccCleanNA_conTCGAM_pos], osccCleanNA_conTCGA[,ii], useNA = "ifany") #dnn=c(colnames(osccCleanNA_conTCGA[osccCleanNA_conTCGAM_pos])))  
     # useNA = "ifany"; "always" is for "margin" (with n=0 count)
-    chiT[ii,1] <- colnames(osccCleanNA_conTCGA[ii], do.NULL=T) # name list of feature variables from L to R
-    # x use.names='check' (default from v1.12.2) emits this message and proceeds
+    chiT[ii, 1] <- colnames(osccCleanNA_conTCGA[ii]) # name list of feature variables from L to R
     
-    check_p <- chisq.test(t)$p.value # retrieved in chiT$X2
+    check_p <- chisq.test(t)$p.value # retrieved in chiT$X2; warming: Chi-squared approximation may be incorrect.
     if (is.na(check_p)==T) {check_p <- chisq.test(t[1:2,1:2])$p.value}
-    chiT[ii,2] <- check_p
+    chiT[ii, 2] <- check_p
     # chisq is sum( (o-e)^2/e ); the Na should be removed, You have zero frequencies in 2 counts.
     #warnings(): In chisq.test(t) : Chi-squared approximation may be incorrect
     #=> fisher.test(a) # Fisher exact test is better in small counts. 
@@ -2050,7 +2049,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # debug for "ZSWIM2"(20482)
     
     cdata <- as.data.frame(cast(mdata, Var2 ~ Var1)) 
-    cdata <- cdata[, c(1:3)] # cdata should has 3 columns
+    cdata <- cdata[, c(1:3)] # cdata should has 3 columns (NA column is removed)
     # names(dimnames(cdata)) = c("expression", "severity")
     # NA is necessary in column Var2
     if (!anyNA(cdata$Var2)) {
@@ -2064,9 +2063,14 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
       cdata <- cdata[order(cdata$ind),]
       cdata <- cdata[,-4] # removal of index
     }
-    cdata <- cbind(cdata, chiT[ii,1]) # add features name => # cdata has 4 columns
-    # print(cdata)
+    cdata <- cbind(cdata, chiT[ii, 1]) # add features name => # now cdata has 4 columns
     #freq[1+(ii-1)*rown,] <- cdata
+    # R4> cdata
+    #    Var2  0   1 chiT[ii, 1]
+    #    1    1 96 216      Gender
+    #    2    2 33  81      Gender
+    #    3 <NA>  0   0      Gender
+    colnames(cdata)[4] <- "Features"
     freq <- rbindlist(list(freq, cdata))
     #plot(ca(as.integer(cdata[-3,])))
     # DEBUG
@@ -2303,10 +2307,12 @@ aa <- LUAD_n; bb<- 1
 # debug: [2019/06/15] [1] "Run 129 XKRX ( 19641  ): obs c(1, 2, NA, 1, 2, NA) 96"   "Run 129 XKRX ( 19641  ): obs c(1, 1, 1, 2, 2, 2) 216"   
 # debug: 19640; The following objects are masked _by_ .GlobalEnv: cases_OS, p_OS
 # if (g1$p_OS<=0.05) { : argument is of length zero => case50_n is 213.5 :-), just round it.
-# debug: 19632 XIRP2; object 'surv_OS1' not found
-#     tryCatch(surv_OS1 <- survdiff(mysurv ~ as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric"), data=osccCleanNA), error = function(e) return(NA)) # PMM1 high or low
+# debug: 19632 XIRP2; object 'surv_OS1' not found <- if There is only 1 group? (85 out of 427: RNAseq is  -0.2303395 as well as cutoff1) 
+# => range(osccCleanNA$PMM1_median, na.rm=T) => try the other cutoff1 (226 vs 200 now)
 
 ## Second good: by for loop, for save the ZSWIM2 data
+rm(cases_OS)
+rm(p_OS)
 aa <- 19632
 for (main_i in aa:bb) {
   #browser()
