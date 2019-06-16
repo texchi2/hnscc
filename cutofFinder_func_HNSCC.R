@@ -56,7 +56,7 @@ oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
 freq_oscc <- oscc %>% freq("H.score_T", header=F) # https://www.dummies.com/programming/r/how-to-read-the-output-of-str-for-lists-in-r/
 #if (is.na(freq_oscc)) {return(5)}
 n_freq_oscc <- as.numeric(strsplit(capture.output(str(freq_oscc))[11], " int ")[[1]][2])
-if (n_freq_oscc/nrow(oscc) >= 0.3) {return(5)} # NaN% > 30%
+if (n_freq_oscc/nrow(oscc) >= 0.3) {return(5)} # if NaN% > 30%
 #table(is.na(oscc$H.score_T))[2] >= nrow(oscc) * 0.7
 
 ## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
@@ -89,13 +89,11 @@ oscc_n427 <- osccCleanNA # n=427; removal of NA cases; spare data
 osccCleanNA <- oscc_n427
 
 # by marginTag
-if (marginTag == "_marginS_") {}
-  else if (marginTag == "_marginFree_") {
+if (marginTag == "_marginS_") {} else if (marginTag == "_marginFree_") {
   # surgical margin status: keeping 0 and excluding + margin (as 1; n=11)
   osccCleanNA_freeMargin <- osccCleanNA[osccCleanNA$margin == 0, ] # margin==0
   # margin free cohort (n=245): ### 
-  osccCleanNA <- osccCleanNA_freeMargin
-  }
+  osccCleanNA <- osccCleanNA_freeMargin}
 #
 
 
@@ -128,7 +126,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # oscc <- cbind(oscc0, osccCleanNA$H.score_T) # expression(IHC score) of PMM1
     # {debug
     # find_repeat <- 100 # searching 100 slices in the interval
-    cohort_n <- nrow(oscc) # n=427
+    cohort_n <- nrow(oscc) # n=328
     # }debug
     oscc0_pos <- which(colnames(oscc0) == "H.score_T") # oscc0$H.score_T as colunm 13
     
@@ -153,20 +151,13 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     #xxx cutoff <- quantile(exp_geneName, c(0.30,0.70)) # by RNAseq value
     # slice by cases
     cutoff_n <- round(quantile(c(1:cohort_n), c(0.30,0.70))) # 30 percentile, 70 percentile
-    cutoff_n[2] <- cutoff_n[2] -1 # from 129 to 298 in  427 cases
+    cutoff_n[2] <- cutoff_n[2] -1 # from 99 to 230 in  328 cases
     # *debug, error and stop on "XKRY"(19642)#
     # (ok)Error in quantile.default(exp_geneName, c(0.3, 0.7)) : 
     #   missing values and NaN's not allowed if 'na.rm' is FALSE
     # (OK)Error during wrapup: names() applied to a non-vector
     #debug
     
-    # if (!require(pkg)){ 
-    #   install.packages(pkg) 
-    # } # Install package automatically if not there
-    # 
-    # https://cran.r-project.org/web/packages/survival/survival.pdf
-    #for (i in seq(cutoff[1], cutoff[2], length.out = find_repeat)){
-
     
     # (for run100) P-value according to KM survival analysis (alone) ####
     for (run100 in seq(cutoff_n[1], cutoff_n[2])){ 
@@ -181,9 +172,9 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
       
       # Binominal H.Score_T (RNAseq) by exp_geneName_sorted$x[i]) #RNAseq cutoff
       oscc[osccM_pos] <- (oscc0[oscc0_pos] >= cutoff100) +0 # oscc$PMM1_median <- (oscc0$PMM1 >= i) +0
-    #  R4> table(oscc$PMM1_median) # when run100 == 129
+    #  R4> table(oscc$PMM1_median) # when run100 == 99
     #  0   1 
-    #  129 297
+    #  99 229
 
     #  *** correction of cases_OS ####
       cases_OS[exp_geneName_sorted$ix[run100+1], 1] <- run100 # group 0 vs 1: 0 has 78 cases ...etc

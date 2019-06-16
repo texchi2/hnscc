@@ -1748,7 +1748,7 @@ rownames(package_list) <- NULL
 package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE] # removal BASE and recommended packages
 # print(package_list, row.names=FALSE)
 # "survival" is the base package
-library(dplyr); library(AMR); library(purrr); library(stringr); library(scales)
+library(dplyr); library(AMR); library(purrr); library(stringr); library(scales); library(magrittr)
 package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "compositions", "openssl","psych", "reshape", "data.table","scales", "dplyr", "magrittr","plyr","ca","devtools","debugr","pforeach","ggrough","gdtools","svglite","xml2","rticles","gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis","xlsx","r2excel","githubinstall","minpack.lm","gplots","VennDiagram","venn","binaryLogic","knitr"))
 #right <- right_join(package_list, package_must)
 #right <- select(right, Package)
@@ -1759,7 +1759,7 @@ right <- anti_join(package_must, package_list, by="Package")
 # }
 
 
-## START: set path on GCP cloud drive ####
+## START:  ####
 # since [2019/06/06]
 TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
 path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
@@ -2309,17 +2309,18 @@ aa <- LUAD_n; bb<- 1
 # if (g1$p_OS<=0.05) { : argument is of length zero => case50_n is 213.5 :-), just round it.
 # debug: 19632 XIRP2; object 'surv_OS1' not found <- if There is only 1 group? (85 out of 427: RNAseq is  -0.2303395 as well as cutoff1) 
 # => range(osccCleanNA$PMM1_median, na.rm=T) => try the other cutoff1 (226 vs 200 now)
-
+# debug: 14865 RGL3", [1] "cutoff run100= 129 RGMB"; [1] "skip at ii= 2"
+# *** debug: In chisq.test(t) : Chi-squared approximation may be incorrect => (fisher.test(a)) chisq.test(a, simulate.p.value = TRUE)
 ## Second good: by for loop, for save the ZSWIM2 data
 rm(cases_OS)
 rm(p_OS)
-aa <- 19632
+#aa <- 19640
 for (main_i in aa:bb) {
   #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
   save(ZSWIM2, file=desti_ZSWIM2)
-}
+} # code on $x2 from 1:5
 ##}
 
 
