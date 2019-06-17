@@ -55,7 +55,7 @@ oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
 # library(AMR) # for freq()
 freq_oscc <- oscc %>% freq("H.score_T", header=F) # https://www.dummies.com/programming/r/how-to-read-the-output-of-str-for-lists-in-r/
 #if (is.na(freq_oscc)) {return(5)}
-n_freq_oscc <- as.numeric(strsplit(capture.output(str(freq_oscc))[11], " int ")[[1]][2])
+n_freq_oscc <- as.numeric(strsplit(capture.output(str(freq_oscc))[11], " int ")[[1]][2]) # no of NaN
 if (n_freq_oscc/nrow(oscc) >= 0.3) {return(5)} # if NaN% > 30%
 #table(is.na(oscc$H.score_T))[2] >= nrow(oscc) * 0.7
 
@@ -126,7 +126,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # oscc <- cbind(oscc0, osccCleanNA$H.score_T) # expression(IHC score) of PMM1
     # {debug
     # find_repeat <- 100 # searching 100 slices in the interval
-    cohort_n <- nrow(oscc) # n=328
+    cohort_n <- nrow(oscc) # n=328 or 427
     # }debug
     oscc0_pos <- which(colnames(oscc0) == "H.score_T") # oscc0$H.score_T as colunm 13
     
@@ -151,7 +151,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     #xxx cutoff <- quantile(exp_geneName, c(0.30,0.70)) # by RNAseq value
     # slice by cases
     cutoff_n <- round(quantile(c(1:cohort_n), c(0.30,0.70))) # 30 percentile, 70 percentile
-    cutoff_n[2] <- cutoff_n[2] -1 # from 99 to 230 in  328 cases
+    cutoff_n[2] <- cutoff_n[2] -1 # from 99 to 230 in  328 cases; 129 to 298 in 427 cases
     # *debug, error and stop on "XKRY"(19642)#
     # (ok)Error in quantile.default(exp_geneName, c(0.3, 0.7)) : 
     #   missing values and NaN's not allowed if 'na.rm' is FALSE
@@ -293,7 +293,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # removal of duplicated item
     OS <- OS[!duplicated(OS),]
     colnames(OS) <- c("cases_OS","p_OS", "rank", "exp")
-    OS <- OS[complete.cases(OS$p_OS), ] # removal of NA, keep n=102
+    OS <- OS[complete.cases(OS$p_OS), ] # removal of NA, keep n=102 or 170
     
     RFS <- data.frame(cases_RFS, as.numeric(unlist(p_RFS)), c(1:cohort_n),  as.numeric(unlist(exp_geneName)))
     # removal of duplicated item and NA
@@ -471,6 +471,29 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # Refresh binominal by a definite cutoff value by AUTO selection: cutoff1
     # [**binomial of PMM1_median] resume the correlation table 2 ###
     osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[, osccCleanNA_pos] >= cutoff1) +0 # binomial after osccCleanNA 
+    # one_group issue
+    #range(osccCleanNA$PMM1_median, na.rm=T) => try the other cutoff1
+    library(dplyr) #nth
+    ij <- range(osccCleanNA$PMM1_median, na.rm=T)
+    OS_pvalue <- OS_pvalue[order(OS_pvalue$p_OS), ] # sorted from small to big
+    # #x find cutoff1 smaller 
+    # if (ij[1]==ij[2] & ij[2]==0) {
+    #   nth_pvalue <- 1
+    #   while (OS_pvalue$exp[nth_pvalue]==cutoff1) {
+    #     
+    #   }
+    #   osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[, osccCleanNA_pos] >= cutoff1) +0
+    # }
+    # # xfind cutoff1 bigger
+    if (ij[1]==ij[2]) {
+      nth_pvalue <- 1
+      while (OS_pvalue$exp[nth_pvalue]==cutoff1) {
+        nth_pvalue <- nth_pvalue + 1
+      }
+      cutoff1 <- OS_pvalue$exp[nth_pvalue]
+      osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[, osccCleanNA_pos] >= cutoff1) +0 # 266 vs 160 now
+    }
+    
     # vertical vector is corrected
     
     # osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[osccCleanNA_pos] >= cutoff1) +0

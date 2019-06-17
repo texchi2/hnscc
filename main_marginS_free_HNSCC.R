@@ -1813,7 +1813,7 @@ sender <- "texchi2@gmail.com"
 
 
 ### $setup global variables...(including "margin") ####
-library("psych") # for describe()
+library(psych) # for describe()
 library(survival)
 
 # ***colnames of osccT
@@ -2307,14 +2307,16 @@ aa <- LUAD_n; bb<- 1
 # debug: [2019/06/15] [1] "Run 129 XKRX ( 19641  ): obs c(1, 2, NA, 1, 2, NA) 96"   "Run 129 XKRX ( 19641  ): obs c(1, 1, 1, 2, 2, 2) 216"   
 # debug: 19640; The following objects are masked _by_ .GlobalEnv: cases_OS, p_OS
 # if (g1$p_OS<=0.05) { : argument is of length zero => case50_n is 213.5 :-), just round it.
-# debug: 19632 XIRP2; object 'surv_OS1' not found <- if There is only 1 group? (85 out of 427: RNAseq is  -0.2303395 as well as cutoff1) 
+# debug: 19632 XIRP2; object 'surv_OS1' not found <- if There is only 1 group? one_group issue (85 out of 427: RNAseq is  -0.2303395 as well as cutoff1) 
 # => range(osccCleanNA$PMM1_median, na.rm=T) => try the other cutoff1 (226 vs 200 now)
-# debug: 14865 RGL3", [1] "cutoff run100= 129 RGMB"; [1] "skip at ii= 2"
+# xdebug: 14865 RGL3", [1] "cutoff run100= 129 RGMB"; [1] "skip at ii= 2"
+# debug: ZNF808 ( 20403 )[2019/06/17] object 'surv_OS1' not found; one_group issue? yes
 # *** debug: In chisq.test(t) : Chi-squared approximation may be incorrect => (fisher.test(a)) chisq.test(a, simulate.p.value = TRUE)
+# 
 ## Second good: by for loop, for save the ZSWIM2 data
-rm(cases_OS)
-rm(p_OS)
-#aa <- 19640
+if (exists("cases_OS")) {rm(cases_OS)}
+if (exists("p_OS")) {rm(p_OS)}
+aa <- 20403
 for (main_i in aa:bb) {
   #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")

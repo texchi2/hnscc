@@ -1,4 +1,5 @@
-survival_marginS <- function(geneName) {
+# debug: geneName <- whole_genome[main_i]
+survival_marginS <- function(geneName) { 
 #  source(paste(path_LUAD, "cutofFinder_func.R", sep="")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
 # for HNSCC: already defined on main, source(file=file.path(path_cohort, "cutofFinder_func_HNSCC.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
   
