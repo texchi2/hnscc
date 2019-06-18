@@ -2311,12 +2311,16 @@ aa <- LUAD_n; bb<- 1
 # => range(osccCleanNA$PMM1_median, na.rm=T) => try the other cutoff1 (226 vs 200 now)
 # xdebug: 14865 RGL3", [1] "cutoff run100= 129 RGMB"; [1] "skip at ii= 2"
 # debug: ZNF808 ( 20403 )[2019/06/17] object 'surv_OS1' not found; one_group issue? yes
+# crash at VHL (19344) -> debug: UBXN2A (19083) => OS_pvalue <- OS_pvalue[complete.cases(OS_pvalue$exp), ]
+
+# 
 # *** debug: In chisq.test(t) : Chi-squared approximation may be incorrect => (fisher.test(a)) chisq.test(a, simulate.p.value = TRUE)
 # 
 ## Second good: by for loop, for save the ZSWIM2 data
+library(AMR) # for freq()
 if (exists("cases_OS")) {rm(cases_OS)}
 if (exists("p_OS")) {rm(p_OS)}
-aa <- 20403
+aa <- 19083
 for (main_i in aa:bb) {
   #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
