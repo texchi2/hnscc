@@ -2325,7 +2325,7 @@ aa <- LUAD_n; bb<- 1
 # debug: ZNF808 ( 20403 )[2019/06/17] object 'surv_OS1' not found; one_group issue? yes
 # crash at VHL (19344) -> debug: UBXN2A (19083) => OS_pvalue <- OS_pvalue[complete.cases(OS_pvalue$exp), ]
 # debug: TMOD4 (18342) -> while(OS_pvalue$exp[nth_pvalue]==cutoff1): only one pvalue => discard this gene by return("skip") 
-# *** debug: In chisq.test(t) : Chi-squared approximation may be incorrect (unbalanced data) => **(fisher.test(a) or chisq.test(a, simulate.p.value = TRUE) or Barnard's test (The mid-p-value)####
+# ***(OK) debug: In chisq.test(t) : Chi-squared approximation may be incorrect (unbalanced data) => **(fisher.test(a) or chisq.test(a, simulate.p.value = TRUE) or Barnard's test (The mid-p-value)####
 # x simulate.p.value: to compute p-values by Monte Carlo simulation, in larger than 2 by 2 tables.
 # x by simulating the test 2000 times
 
@@ -2342,6 +2342,8 @@ for (main_i in aa:bb) {
 } # code on $x2 from 1:5
 ##}
 
+# we might compare the difference of P-value between chisq.test and fisher.test
+# ../xlsx and ../xlsx_chisq
 
 ## ## email for P-value analysisi of "ZSWIM2_archive.Rda (main_i)"####
 end_time <- Sys.time()
