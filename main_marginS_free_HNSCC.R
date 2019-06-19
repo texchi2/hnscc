@@ -1999,20 +1999,38 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # useNA = "ifany"; "always" is for "margin" (with n=0 count)
     chiT[ii, 1] <- colnames(osccCleanNA_conTCGA[ii]) # name list of feature variables from L to R
     
-    check_p <- chisq.test(t)$p.value # retrieved in chiT$X2; warming: Chi-squared approximation may be incorrect.
-    if (is.na(check_p)==T) {check_p <- chisq.test(t[1:2,1:2])$p.value}
+    # unbalanced data issue: chisq.test or fisher.test
+    flag_fisher <- FALSE
+    h0test <- chisq.test(t)
+    if (any((h0test$expected<5)==TRUE)) { # if warming: Chi-squared approximation may be incorrect.
+      h0test <- fisher.test(t) # using Fisher's exact test instead
+      flag_fisher <- TRUE
+    }
+
+    check_p <- h0test$p.value # retrieved in chiT$X2
+    if (is.na(check_p)==T) {
+      if (flag_fisher==FALSE) {
+        check_p <- chisq.test(t[1:2,1:2])$p.value
+        } else if (flag_fisher==TRUE) {
+          check_p <- fisher.test(t[1:2,1:2])$p.value
+        }
+      }
     chiT[ii, 2] <- check_p
+    
+    # debug
+    obs <- as.data.frame(chisq.test(t)$observed) # we need this observed table, even using fisher.test    
+    # # error when there is only one group
+    if (is.na(tryCatch(mdata <- melt(obs, id.vars=c("Var2", "Var1")), error = function(e) return(NA)))) {print(paste("skip at ii= ", ii, sep=""));return(list("skip", chiT, freq))} # back to marginS.R
+    # debug for "ZSWIM2"(20482)
+    
     # chisq is sum( (o-e)^2/e ); the Na should be removed, You have zero frequencies in 2 counts.
     #warnings(): In chisq.test(t) : Chi-squared approximation may be incorrect
-    #=> fisher.test(a) # Fisher exact test is better in small counts. 
+    #=> fisher.test(a) # Fisher exact test is better in small counts. (<5) 
     #table(t); #print(c("ii=",paste(ii)))
     # t
     # 0   5   6 122 123 
     # 2   1   1   1   1 
     #print(ii) # debug
-    
-    obs <- as.data.frame(chisq.test(t)$observed)
-    
     
     # >table(t)
     # 50 57 62 76 
@@ -2027,9 +2045,6 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # with error # mdata <- melt(obs, id=c("Var2", "Var1")) # using the colnames of table t
     # id variables not found in data:" Var2, Var1 [2018/03/27] , only error on "Gene name = ZSWIM2"(20482)
     
-    #print(paste("Run", run100, geneName, "(", which(whole_genome==geneName)," ): obs", obs, t))
-    # under cutoff finding 100
-    
     # ***ZSWIM2 skip (?) 
     # Error when "melt": id variables not found in data: Var2, Var1; (360: mdata <- melt(obs, id=c("Var2", "Var1")) # using the colnames of table t)
     #if (is.na(tryCatch([expression], error = function(e) return(NA)))) {return(list("skip", chiT, freq))}
@@ -2043,10 +2058,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # 4    1    1    2
     # 5    0 <NA>    0
     # 6    1 <NA>    0
-    # debug
-    if (is.na(tryCatch(mdata <- melt(obs, id.vars=c("Var2", "Var1")), error = function(e) return(NA)))) {print(paste("skip at ii= ", ii, sep=""));return(list("skip", chiT, freq))} # back to marginS.R
-    # mdata <- melt(obs, id.vars=c("Var2", "Var1")) # error when there is only one group
-    # debug for "ZSWIM2"(20482)
+
     
     cdata <- as.data.frame(cast(mdata, Var2 ~ Var1)) 
     cdata <- cdata[, c(1:3)] # cdata should has 3 columns (NA column is removed)
@@ -2312,15 +2324,16 @@ aa <- LUAD_n; bb<- 1
 # xdebug: 14865 RGL3", [1] "cutoff run100= 129 RGMB"; [1] "skip at ii= 2"
 # debug: ZNF808 ( 20403 )[2019/06/17] object 'surv_OS1' not found; one_group issue? yes
 # crash at VHL (19344) -> debug: UBXN2A (19083) => OS_pvalue <- OS_pvalue[complete.cases(OS_pvalue$exp), ]
+# debug: TMOD4 (18342) -> while(OS_pvalue$exp[nth_pvalue]==cutoff1): only one pvalue => discard this gene by return("skip") 
+# *** debug: In chisq.test(t) : Chi-squared approximation may be incorrect (unbalanced data) => **(fisher.test(a) or chisq.test(a, simulate.p.value = TRUE) or Barnard's test (The mid-p-value)####
+# x simulate.p.value: to compute p-values by Monte Carlo simulation, in larger than 2 by 2 tables.
+# x by simulating the test 2000 times
 
-# 
-# *** debug: In chisq.test(t) : Chi-squared approximation may be incorrect => (fisher.test(a)) chisq.test(a, simulate.p.value = TRUE)
-# 
 ## Second good: by for loop, for save the ZSWIM2 data
 library(AMR) # for freq()
 if (exists("cases_OS")) {rm(cases_OS)}
 if (exists("p_OS")) {rm(p_OS)}
-aa <- 19083
+#aa <- 18342
 for (main_i in aa:bb) {
   #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")

@@ -486,13 +486,20 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     #   osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[, osccCleanNA_pos] >= cutoff1) +0
     # }
     # # xfind cutoff1 bigger
-    if (ij[1]==ij[2]) {
-      nth_pvalue <- 1
-      while (OS_pvalue$exp[nth_pvalue]==cutoff1) {
-        nth_pvalue <- nth_pvalue + 1
+      #if (ij[1]==ij[2] & nrow(OS_pvalue)==1
+      if (ij[1]==ij[2]) {
+        flag_newCutoff1 <- FALSE
+        for (nth_pvalue in c(1:nrow(OS_pvalue))) {
+          if (OS_pvalue$exp[nth_pvalue]!=cutoff1) {
+            cutoff1 <- OS_pvalue$exp[nth_pvalue]
+            flag_newCutoff1 <- TRUE # find a new cutoff1
+            break
+          }
+        #if (nth_pvalue > nrow(OS_pvalue)) {return("skip")}
       }
-      cutoff1 <- OS_pvalue$exp[nth_pvalue]
-      osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[, osccCleanNA_pos] >= cutoff1) +0 # 266 vs 160 now
+      if (flag_newCutoff1==TRUE) {
+        osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[, osccCleanNA_pos] >= cutoff1) +0 # 266 vs 160 now
+      } else if (flag_newCutoff1==FALSE) {return("skip")} # we skip this gene
     }
     
     # vertical vector is corrected

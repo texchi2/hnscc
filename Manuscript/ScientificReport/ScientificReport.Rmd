@@ -39,7 +39,8 @@ output: rticles::springer_article
 ---
 target journal: https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
 BBRC: Biochemical and Biophysical Research Communications https://www.journals.elsevier.com/biochemical-and-biophysical-research-communications
-https://bmcbioinformatics.biomedcentral.com BMC Bioinformatics, impact factor 2?
+https://bmcbioinformatics.biomedcentral.com 
+BMC Bioinformatics, impact factor 2 (https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
 https://www.biomedcentral.com/journals#Life-Sciences
 # Introduction {#intro}
 
@@ -131,6 +132,12 @@ contingency table to find significant clinicopathological features
       # contingency P-value
 # Kaplan-Meier curve + Log-rank test, + Cox proportional regression
     # textbook: David Kleinbaum???Survival analysis: A self-learning text
+Chi-square => Fisher exact test issue: the small cell values in the contingency table (unbalanced data) => Exact tests are preferred see e.g this for SPSS or this from Kang and Ahn 2008 which found that for highly unbalanced 2x2 tables a conditional exact test (e.g. Fisher's exact) is preferred. a rule of thumb: at least one of the counts <= 5.
+H0: the survival is independent of the expression level of the individual gene
+
+(As the p-value 0.04828 is less than the .05 significance level, we do reject the null hypothesis that the survival is independent of the expression level of the individual gene => the survival is associated of the expression level of the gene.)
+https://www.reddit.com/r/rstats/comments/4bnlor/getting_chisquared_approximation_may_be_incorrect/
+http://www.r-tutor.com/elementary-statistics/goodness-fit/chi-squared-test-independence
 ...
 margin_Free
 ditto
