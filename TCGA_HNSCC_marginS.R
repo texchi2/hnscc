@@ -371,7 +371,7 @@ library("r2excel")
 setwd(path_cohort) # change working directory to the HNSCC, GCP
 
 # filename for all margins cases, defined as HNSCC
-filenamex <- paste(TCGA_cohort, "_survivalAnalysis_marginS_", geneName, ".xlsx", sep = "")
+filenamex <- paste("xlsx/", TCGA_cohort, "_survivalAnalysis_marginS_", geneName, ".xlsx", sep = "")
 wb <- createWorkbook(type="xlsx")
 # Create a sheet in that workbook
 sheet <- xlsx::createSheet(wb, sheetName = paste(geneName, "_multivariate"))
@@ -779,7 +779,7 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 
 #tryCatch(
   RFS_pvalue <- OS_pvalue #:-) for HNSCC only
-  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("xlsx/HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
 #, error = function(e) return(NA))
 #print(paste("Create", paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""), "successfully."))
 
