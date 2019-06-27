@@ -17,6 +17,7 @@
 # [2018/11/30] Teamviewer is better.
 # [2019/05/02] start to work [2019/05/08] upgraded Rstudio server + install openssl 1.1.0
 # [2019/05/13]
+# [2019/06/19] ready to fully run
 
 # Tutorial: Survival analysis of TCGA patients integrating gene expression (RNASeq) data
 # https://www.biostars.org/p/153013/
@@ -2000,12 +2001,17 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     chiT[ii, 1] <- colnames(osccCleanNA_conTCGA[ii]) # name list of feature variables from L to R
     
     # unbalanced data issue: chisq.test or fisher.test
-    flag_fisher <- FALSE
-    h0test <- chisq.test(t)
-    if (any((h0test$expected<5)==TRUE)) { # if warming: Chi-squared approximation may be incorrect.
+    
+    #h0test <- chisq.test(t)
+    if (any((chisq.test(t)$expected<5)==TRUE)) { # if warming: Chi-squared approximation may be incorrect.
       h0test <- fisher.test(t) # using Fisher's exact test instead
       flag_fisher <- TRUE
-    }
+      print("Fisher exact test +1")
+    } else {
+      h0test <- chisq.test(t) # using Chi squart test is fine
+      flag_fisher <- FALSE
+      print("chisq.test")
+      }
 
     check_p <- h0test$p.value # retrieved in chiT$X2
     if (is.na(check_p)==T) {
@@ -2328,17 +2334,20 @@ aa <- LUAD_n; bb<- 1
 # ***(OK) debug: In chisq.test(t) : Chi-squared approximation may be incorrect (unbalanced data) => **(fisher.test(a) or chisq.test(a, simulate.p.value = TRUE) or Barnard's test (The mid-p-value)####
 # x simulate.p.value: to compute p-values by Monte Carlo simulation, in larger than 2 by 2 tables.
 # x by simulating the test 2000 times
+# check _marginS_ or _marginFree_: osccCleanNA_freeMargin <- osccCleanNA[osccCleanNA$margin == 0, ] # keeping margin==0 cases
+# resume: VPS37A
 
 ## Second good: by for loop, for save the ZSWIM2 data
 library(AMR) # for freq()
 if (exists("cases_OS")) {rm(cases_OS)}
 if (exists("p_OS")) {rm(p_OS)}
-#aa <- 18342
+aa <- 13422
 for (main_i in aa:bb) {
   #browser()
   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
   save(ZSWIM2, file=desti_ZSWIM2)
+  # ***ZSWIM2 should be saved by appending.
 } # code on $x2 from 1:5
 ##}
 
@@ -2349,6 +2358,8 @@ for (main_i in aa:bb) {
 end_time <- Sys.time()
 body_text <- data.frame(matrix(data = NA, nrow = LUAD_n, ncol = 2)) # aa>bb == True ; aa-bb+1
 colnames(body_text) <- c("P-value") #, "body_text")
+# run01 done on [2019/06/26]
+
 
 #debug
 #aa<- 20499; bb<- 16349
@@ -2429,6 +2440,8 @@ if (length(body_pvalue) > 0) {
 print("Sending you a email report...")
 if (is.na(tryCatch( send_message(texchi2), error = function(e) return(NA)))) {
 } else {print("Done !")}
+# http://localhost:1410/?state=3xJn1CFjL4&code=4/dAEsLKmTNliKK2pIncd-LXmiRscpA-v_gHGzpJbMXf1R7VFzyuRLFR9eME3FxwAF405Y8YaENSmp7hWyScfdxVU&scope=https://www.googleapis.com/auth/gmail.readonly%20https://www.googleapis.com/auth/gmail.modify%20https://www.googleapis.com/auth/gmail.compose%20https://mail.google.com/
+# safari can't open localhost 
 
 ## in case internet is lost=>
 # (Ok)Error in curl, Could not resolve host: www.googleapis.com
@@ -2442,10 +2455,10 @@ print(paste("Expended duration:", end_time - start_time, "hours"))
 
 
 
-# [Results] ####
-#====== Analysis of output .Rda of _marginS_ or _marginFree_
-# [2018/06/20] they are stored at ./run04_marginS_
-path_ZSWIM2 <- file.path(path_cohort, "run04_marginS_")
+# [Results] _marginsS_ ####
+#====== Analysis of output .Rda of _marginS_ on GCE i-4 or _marginFree_ on GCE i-4Free
+# [2019/06/26] they are stored at ./xlsx
+path_ZSWIM2 <- file.path(path_cohort, "xlsx")
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
 # 3 hours for 1,000 genes to be scanned under GCP Rstudio server
@@ -2453,14 +2466,14 @@ path_ZSWIM2 <- file.path(path_cohort, "run04_marginS_")
 #which(whole_genome==geneName)
 #
 #_marginS_
-# merge ZSWIM2a ZSWIM2b and ZSWIM2c => ZSWIM2abc_archive.Rda [2018/06/19]
+# xmerge ZSWIM2a ZSWIM2b and ZSWIM2c => ZSWIM2abc_archive.Rda [2018/06/19]
 # para_seg <- c(20499, 13528, 6833, 1) # ZZZ3-> PLCE1, PNMT-> GARNL3, GAR1-> A1BG
-load(file=file.path(path_ZSWIM2, "ZSWIM2c_archive.Rda")) #
-ZSWIM2 <- ZSWIM2abc #(done, merged)
-save(data=ZSWIM2, file=file.path(path_ZSWIM2, "ZSWIM2_archive.Rda")) # or ZSWIM2abc_archive 
-# OR
+#load(file=file.path(path_cohort, "ZSWIM2_archive.Rda")) # as ZSWIM2
+#ZSWIM2 <- ZSWIM2abc #(done, merged)
+#save(data=ZSWIM2, file=file.path(path_ZSWIM2, "ZSWIM2_archive.Rda")) # or ZSWIM2abc_archive 
+#x OR
 # _marginFree_
-load(file="ZSWIM2_free_archive.Rda") # as well as ZSWIM2
+#load(file="ZSWIM2_free_archive.Rda") # as well as ZSWIM2
 
 
 
@@ -2468,7 +2481,7 @@ load(file="ZSWIM2_free_archive.Rda") # as well as ZSWIM2
 #1) KM plot is not at best cutoff, why??
 #2) ZSWIM2 should be saved by appending.
 #3)
-load(file=file.path(path_ZSWIM2, "ZSWIM2_archive.Rda")) # merged abc
+load(file=file.path(path_cohort, "ZSWIM2_archive.Rda")) # x merged abc
 ZSWIM2$X3 <- addNA(ZSWIM2$X2, ifany=F)
 ZSWIM2_2 <- table(ZSWIM2$X3) # try to tryCatch (1, 2)
 # 0     1     2     3     4     5     6     7     8     9 
@@ -2486,24 +2499,19 @@ ZSWIM2_2 <- data.frame(ZSWIM2_2)
 #print(run16h <- (sum(ZSWIM2_2$Freq)-(LUAD_n-(18602-17406))))
 # running 18602-17406=1196 genes in 16 hours
 plot((ZSWIM2_2))
-#> sum(ZSWIM2_2$Freq)
-#[1] 20499  # scan completely
+sum(ZSWIM2_2$Freq)
+#[1] 20500  # scan completely
 
 # reture(0): ok for analysis
-text_pie <- paste("Workable genes \n in ", ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq)*100, " %") # _marginS_ about 50.96% usable RNAseq data
+text_pie <- paste("Workable genes \n in ", round(ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq)*100), " %") # _marginS_ about 45.9% usable RNAseq data
 pie(ZSWIM2_2$Freq, labels=ZSWIM2_2$Var1, main=text_pie)
-# OR _marginFree_ with 52%(?) usable RNAseq data
+
 # deal with return(1), return(2) and return(3) errors, try to solve it
 # _marginS_
-n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.5095858
-error01_sample <- which(ZSWIM2$X3==1) #  4.6% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
-error02_sample <- which(ZSWIM2$X3==2) # 17.4% error02: There has only one group in survdiff.
-error03_sample <- which(ZSWIM2$X3==3) # 0.42% error03: There has only one group in survdiff.
-# OR _marginFree_
-n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.52
-error01_sample <- which(ZSWIM2$X3==1) #  5.0% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
-error02_sample <- which(ZSWIM2$X3==2) # 18.4% error02: There has only one group in survdiff.
-error03_sample <- which(ZSWIM2$X3==3) # 3.4% error03: There has only one group in survdiff.
+n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.4593171
+error01_sample <- which(ZSWIM2$X3==1) #  32.2% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
+error02_sample <- which(ZSWIM2$X3==2) # 14.2% error02: There has only one group in survdiff.
+error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group in survdiff.
 # done #
 
 
@@ -2514,10 +2522,11 @@ error03_sample <- which(ZSWIM2$X3==3) # 3.4% error03: There has only one group i
 # (Both) Retrieving the summary table to form z-score in 
 # HNSCC (marginS), from all HNSCC_survival*.Rda ####
 # _marginFree_ or _marginS_ from .Rda
-# # [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
+#x # [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
 SFree <- "_marginS_"
-#OR _marginFree_ ####
-SFree <- "_marginFree_"
+#OR _marginFree_ ###
+#SFree <- "_marginFree_"
+
 # get_Rda_pvalue <- function(geneName) {
 #   load(file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
 #   # load list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue")
@@ -2533,9 +2542,9 @@ SFree <- "_marginFree_"
 # Table1: list genes, which it's KM plot with P-value < 0.05, and ranking by P-value (ascending) and z-score
 
 aa <- LUAD_n; bb<- 1
-#aa <- ZSWIM2_2$Freq[1]  # n=9445
+#aa <- ZSWIM2_2$Freq[1]  # n=9416
 # however, $ ls HNSCC_sur*.Rda | wc -l
-# 16194
+# 16017
 
 #{ declare empty data.frame and list
 #*
@@ -2556,7 +2565,7 @@ candidate_cox <- replicate(aa, list()) # it doesn't need colnames
 # #}
 
 
-setwd(path_ZSWIM2) # set for a while (for ip loop)
+setwd(path_ZSWIM2) # set for a while (for ip loop) at ./xlsx
 for (ip in (bb:aa)) {
   geneName <- candidate_sample$gene_id[ip]
   #print(paste("At", path_ZSWIM2, "=> (", ip, ")", geneName), sep="")
@@ -2637,6 +2646,8 @@ for (ip in (bb:aa)) {
     #}
   }
 } # end of ip for loop
+# #[2019/06/26] _marginS_ finished at 19:48 (about 3 hours)
+
 
 #_marginS_ or _marginFree_ by SFree; saving on ./run04_marginS_, files => 17030
 save(candidate_sample, candidate_cox, n_percent_Bonferroni, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalueKM_candidate_cox.Rda", sep=""))) #ok; with KM_sig and Remark, and Cox HR
@@ -2645,7 +2656,7 @@ setwd(path_cohort)
 # saved file="HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda" above
 #_marginFree_ by SFree
 #save(candidate_sample, candidate_cox, n_percent_Bonferroni, file="HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda") #ok; with KM_sig and Remark
-#[2018/05/27]
+
 
 # devtools::install_github(c('jeroenooms/jsonlite', 'rstudio/shiny', 'ramnathv/htmlwidgets', 'timelyportfolio/listviewer'))
 # library(listviewer)
@@ -3457,7 +3468,7 @@ aks_genes <- getBM(attributes = c('hgnc_symbol'),
 aks_genes %in% unlist(candidates_Bonferroni_pvalue$Gene_id)
 # False (none of them within)
 
-#### [mainB process #part B] { margin free ####
+####(skip) [mainB process #part B] { margin free ####
 # genome-wide scan for margin 0 only cohort ###
 # survival_marginFree <- function() {} in TCGA_HNSCC_marginFree.R
 #source(paste(path_cohort, "TCGA_HNSCC_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_HNSCC_marginFree.R
@@ -3524,8 +3535,225 @@ print(paste("Duration: ", (end_time - start_time)))
 # #osccCleanNA <- oscc_n256
 # #}
 
-# Go back to  [Results] section ####
-#.....resume
+
+
+
+
+# [Results] _marginsFree_ ####
+#====== Analysis of output .Rda of _marginS_ on GCE i-4 or _marginFree_ on GCE i-4Free
+# [2019/06/26] they are stored at ./xlsx
+path_ZSWIM2 <- file.path(path_cohort, "xlsx")
+
+# ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
+# 3 hours for 1,000 genes to be scanned under GCP Rstudio server
+# STRAP to SLC8A1
+#which(whole_genome==geneName)
+#
+#_marginS_
+# merge ZSWIM2a ZSWIM2b and ZSWIM2c => ZSWIM2abc_archive.Rda [2018/06/19]
+# para_seg <- c(20499, 13528, 6833, 1) # ZZZ3-> PLCE1, PNMT-> GARNL3, GAR1-> A1BG
+load(file=file.path(path_cohort, "ZSWIM2c_archive.Rda")) #
+ZSWIM2 <- ZSWIM2abc #(done, merged)
+save(data=ZSWIM2, file=file.path(path_ZSWIM2, "ZSWIM2_archive.Rda")) # or ZSWIM2abc_archive 
+# OR
+# _marginFree_
+load(file="ZSWIM2_free_archive.Rda") # as well as ZSWIM2
+
+
+
+#*** Dissection of ZSWIM2 #
+#1) KM plot is not at best cutoff, why??
+#2) ZSWIM2 should be saved by appending.
+#3)
+load(file=file.path(path_ZSWIM2, "ZSWIM2_archive.Rda")) # merged abc
+ZSWIM2$X3 <- addNA(ZSWIM2$X2, ifany=F)
+ZSWIM2_2 <- table(ZSWIM2$X3) # try to tryCatch (1, 2)
+# 0     1     2     3     4     5     6     7     8     9 
+# 682    64   187    26    23    21     9    18    13    14 
+# 10    11    12    13    14    15    16    17    18    19 
+# 14    10    12    10     5     6     5     6     2     5 
+# 20    21    22    23    24    25    26    27    28    29 
+# 3     5     1     4     2     3     1     2     5     2 
+# 30    31    34    35    36    37    40    41    44    49 
+# 3     3     3     2     2     2     1     1     1     1 
+# 51    52    57    60    66  <NA> 
+#   1     2     1     1     1 19314 
+ZSWIM2_2 <- data.frame(ZSWIM2_2)
+#ZSWIM2_2$Freq[46] <- ZSWIM2_2$Freq[46] - (17406+(LUAD_n-18602)) #number of NA:11, from TRIL(18602) to "STX10"(17406)
+#print(run16h <- (sum(ZSWIM2_2$Freq)-(LUAD_n-(18602-17406))))
+# running 18602-17406=1196 genes in 16 hours
+plot((ZSWIM2_2))
+#> sum(ZSWIM2_2$Freq)
+#[1] 20499  # scan completely
+
+# reture(0): ok for analysis
+text_pie <- paste("Workable genes \n in ", ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq)*100, " %") # _marginS_ about 50.96% usable RNAseq data
+pie(ZSWIM2_2$Freq, labels=ZSWIM2_2$Var1, main=text_pie)
+# OR _marginFree_ with 52%(?) usable RNAseq data
+# deal with return(1), return(2) and return(3) errors, try to solve it
+# _marginS_
+n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.5095858
+error01_sample <- which(ZSWIM2$X3==1) #  4.6% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
+error02_sample <- which(ZSWIM2$X3==2) # 17.4% error02: There has only one group in survdiff.
+error03_sample <- which(ZSWIM2$X3==3) # 0.42% error03: There has only one group in survdiff.
+# OR _marginFree_
+n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.52
+error01_sample <- which(ZSWIM2$X3==1) #  5.0% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
+error02_sample <- which(ZSWIM2$X3==2) # 18.4% error02: There has only one group in survdiff.
+error03_sample <- which(ZSWIM2$X3==3) # 3.4% error03: There has only one group in survdiff.
+# done #
+
+
+
+
+
+
+# (Both) Retrieving the summary table to form z-score in 
+# HNSCC (marginS), from all HNSCC_survival*.Rda ####
+# _marginFree_ or _marginS_ from .Rda
+# # [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
+SFree <- "_marginS_"
+#OR _marginFree_ ####
+SFree <- "_marginFree_"
+# get_Rda_pvalue <- function(geneName) {
+#   load(file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+#   # load list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue")
+#   # a example: geneName <- "TRIP13"
+#   #OS_pvalue$p_OS[which.min(OS_pvalue$p_OS)]
+#   
+#   if (nrow(OS_pvalue) > 0)  { # we hit this gene with P-value < 0.05 in KM plot
+#     return(min(OS_pvalue$p_OS))} else {return(NA)}
+# }
+
+# candidate_sample(KM) and candidate_cox (Cox list), two parts
+# candidate_sample: Kaplan–Meier plots for genes significantly associated with survival.
+# Table1: list genes, which it's KM plot with P-value < 0.05, and ranking by P-value (ascending) and z-score
+
+aa <- LUAD_n; bb<- 1
+#aa <- ZSWIM2_2$Freq[1]  # n=9445
+# however, $ ls HNSCC_sur*.Rda | wc -l
+# 16194
+
+#{ declare empty data.frame and list
+#*
+candidate_sample <- data.frame(matrix(data = NA, nrow = aa, ncol = 3)) # for num, gene ID and it's P-value
+colnames(candidate_sample) <- c("number", "gene_id", "p_value") # OS P-value only (in HNSCC); 
+#"number" position in ZSWIM2
+#candidate_sample$number <- data.frame(which(ZSWIM2$X3==0)) # gene "number"
+candidate_sample$gene_id <- whole_genome[bb:aa] # retrieving gene name from whole_genome; return() at X2
+#
+
+#* a list for all cox survival datas
+# http://www.cookbook-r.com/Manipulating_data/Converting_between_data_frames_and_contingency_tables/
+# column name might be created by variable: e.x. df.sex[,"per"] <- df.sex$count1/sum(df.sex$count1); # df.sex$per
+candidate_cox <- replicate(aa, list()) # it doesn't need colnames
+#data.table(matrix(data = NA, nrow = aa, ncol = 3)) # for num, gene ID and it's P-value
+# colnames(candidate_cox) <- c( "Features", "HR",       "P_value_uni",  "sig",      "Features", "HR",      
+#                               "P_value_multi",  "sig",      "Features", "P_value_KM",  "sig" )
+# #}
+
+
+setwd(path_ZSWIM2) # set for a while (for ip loop)
+for (ip in (bb:aa)) {
+  geneName <- candidate_sample$gene_id[ip]
+  #print(paste("At", path_ZSWIM2, "=> (", ip, ")", geneName), sep="")
+  #candidate_sample$p_value <- lapply(unlist(candidate_sample$gene_id[bb:aa]), get_Rda_pvalue) # retrieving P-value by gene name from .Rda; return() at X3
+  #[choice ONE]: _marginFree_ or _marginS_ loading from .Rda
+  #  _marginS_
+  
+  load_filename <- file.path(paste("HNSCC_survivalAnalysis", SFree, geneName, ".Rda", sep=""))
+  #OR (automatically defined)
+  #_marginFree_
+  #load_filename <- paste("HNSCC_survivalAnalysis", SFree, geneName, ".Rda", sep="")
+  #
+  #
+  if (load_filename %in% dir()) {
+    
+    load(file=load_filename)
+    #      if (is.na(tryCatch(load(file=load_filename), error = function(e) return(NA)))) {} # load file with error free :-)
+    #  load(file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+    # load list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue")
+    # a example: geneName <- "TRIP13"
+    print(paste(SFree, "with how many OS P-values: ", nrow(OS_pvalue)))
+    if (nrow(OS_pvalue) > 0) {
+      candidate_sample$p_value[ip] <- min(OS_pvalue$p_OS)
+      candidate_sample$number[ip] <- nrow(OS_pvalue) #number of OS P-values in this gene
+    }
+    #candidate_sample$p_value[ip] <- get_Rda_pvalue(candidate_sample$gene_id[ip]) # retrieving P-value by gene name from .Rda; return() at X3
+    #  print(paste(ip, geneName, ": ", candidate_sample$p_value[ip], sep=" "))
+    
+    #***
+    # Significant features from table 2, table 3 and table 4 of output .Rda files ##
+    #{
+    # [uni_cox_pvalue and uni_HR]
+    # [multi_cox_pvalue and multi_HR]
+    # [exp_pvalue]
+    # from tableChi1 (Table 2), tableOS1 (Table 3) /[tableRFS1]
+    
+    # focusing on tableOS1, Cox proportiopnal hazard model: (both univariate and multivariate) P-value <= 0.05,
+    # and sorted by HR > 1 vs HR < 1
+    # P-value notes:
+    # Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
+    # if <0.001 => mark as "***"
+    # osHR$X4[osHR$X4<0.001] <- "***"
+    
+    # uni_cox_pvalue
+    uni_cox_pvalue <- tableOS1[c(FALSE, TRUE), c(1,2,5)] # get significant P-value, hazard ratio at column 2
+    uni_cox_pvalue$`P-value` <- as.character(uni_cox_pvalue$`P-value`)
+    uni_cox_pvalue$`P-value`[(uni_cox_pvalue$`P-value` == "***")] <- "0.001"
+    uni_cox_pvalue$`P-value` <- as.numeric(uni_cox_pvalue$`P-value`)
+    uni_cox_pvalue$sig <- uni_cox_pvalue$`P-value` <= 0.05 # "sig" marking for significant
+    
+    # multi_cox_pvalue
+    multi_cox_pvalue <- tableOS1[c(FALSE, TRUE), c(1,6,9)] # get significant P-value, hazard ratio at column 6
+    multi_cox_pvalue$`P-value` <- as.character(multi_cox_pvalue$`P-value`)
+    multi_cox_pvalue$`P-value`[(multi_cox_pvalue$`P-value` == "***")] <- "0.001"
+    multi_cox_pvalue$`P-value` <- as.numeric(multi_cox_pvalue$`P-value`)
+    multi_cox_pvalue$sig <- multi_cox_pvalue$`P-value` <= 0.05 # "sig" marking for significant
+    
+    # *** we don't have RFS in HNSCC cohort :-)
+    
+    # and tableChi1: P-value <= 0.05 # exp_pvalue
+    # "sig" marking the significant "features": check "odd" position
+    exp_pvalue <- tableChi1[c(TRUE, FALSE), c(1,7)] # get significant P-value from column 7, name from column 1; remark at column 8
+    exp_pvalue$`P-value` <- as.numeric(as.character(exp_pvalue$`P-value`))
+    exp_pvalue$sig <- exp_pvalue$`P-value` <= 0.05 # "sig" marking for significant
+    
+    # # merging them as one by common row names
+    # > colnames(exp_pvalue)
+    exp1 <- data.frame("X1"= geneName, "X2" = NA,  "X3"=NA) # append one row, with this geneName
+    colnames(exp1) <- colnames(exp_pvalue) # precisely matched
+    candidate_cox_ip <- cbind(uni_cox_pvalue, multi_cox_pvalue, rbind(exp_pvalue, exp1)) # colname is duplicated, bind 3 tables together
+    colnames(candidate_cox_ip) <- c( "uni_Features", "uni_HR",       "uni_P_value",  "uni_sig",      "multi_Features", "multi_HR",
+                                     "multi_P_value",  "multi_sig",      "KM_Features", "KM_P_value",  "KM_sig") # KM_sig is Remark at table 2(tableChi1)
+    
+    # it must be [[]] for assign the content !!! https://stat.ethz.ch/R-manual/R-devel/library/base/html/Extract.html.
+    candidate_cox[[ip]] <- candidate_cox_ip #http://cran.r-project.org/doc/manuals/R-lang.html#Indexing
+    print(paste(ip, "cox features saved; ncol = ", length(candidate_cox[[ip]]))) # a vector in [] is ok for indexing
+    # length == 11 => that is correct !
+    #}
+  }
+} # end of ip for loop
+
+
+#_marginS_ or _marginFree_ by SFree; saving on ./run04_marginS_, files => 17030
+save(candidate_sample, candidate_cox, n_percent_Bonferroni, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalueKM_candidate_cox.Rda", sep=""))) #ok; with KM_sig and Remark, and Cox HR
+# xlsx/HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda (ok)
+setwd(path_cohort) 
+#_marginS_ by SFree
+# saved file="HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda" above
+#_marginFree_ by SFree
+#save(candidate_sample, candidate_cox, n_percent_Bonferroni, file="HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda") #ok; with KM_sig and Remark
+#[2018/05/27]
+
+# devtools::install_github(c('jeroenooms/jsonlite', 'rstudio/shiny', 'ramnathv/htmlwidgets', 'timelyportfolio/listviewer'))
+# library(listviewer)
+# jsonedit( candidate_cox )
+# # finished (both) processes
+
+
+
+
 
 ## Post1 process _marginFree_ ####
 ## table1 (KM): candidate_sample(KM) ##

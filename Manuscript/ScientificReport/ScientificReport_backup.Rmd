@@ -1,7 +1,7 @@
---- 
-title: A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
-Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
-subtitle: A Optimizated Cutoff Finder for Biomarker Discovery for Head and Neck Squamous Cell Carcinoma
+---
+title: A Biomarker Cutoff Optimization in TCGA HNSCC 
+title: A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma. Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
+subtitle: Do you have a subtitle? If so, write it here
 titlerunning: Short form of title (if too long for head)
 authorrunning: Short form of author list if too long for running head
 thanks: | 
@@ -12,7 +12,7 @@ thanks: |
 authors: 
 - name: Li-Hsing Chi 1
   address: Department of YYY, University of XXX
-  email: texchi2@gmail.com
+  email: abc@def
   
 - name: Âuthóř 2
   address: Department of ZZZ, University of WWW
@@ -23,8 +23,6 @@ keywords:
 - TCGA
 - survival
 - cutoff
-- biomarker
-- reproducibility
 
 #PACS: 
 #- PAC1
@@ -34,10 +32,8 @@ MSC:
 - MSC code 1
 - MSC code 2    
 
-# Abstract {#abstract}
-  Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment. 
-	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of EGFR and VEGF in HNSCC cancer tissues. 
-	This distribution of these important biomarkers is analyzed and correlated with immunohistologically determined EGFR status.
+abstract:
+  Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment. Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of estrogen receptor (ER) and progesterone receptor (PgR) in breast cancer tissues. This distribution of these important markers is analyzed and correlated with immunohistologically determined ER status.
 
 bibliography: bibliography.bib
 output: rticles::springer_article
@@ -47,17 +43,10 @@ BBRC: Biochemical and Biophysical Research Communications https://www.journals.e
 https://bmcbioinformatics.biomedcentral.com 
 BMC Bioinformatics, impact factor 2 (https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
 https://www.biomedcentral.com/journals#Life-Sciences
-
 # Introduction {#intro}
-Biomarker discovery is in hurry for immunotherapy of HNSCC.
-TCGA survival analysis in global genome scanning manner.
-Optimzed cutoff finding (reproducible survival analysis: more than clicking, coping and pasting, which crossing 20500 whole genomes. We might get the same result in each run of R script)
-The aim of Reproducible Bioinformatics project is the creation of easy to use Bioinformatics workflows that fullfill the following roles (Sandve et al. PLoS Comp Biol. 2013): to provide Public Access to Scripts, Runs, and Results.
-Rules: creating a portable project (.Rproj in Rstudio environment), using code/script (R) to automate data manipulation steps and analyses, connecting the results to dynamic text (R Markdown, knitr and LaTex), with version control (git) al scripts, figures and documents.
-- RNAseq workflow
-- miRNAseq workflow
-- ChIPseq workflow
-https://github.com/texchi2/docker4seq
+
+Your text comes here. Separate text sections with
+
 # Material and method {#sec:1}
 <!-- # since the date [2019/05/13] after -->
 set up a data science environment on Google Cloud Platform (GCP)
@@ -262,7 +251,6 @@ a candidate table, with "number of P-value" under cutoff finding (becoming z-sco
 
 post2 process: add table2 (cox): candidate_cox
 line 2831: reproducible research
-e.x. cox proportional hazard ratio in AACSL 
 
 ## [Results] _marginsF_ {#sec:3}
 since [2019/06/26]

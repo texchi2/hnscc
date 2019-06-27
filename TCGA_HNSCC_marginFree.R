@@ -1,13 +1,17 @@
-survival_marginFree <- function(geneName) {
+# debug: geneName <- whole_genome[main_i]
+survival_marginFree <- function(geneName) { 
+#  source(paste(path_LUAD, "cutofFinder_func.R", sep="")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
+# for HNSCC: already defined on main, source(file=file.path(path_cohort, "cutofFinder_func_HNSCC.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
+  
 #  system.time( # as a timer
   #save(ZSWIM2, file=desti_ZSWIM2) # save it globally
-  #global decalration on main.R
+  #global declaration was moved onto main.R
   #
   # for debug
   # sink(stdout(), type="message")
   # options(error=traceback, showWarnCalls=T)
   
-# delare as a function to be called
+# Declare as a function to be called
 # 
 # install JRE on BASH
 # >tar zxvf jre-9_osx-x64_bin.tar.gz
@@ -37,7 +41,7 @@ survival_marginFree <- function(geneName) {
 # Java library path: $(JAVA_HOME)/lib/server
 # 
 # 
-# # DO NOT RUN this {https://www.r-bloggers.com/upgrade-r-without-losing-your-packages/
+# x# DO NOT RUN this {https://www.r-bloggers.com/upgrade-r-without-losing-your-packages/
 # tmp <- installed.packages()
 # installedpkgs <- as.vector(tmp[is.na(tmp[,"Priority"]), 1])
 # save(installedpkgs, file="installed_old.rda")
@@ -72,544 +76,44 @@ survival_marginFree <- function(geneName) {
 
 
 
-# https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
-# or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
-# FirebrowseR - Paper describing the R FirebrowseR package.
-# GenomicDataCommons - Paper describing the R GenomicDataCommons package.
-# 
-## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
-# FirebrowseR - An R package to download directly the results of the analyses performed by Firehose in R.
-#go to FireBrowse ( http://gdac.broadinstitute.org/ ):
-# install.packages("devtools")
-# library("devtools")
-# devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
-
-# library(FirebrowseR)
-#
-#manuscript and TCGA survival analysis Interpretation ##
-#https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
-#integrating gene expression (RNASeq) data Why would you want to do survival
-#analysis based on gene expression data? Well, let's say you have a number of
-#genes that you are interested in and they are differentially expressed between
-#tumor and normal samples, it would be very powerful to show that alteration in
-#gene expression correlates with worse survival or earlier tumor recurrence.
-#https://groups.google.com/forum/m/#!msg/ucsc-cancer-genomics-browser/YvKnWZSsw1Q/3IAkkEMyFa4J
-#from Mary Goldman and Jing Zhu, UCSC Cancer Browser
-#https://genome-cancer.ucsc.edu/ 
-
-
-
 
 # [2018/03/06] with Peter Lai birthday
 # 
 # [Option-Cmd + E] for running to the end
 # ***geneName<-"SLC2A9" # for debug
-# Resume:[5a.START] ZZZ3 and TMSB4X ####
+# Resume:[5.START] ZZZ3 and TMSB4X ###
 # Start the survival analysis for each individual gene
-## # set path on google drive
-#library(FirebrowseR)
-path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github"
-TCGA_cohort <- "HNSCC" # cancer type
-# path_LUAD <- "~/R/LUAD_Peter_survival" # under rstudio-server on GCP
-#path_LUAD <- "~/R/LUAD_Peter_survival/mount" # mount google drive to ubuntu@instances-4 at GCP
-#path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
-# path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
-setwd(path_cohort) # set the working directory to the google drive => GCP
+# TCGA_cohort <- "HNSCC" # cancer type
 
-
-#load(file="TMU_TA51BCDE_T70_clinical_fullFeatures13_dichotomized.Rda") # as oscc (without margin feature)
-# or
-load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda") # as oscc with "margin", negative n=348 while positive n=18 and 156:NaN)
-#
-#load(file="whole_genome.Rda") # the name list of protein coding genome: whole_genome
-# x LUAD_n <- length(whole_genome) # we do not need this anymore
-
-
-# # debug; run inside the function()
-# geneName <- whole_genome[20483] # aka. ZSWIM3
-# # debug
-#
-# geneName <- whole_genome[LUAD_n] # aka. "ZZZ3"
-# print(paste("Gene name = ", geneName, sep=""))
-
-# load and prepare HNSCC.clinico_mRNA.Fire for survival analysis
-# check file permissions: modes 4 test for read permission; 2 write; 1 excutable; 0 exist.
-#if (file.access(".", 4))
-# 
-if (is.na(tryCatch(load(file=paste("LUAD.mRNA.Exp.", geneName, ".Fire.Rda", sep="")), error = function(e) return(NA)))) {return(3)} # there is NO such file
-                   # as LUAD.mRNA.Exp.Fire
-# there is NO such file: "LUAD.mRNA.Exp.ZFP91.CNTF.Fire.Rda" %in% dir() => False
-# 
-# "sample_type"          # 59 NT(Solid Tissue Normal) 515 TP(Primary Solid Tumor) or 2 TR(Recurrent Solid Tumor)
-
-LUAD_T_mRNA.Fire <- LUAD.mRNA.Exp.Fire[LUAD.mRNA.Exp.Fire$sample_type %in% c("TP"), c("tcga_participant_barcode","z.score")] # n=517 -2 = 515
-# removing duplicated ID %in%  c("TCGA-50-5066","TCGA-50-5946") => TR recurrent sample
-
-# inner join by merge
-if (is.na(tryCatch(LUAD.clinico_mRNA.Fire <- merge(oscc, LUAD_T_mRNA.Fire, by="tcga_participant_barcode") , error = function(e) return(NA)))) {return(5)} # merge error
-                   #n=515 with sample_type "TP", excluding "NT normal tissue" or "TR"
-
-# [colnames correction] LUAD(LUAD.clinico_mRNA.Fire) => HNSCC(osccT) "TMU_TA51BCDE_T70_clinical_fullFeatures14_margin.Rda"
-# # > colnames(osccT) of HNSCC
-# [1] "Unique.ID"               "H.score_N"               "H.score_T"              
-# [4] "margin"                  "Gender"                  "age.at.diagnosis"       
-# [7] "T"                       "N"                       "M"                      
-# [10] "stage_2"                 "R.T"                     "C.T"                    
-# [13] "OS..months._from.biopsy" "RFS..months._from.op"    "recurrence" (as RFS_IND)
-
-# > colnames(LUAD.clinico_mRNA.Fire)
-# [1] "tcga_participant_barcode" "gender"                  
-# [3] "ageDx"                                     
-# [4] "pathologic_T"             "pathologic_N"            
-# [6] "pathologic_M"             "stage"     "margin"             
-# [9] "OS_IND"                   "OS_months"               
-# [11] "RFS_IND"                  "RFS_months"                
-# [13] expression "z.score" of RNAseq (tumour)
-
-# rename all of colnames as HNSCC's osccT
-colnames(LUAD.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
-                                      "T","N",
-                                      "M","stage_2","margin",
-                                      "OS_IND", "OS..months._from.biopsy",
-                                      "RFS_IND", "RFS..months._from.op", "H.score_T")
-# n=515 in LUAD
-# n=? in HNSCC
-oscc <- LUAD.clinico_mRNA.Fire # starting analysis with "oscc" HNSCC
-# oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
-
-## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
-oscc$PMM1_median <-(oscc$H.score_T >= median(oscc$H.score_T, na.rm=T)) +0 # higher 1 or lower 0
-osccM_pos <- which(colnames(oscc) == "PMM1_median") # at column 14
-
-#x oscc$geneM <- 0
-#x colnames(oscc)[colnames(oscc) == "geneM"] <- paste(geneName, "_median", sep="") # rename as oscc$geneName_median
-#x osccM_pos <- which(colnames(oscc) == paste(geneName, "_median", sep="")) # at column 19 :-)
-
-
-
-
-##
-#                   [run to here]
-#
-#
-#
-#
-#
-#
-#
-# [Data cleaning or osccClean], with margin feature ####
-# clinicopathologic table [2018/03/09]
-osccClean <- 0 # reset it
-#osccClean <- oscc[!is.na(oscc$RFS..months._from.op), ] # optional ! # (removal of NA of X_RFS) => n=372 in OS and RFS cohort ??
-osccClean <- oscc
-
-# commonFeatures <- c(4:9) # common features: gender, age, margin and TNM :-)
-commonFeatures <- which(colnames(oscc) %in% c("Gender", "age.at.diagnosis", "T", "N", "M", "margin")) #  6 essential features
-osccCleanNA <- osccClean[complete.cases(osccClean[, commonFeatures]), ] # copy all features but remove Na or NaN entities in 6 essential features for their "completeness"
-
-# *** addNA for counting all NA (e.g. there is 0, no 1, in margin-free cohort) in "M" "stage_2" or "margin"
-# the “pathological” case of two different kinds of NAs which are treated differently: exclude = if (useNA == "no") c(NA, NaN)
-# "unusual NA comes from addNA() as factor
-# [2018/03/14] finallized debug
-osccCleanNA$margin <- addNA(osccCleanNA$margin, ifany=F) # ifany=="always" add NA as a factor
-#   0    1 <NA> => 3 levels of factor in "margin"
-# 245   11    0 
-#  osccCleanNA$M <- addNA(osccCleanNA$M, ifany=F) # "always" add NA as a factor
-#  osccCleanNA$stage_2 <- addNA(osccCleanNA$stage_2, ifany=F) # "always" add NA as a factor
-
-oscc_n256 <- osccCleanNA # n=256; removal of NA cases
-#osccClean1 <- osccClean # original cohort n=515
-
-#+++ end of data cleaning ++++
-#
-# {
-# surgical margin status: keeping 0 and excluding + margin (as 1; n=11)
-osccCleanNA_freeMargin <- osccCleanNA[osccCleanNA$margin == 0, ] # margin==0
-#osccCleanNA <- osccCleanNA_freeMargin # n=245, LUAD s/p OP with margin free##
-# n=11, margin involved; 11/256 = 5.3% (how about it's survival impact on each individual genes in LUAD?)
-# 
-# option1) marginFree
-# margin free cohort (n=245): #### 
-osccCleanNA <- osccCleanNA_freeMargin
-# 
-# option2) marginS
-# margin positive and negative cohort (n=256) #### 
-#osccCleanNA <- oscc_n256
-#}
-
-
-## 5b. (repeat100) Cutoff finder [osccCleanNA] ####
-oscc <- oscc0 <- osccCleanNA # syncrhonize them
-
-# checking the completeness
-which(complete.cases(oscc$H.score_T)==F) # no NaN -> 0
-which(complete.cases(oscc$OS_IND)==F) # no Nan -> 0
-
-# *** column 9 should be OS_IND
-which(complete.cases(oscc[oscc$OS_IND==1,9])==F) #OS_IND ==1, death event (dead) => no NaN
-
-
-
-# # (skipped, if LUAD RFS is copied from OS)
-# which(complete.cases(oscc$RFS_IND)==F) # RFS_IND
-# # which(complete.cases(oscc$RFS..months._from.op)==F) #n=103; it may be imputed from OS time (oscc$OS..months._from.biopsy)
-# osccCleanNA_RFS <- oscc[which(complete.cases(oscc$RFS..months._from.op)==F), ]
-# osccCleanNA_RFS$RFS..months._from.op <- osccCleanNA_RFS[osccCleanNA_RFS$RFS_IND==1, 9] # imputed from OS..months._from.biopsy
-# 
-
-
-
-
-# start 100 round ####
-# oscc <- cbind(oscc0, osccCleanNA$H.score_T) # expression(IHC score) of PMM1
-# debug
-# 100 slicing is NOT right !
-#find_repeat <- 100 # searching 100 slices in the interval
-cohort_n <- nrow(oscc)
-# debug
-oscc0_pos <- which(colnames(oscc0) == "H.score_T") # oscc0$H.score_T as colunm 13
-
-
-exp_geneName <- t(oscc0[, oscc0_pos]) # horizontal vector of RNAseq, why t?
-#exp_geneName <- oscc0[, oscc0_pos] # vertical vector
-# $x is RNAseq be sorted, $x is its original position
-# sorting issue ##
-exp_geneName_sorted <- data.frame(sort(exp_geneName, decreasing = F, method="radix", index.return=T))
-#asc <- order(exp_geneName, method="radix")
-
-
-p_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
-cases_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
-p_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
-cases_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
-#run100 <- 0
-#cut_featuresRemark <- 0 # finder results
-
-# oscc_pos <- which(colnames(oscc) == geneName)
-# oscc[oscc_pos] <- exp_geneName
-#if (is.na(tryCatch(cutoff <- quantile(exp_geneName, c(0.30,0.70)), error = function(e) return(NA)))) {return(4)} # return to main by "XKRY"(19642)
-#xxx cutoff <- quantile(exp_geneName, c(0.30,0.70)) # by RNAseq value
-# by cases
-cutoff_n <- round(quantile(c(1:cohort_n), c(0.30,0.70))) # 30 percentile, 70 percentile
-cutoff_n[2] <- cutoff_n[2] -1 # 78~179 in cases 256
-# *debug, error and stop on "XKRY"(19642)#
-# (ok)Error in quantile.default(exp_geneName, c(0.3, 0.7)) : 
-#   missing values and NaN's not allowed if 'na.rm' is FALSE
-# (OK)Error during wrapup: names() applied to a non-vector
-#debug
-
-# if (!require(pkg)){ 
-#   install.packages(pkg) 
-# } # Install package automatically if not there
-# 
-
-
-
-# https://cran.r-project.org/web/packages/survival/survival.pdf
-#for (i in seq(cutoff[1], cutoff[2], length.out = find_repeat)){
-# P-value according to KM survival analysis (alone)
-for (run100 in seq(cutoff_n[1], cutoff_n[2])){ 
-  # sorted (by RNAseq) no.78~179 in cases 256 of LUAD
-  # use oscc0 for "positioning"; 
-  # oscc is the dataset to be analysed here.
+# 6) call cutofFinder_func_HNSCC.R, run100; source defined on main ####
+  marginTag <- "_marginFree_" # with margin 0 alone
+  #browser()
+  cutoffReturn <- cutofFinder_func(geneName, marginTag) # with return cutoff1 at # of patient
+if (length(cutoffReturn) == 8) {
   
-  # Binominal H.Score_T (RNAseq) by exp_geneName_sorted$x[i]) #RNAseq cutoff
-  # exp_geneName_sorted$x[i], cutoff100 is the cutoff value of RNAseq in rank i
-  cutoff100 <- exp_geneName_sorted$x[run100]
-  oscc[osccM_pos] <- (oscc0[oscc0_pos] >= cutoff100) +0 # oscc$PMM1_median <- (oscc0$PMM1 >= i) +0
-  #run100 <- i - as.numeric(cutoff_n[1]) +1 # *** incremental (start from 1) by i
-#print(paste(run100, cutoff100))
-    # Surv {survival} run survival analysis: OS 
-  # 1) event: For right censored data, the status indicator (event, OS_IND), normally 0=alive, 1=dead. 
-  #   Other choices are TRUE/FALSE (TRUE =death) or 1/2 (2=death). 
-  # 2) (For interval censored data, the status indicator is
-  # 0=right censored, 1=event at time, 2=left censored, 3=interval censored.)
-  # 3) Although unusual, the event indicator can be omitted, in which case all
-  # subjects are assumed to have an event.
-  # Usage: Surv(time, time2, event,
-  # type=c('right', 'left', 'interval', 'counting', 'interval2', 'mstate'),
-  # origin=0)
-  # 
-  # run survival analysis: OS
-  mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1) #1==death event
-  # Test for difference (log-rank test) with P-value
-  if (is.na(tryCatch(surv_OS <- survdiff(mysurv ~ as.vector(unlist(oscc[osccM_pos]), mode="numeric"), data=oscc), error = function(e) return(NA)))) {return(2)} # grouping by PMM1_median
-  # OS, error 2 due to ZSWIM2? (one group only) ####
-  # extract P-value from surv_OS, put in "original" position (unsorted)
-  p_OS[exp_geneName_sorted$ix[run100], 1] <- format(pchisq(surv_OS$chisq, length(surv_OS$n)-1, lower.tail = FALSE), digits=3)
-#  cases_OS[j] <- surv_OS$n[1] #cutoffs by cases, remaping sorted ####
-  #[coxph] - fits a Cox proportional hazards regression model
-  #OS.km <- survfit(mysurv ~ oscc[osccM_pos], data=oscc, conf.type = "log-log")
-  #  jpeg(file=paste("KMplot_OS_", geneName, i, ".jpg", sep = ""))
-  #  plot(OS.km, lty=1, col=c("blue","red"), sub=paste("p-value =", p_OS[j]), main=paste("OS in OSCC(n=", surv_OS$n[1]+surv_OS$n[2],")/", geneName, "cutoff=", i), ylab="Percent Survival", xlab="Days")
-  #  legend("topright", legend=c(paste("low(",surv_OS$n[1], ")"), paste("high(",surv_OS$n[2], ")")), lty=1:2, col=c("blue","red"))
-  #  dev.off()
-    
+  osccCleanNA <- cutoffReturn[[1]] # taken for freq, chiT as well as tableChi1
+  case50_n <- cutoffReturn[[2]] # of patients to cut
+  cutoff1 <- cutoffReturn[[3]] # cutoff1 at RNAseq level
+  surv_OS1 <- cutoffReturn[[4]]
+  p_OS0 <- p_OS1 <- as.numeric(cutoffReturn[[5]]) # optimized P-Value
+  OS <- cutoffReturn[[6]] # cases_OS and p_OS
+  RFS <- cutoffReturn[[7]] # cases_RFS and p_RFS
+  OS_pvalue <- cutoffReturn[[8]]
+  osccCleanNAM_pos <- which(colnames(osccCleanNA) == paste("PMM1", "_median", sep=""))
   
-  # run survival analysis: RFS
-  mysurv <- Surv(oscc$RFS..months._from.op, oscc$RFS_IND==1) #1==tumour recurrency
-  # Test for difference (log-rank test) with P-value
-  # RFS, error 2 = function(e) return(NA)) for "Survdiff.fit error on there is only one group"   # due to ZSWIM2 (one group only) ####
-  if (is.na(tryCatch(surv_RFS <- survdiff(mysurv ~ as.vector(unlist(oscc[osccM_pos]), mode="numeric"), data=oscc), error = function(e) return(NA)))) {return(2)}
-
-  p_RFS[exp_geneName_sorted$ix[run100], 1] <- format(pchisq(surv_RFS$chisq, length(surv_RFS$n)-1, lower.tail = FALSE), digits=3)
-#  cases_RFS[j] <- surv_RFS$n[1] #cutoffs
-  #RFS.km <- survfit(mysurv ~ oscc[osccM_pos], data=oscc, conf.type = "log-log")
-  #  jpeg(file=paste("KMplot_RFS_", geneName, i, ".jpg", sep = ""))
-  #  plot(RFS.km, lty=1, col=c("blue","red"), sub=paste("p-value =", p_RFS[j]), main=paste("RFS in OSCC(n=", surv_RFS$n[1]+surv_RFS$n[2],")/", geneName, "cutoff=", i), ylab="Percent Survival", xlab="Days")
-  #  legend("topright", legend=c(paste("low(",surv_RFS$n[1], ")"), paste("high(",surv_RFS$n[2], ")")), lty=1:2, col=c("blue","red"))
-  #  dev.off()
-  
-  #  ++++ Beside KM P-value, contingency P-value is also important ! ++++++
-  # Calling for contingency table to find significant clinicopathological features
-  # contingency P-value
-  # **debug(contingencyTCGA) ####
-  contiT <- contingencyTCGA(oscc, geneName) # calling this function (OSCC cohort, PMM1) 2 parameters, no more cutoff1; 
-  # There were 12 warnings (use warnings() to see them)
-  # exp_geneName_sorted$x[i] is cutoff value of RNAseq
-  if (contiT[[1]]=="skip") {return(1)} # ***ZSWIM2 skip "error prone" genes, error 1
-  #(OK)Error in if (contiT[[1]] == "skip") :NA, missing value where TRUE/FALSE needed
-
-  # "margin" at column 8 of oscc
-    #  oscc <- contiT[[1]] # updating PMM1_median
-  chiT <- contiT[[2]] # extrac it from list by using [[]]; chiT$X2 is the P-value
-  freq <- contiT[[3]] # well DONE
-  
-  # no more table 2 here
-  
-} # end of 100 cut/slice, defined by [find_repeat]
-# cases_OS[, 1] <- exp_geneName_sorted$ix[seq(cutoff_n[1],cutoff_n[2])] #remaping the index after sorting
-# cases_RFS[, 1] <-exp_geneName_sorted$ix[seq(cutoff_n[1],cutoff_n[2])]
-cases_OS[, 1] <- exp_geneName_sorted$ix # unsorted rank
-cases_RFS[, 1] <-exp_geneName_sorted$ix
-print(paste("Cutoff finding is done, for", geneName, "(", which(whole_genome==geneName), ")"))
-# no more use of interim surv_OS, surv_RFS
-
-
-
-
-
-
-
-# Generate OS and RFS "table" with cutoffs and its P-value in KM ####
-#{
-OS <- data.frame(cases_OS, as.numeric(unlist(p_OS)), c(1:cohort_n), as.numeric(unlist(exp_geneName)))
-# removal of duplicated item
-OS <- OS[!duplicated(OS),]
-colnames(OS) <- c("cases_OS","p_OS", "rank", "exp")
-OS <- OS[complete.cases(OS$p_OS), ] # removal of NA, keep n=102
-
-RFS <- data.frame(cases_RFS, as.numeric(unlist(p_RFS)), c(1:cohort_n),  as.numeric(unlist(exp_geneName)))
-# removal of duplicated item and NA
-RFS <- RFS[!duplicated(RFS),]
-colnames(RFS) <- c("cases_RFS","p_RFS", "rank", "exp")
-RFS <- RFS[complete.cases(RFS$p_RFS), ] # removal of NA
-
-#}
-
-# # rownames(cut_featuresRemark) <- tableChi1$Features # there is duplicated row names :-)
-# # summary(cut_featuresRemark) to see result
+# => find cutoff1, generate OS P-Value plot and KM plot.
+# It was masked _by_ .GlobalEnv:  cases_OS, p_OS
 # 
-# # to generate the 201 first odd numbers; c(T,F) or seq.int(1, by = 2, length.out = find_repeat + 1)
-# # Sequence Generation: seq() or seq.int()
-# # https://www.rdocumentation.org/packages/base/versions/3.4.1/topics/seq
-# 
-# #describe(cut_featuresRemark[, c(1:(find_repeat * 2 + 1))[c(T,F)]])
-# 
-
-library(graphics) # plot HOLD ####
-# #{
-# cumulative P value curves
-library(ggplot2) # http://www.cookbook-r.com/Graphs/Legends_(ggplot2)/
-
-# ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
-#   scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-#   scale_y_discrete(breaks = c(0, 0.05, 0.10, 0.50, 0.99)) + #, labels = c("0", "0.05", "0.10", "0.50", "0.99")) +
-#   coord_trans(y = "log10") +
-#   ggtitle(paste("Cumulative P value curves for OS under", geneName, "expression")) +
-#   xlab("# of patients") + ylab("P-value(log10)") +
-#   geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T)
-# #  geom_vline(xintercept=300, color = "green", size=2, show.legend = T)
-# View(OS[OS$p_OS <= 0.05,1:2])
-# #
-# #plot(cases_OS, p_OS, type="p", log="y", main=paste("Cumulative P value curves for", geneName), xlab="# of patients", ylab="P-value")
-# #axis(side=4, at=c(0.01, 0.05, 0.2, 0.5, 0.99))
-# #abline(h=0.05, lty=2, col="red")
-# #abline(v=320, col="green")
-# #lines(x=c(cases_OS[1], cases_OS[length(cases_OS)]), y=c(0.05, 0.05), col = "red")
-# 
-# plot(cases_RFS, p_RFS, type="p")
-library(graphics)
-# cumulative P value curves
-library(ggplot2)
-
-# ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
-#   scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-#   scale_y_discrete(breaks = c(0, 0.05, 0.10, 0.50, 0.99)) + #, labels = c("0", "0.05", "0.10", "0.50", "0.99")) +
-#   coord_trans(y = "log10") +
-#   ggtitle(paste("Cumulative P value curves for RFS under", geneName, "expression")) +
-#   xlab("# of patients") + ylab("P-value(log10)") +
-#   geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T)
-# geom_vline(xintercept=150, color = "green", size=2, show.legend = T)
-# View(RFS[RFS$p_RFS <= 0.05,1:2])
-# #}
-# describe(cut_featuresRemark$Remark)
-
-# [done cutoff finder] ++++++++++++++++++++++++
-#{ PAUSE here.....
-#
-#
-#
-#
-#
-#
-
-# {5c.Auto}: select a cutoff=> please choice ONE from OS (in LUAD) or RFS ####
-# auto pickup one cutoff from OS/RFS tables, which has lowest P-value, to run directly then export
-OS_pvalue <- OS[OS$p_OS <= 0.05, ] # with rank registration
-cohort_n <- nrow(oscc) # length(oscc) is columne number (variable number)
-#cohort_n <- (surv_OS$n[1]+surv_OS$n[2])
-# case50_n is the cutoff1 by cases number in unsorted.
-if (nrow(OS_pvalue) > 0) {
-  case50_n <- OS_pvalue[which.min(OS_pvalue$p_OS), 3] # there is a hit; original rank
-#  cutoff1 <- exp_geneName[case50_n] # unsorted, original rank####
-  cutoff1 <- OS_pvalue[which.min(OS_pvalue$p_OS), 4]
-  #cohort_rank <- OS_pvalue[which(OS_pvalue$cases_OS==case50_n), 3] # for KM plot legend
-  } else {
-    # sad, no hit, using default 50% cutoff in SORTED manner at n=128 around
-    # [if multiple candidate, it will pickup the first hit]
-    default50 <- 0.5
-    case50_n <- cohort_n * default50
-    cutoff1 <- quantile(exp_geneName_sorted$x, c(default50))  # ?half of missingless LUAD cases
-    } # cutoff1 submit for statistics export
+#**spared code:  cutoffReturn <- cutofFinder_func(geneName) # with return cutoff1 at # of patients
+  #p_RFS0 <- cutoffReturn[[2]]
+  # => find cutoff1, generate RFS P-Value plot and KM plot.
+ 
+} else if (length(cutoffReturn) == 1) {
+  return(cutoffReturn) # return with error code
+  }
 
 
-# (OK)Error in quantile.default(exp_geneName, c(case50_n/cohort_n)) : 
-# 'probs' outside [0,1] => cohort_n
-# or 
-##cutoff1 <- quantile(exp_geneName, c(case50_n/(surv_RFS$n[1]+surv_RFS$n[2])))  # 56 out of missingless LUAD cases
-
-# for PMM1; cutoff at case n=56 (OS) or case n=? (RFS),  at lowerest P-value
-# Kaplan-Meier survival of OS, P-value = 0.0198; of RFS, P-value = ? in LUAD
-
-
-
-# 5d.[Statistic procedure] [Option-Cmd + E] for running to the end ###
-# The features from column L to R; running to the end of R2Excel export +++++++++++
-# The correlation of gene expression and clinical features  ### contingency tables
-# if (!require(pkg)){ 
-#   install.packages(pkg) 
-# } # Install package automatically if not there
-
-
-
-# # x debug {contingencyTCGA)
-# # # call function for chiT, freq data.frame
-# contiT <- contingencyTCGA(osccCleanNA, geneName, cutoff1) # calling this function (OSCC cohort, PMM1, cutoff1)
-# osccCleanNA <- contiT[[1]] # updated
-# chiT <- contiT[[2]] # extrac it from list by using [[]]
-# freq <- contiT[[3]] # well DONE
-# View(chiT) # for p-value (=0.0389 in pathologic_T)
-# View(freq) # contingency table
-# # } # debug
-
-
-
-# Statistics for osccCleanNA by cutoff1
-## (6) KM survival curves in a specific cohort ####
-# right censored? yes
-# Kaplan-Meier curve + Log-rank test, + Cox proportional regression
-# textbook: David Kleinbaum???Survival analysis: A self-learning text
-library(survival)
-library(rms)
-
-osccCleanNA <- oscc # synchronize; be sorted (osccCleanNA) by RNAseq ##
-#osccCleanNA1 <- osccCleanNA
-osccCleanNAM_pos <- which(colnames(osccCleanNA) == paste("PMM1", "_median", sep=""))
-osccCleanNA_pos <- which(colnames(osccCleanNA) == "H.score_T")
-
-
-# Refresh binominal by a definite cutoff value by AUTO selection: cutoff1
-# [**binomial of PMM1_median] resume the correlation table 2 ####
-osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[, osccCleanNA_pos] >= cutoff1) +0 # binomial after osccCleanNA 
-# vertical vector is corrected
-
-# osccCleanNA[osccCleanNAM_pos] <- (osccCleanNA[osccCleanNA_pos] >= cutoff1) +0
-# it is also ok # horizontal vector
-#all.equal(as.numeric(osccCleanNA$H.score_T), as.numeric(exp_geneName), check.attributes = F)
-#> TRUE
-
-# 3650 days = 10 years; cut it into 3650 days (do not need to remove 6 cases)
-# over3650 <- osccCleanNA[osccCleanNA$X_RFS > 3650, 1]
-# [1] TCGA-CV-5432-01 TCGA-CV-7183-01 TCGA-CV-7435-01 TCGA-CV-A45Q-01 TCGA-CV-A45R-01
-# [6] TCGA-CV-A45T-01
-# TCGA-CV-5430-01; removal one more
-#osccCleanNA <- osccCleanNA[!osccCleanNA$sampleID %in% over3650,] # n=366
-#osccCleanNA <- osccCleanNA[!osccCleanNA$sampleID == "TCGA-CV-5430-01",] # n=356
-
-
-# KM survival curves
-#OS1
-# cancer type shouble be defined at TCGA_cohort <- "LUAD" "HNSC"
-mysurv <- Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) #1==dead
-# Test for difference (log-rank test)
-tryCatch(surv_OS1 <- survdiff(mysurv ~ as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric"), data=osccCleanNA), error = function(e) return(NA)) # PMM1 high or low
-# pchisq gives the distribution function
-p_OS1 <- format(pchisq(surv_OS1$chisq, length(surv_OS1$n)-1, lower.tail = FALSE), digits=3)
-#cases_OS1 <- surv_OS1$n[1]
-# #Value of survdiff => a list with components: help("survdiff")
-# n => the number of subjects in each group.
-# obs
-# the weighted observed number of events in each group. If there are strata, this will be a matrix with one column per stratum.
-# exp
-# the weighted expected number of events in each group. If there are strata, this will be a matrix with one column per stratum.
-# chisq
-# the chisquare statistic for a test of equality.
-# var
-# the variance matrix of the test.
-# strata
-# optionally, the number of subjects contained in each stratum.
-
-#
-
-# [survfit] - Kaplan-Meier curve
-
-# confidence intervals as log hazard or log(-log(survival))
-OS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
-# 365.25 days in a year for xscale => 3650 days for 10 years
-# 12 months per year for 5 years => 60 months
-
-plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
-#plot(OS.km, lty=1, col=c("blue","red"), sub="p= 0.816", main="OS in osccCleanNA(n=505)/gene level", ylab="Percent Survival", xlab="Days")
-#legend("topright", legend=c('Low', 'High'), lty=1:2, col=c("blue","red"))
-# summary(OS.km, times = seq(0, 3000, 100))
-
-
-
-
-#RFS1
-mysurv <- Surv(osccCleanNA$RFS..months._from.op, osccCleanNA$RFS_IND==1) #1==tumour recurrency
-# Test for difference (log-rank test)
-tryCatch(surv_RFS1 <- survdiff(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA), error = function(e) return(NA))
-p_RFS1 <- format(pchisq(surv_RFS1$chisq, length(surv_RFS1$n)-1, lower.tail = FALSE), digits=3)
-#cases_RFS1 <- surv_RFS1$n[1]
-
-RFS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, conf.type = "log-log")
-# 12 months per year for 5 years => 60 months
-
-plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_RFS1), main=paste("RFS in TCGA", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:2, col=c("blue","red"))
-#plot(RFS.km, lty=1, col=c("blue","red"), sub="p= 0.0487", main="RFS in osccCleanNA(n=372)/gene level", ylab="Percent Survival", xlab="Days")
-#legend("topright", legend=c('Low', 'High'), lty=1:2, col=c("blue","red"))
-# summary(RFS.km, times = seq(0, 3000, 100))
-# [DONE] ##  back to Cutoff finder (n=185) or set 50:50 on section [5c]
-
-
-
-
-
-## ## 7)[COXPH modelling] ####
+## 7)[COXPH modelling] ####
 library(rJava) # PASSED
 library("xlsx")
 # # solved ERROR: compilation failed for package ‘git2r’; ERROR: dependencies ‘httr’, ‘git2r’ are not available for package ‘devtools’
@@ -663,23 +167,23 @@ library(r2excel) # (package ‘r2excel’ is available for R version 3.4.1 below
 # "M","stage_2","OS..months._from.biopsy",
 # "OS_IND","RFS..months._from.op","RFS_IND","H.score_T")
 
-# rename all of colnames (features) as osccT
+# ***rename all of colnames (features) as osccT [old coding]
 colnames(osccCleanNA) <- coln_osccT # colnames (features) of osccT
 
 osHRmulti <- 0
-# 8 features in LUAD
+# 8 + OS/RFS features in HNSCC
 # #warning() X matrix deemed to be singular (margin) in coxph
 # https://stackoverflow.com/questions/20977401/coxph-x-matrix-deemed-to-be-singular
 oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) ~ +
   Gender +
   ageDx +
 #                 primary_site +
-#                 clinical_T +
-#                 clinical_N +
-#                 clinical_stage +
-  pathologic_T +
-  pathologic_N +
-  pathologic_M +
+                 clinical_T +
+                 clinical_N +
+                 clinical_M +
+#  pathologic_T +
+#  pathologic_N +
+#  pathologic_M +
   stage +
   margin +
 #  R.T +
@@ -763,7 +267,7 @@ osHR$X4[osHR$X4<0.001] <- "***"
 
 
 ## *** [Multivariate for RFS] table 4 right
-## # 8 features in LUAD
+## # 8 features in HNSCC
 rfsHRmulti <- 0
 # P-value notes:
 #Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
@@ -771,12 +275,12 @@ rfscox <- coxph(Surv(osccCleanNA$RFS..months._from.op, osccCleanNA$RFS_IND==1) ~
                   Gender +
                   ageDx +
                   #                 primary_site +
-                  #                 clinical_T +
-                  #                 clinical_N +
-                  #                 clinical_stage +
-                  pathologic_T +
-                  pathologic_N +
-                  pathologic_M +
+                                   clinical_T +
+                                   clinical_N +
+                                   clinical_M +
+                  #pathologic_T +
+                  #pathologic_N +
+                  #pathologic_M +
                   stage +
                   margin +
                   # R.T +
@@ -805,10 +309,10 @@ rfsHRmulti <- round(rfsHRmulti, 3)
 
 
 #*** [Univariate for RFS]  table 4 left panel
-# # 8 features in LUAD, put in coxph one by one
+# # 8 features in HNSCC, put in coxph one by one
 # number of features 13 -> 14 (add a feature: margin status)
 rfscox <- 0
-features_os <- colnames(osccCleanNA)[c(2:8,14)] # features selection ["Gender" to "margin", "PMM1"] 8 out of 14
+features_os <- colnames(osccCleanNA)[c(2:8,14)] # features selection ["Gender" to "margin", "PMM1"] clincical TNM, 8 out of 14
 rfsHR <- data.frame(matrix(0, nrow=length(features_os), ncol=4))
 ## *** looping the cox regression model over several features
 ## as.formula: text to code (class: forumla list)
@@ -860,15 +364,14 @@ rfsHR$X4[rfsHR$X4<0.001] <- "***"
 library("xlsx")
 library("r2excel")
 # Create an Excel workbook. Both .xls and .xlsx file formats can be used.
-#TCGA_cohort <- "LUAD" # cancer type
+#TCGA_cohort <- "HNSCC" # cancer type
 #path_LUAD <- "~/R/LUAD_Peter_survival/" # under rstudio-server on GCP
 #path_LUAD <- "/Users/apple/Google\ Drive/2018_PhD_dissertation/LUAD_Peter_survival/"
 # path_LUAD <- "/Users/apple/Documents/My\ Tableau\ Repository/Workbooks/"
-path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github"
-setwd(path_cohort) # change working directory to the google drive
+setwd(path_cohort) # change working directory to the HNSCC, GCP
 
-# filename for all margins cases, eighter _marginFree_ or _marginS_
-filenamex <- paste(TCGA_cohort, "_survivalAnalysis_marginFree_", geneName, ".xlsx", sep = "")
+# filename for all margins cases, defined as HNSCC
+filenamex <- paste("xlsx/", TCGA_cohort, "_survivalAnalysis_marginFree_", geneName, ".xlsx", sep = "")
 wb <- createWorkbook(type="xlsx")
 # Create a sheet in that workbook
 sheet <- xlsx::createSheet(wb, sheetName = paste(geneName, "_multivariate"))
@@ -885,11 +388,16 @@ xlsx.addLineBreak(sheet, 3)
 
 
 
-
-# Part I: # Table 2 construction by Calling contignecyBin ####
+# under optimized cutoff1
+# Part I: # Table 2 construction by Calling contingencyTCGA and contignecyBin ####
 # ??using tableChi2 by contigencyBin2 with c("Gender","ageDx", "pathologic_T", "pathologic_N", "pathologic_M", "stage","margin" )
 # under beset cutoff value (auto choosen)
 # Table 2: clinical correlation tables (tableChi1)
+contiT <- contingencyTCGA(osccCleanNA, geneName) # calling this function (OSCC cohort, PMM1) 2 parameters, no more cutoff1; 
+# "margin" at column 8 of oscc
+#  oscc <- contiT[[1]] # updating PMM1_median
+chiT <- contiT[[2]] # extrac it from list by using [[]]; chiT$X2 is the P-value
+freq <- contiT[[3]] # well DONE
 tableChi1 <- contingencyBin (osccCleanNA, chiT, freq) # calculating the P-value
 # ***add rownames
 nrow_featuresUni <- length(featuresUni) # aka. 8
@@ -898,10 +406,10 @@ nrow_tableChi1[c(T,F)] <- featuresUni[-nrow_featuresUni] # skip last one row (z-
 # > nrow_tableChi1
 # [1] "Gender"                 NA                      
 # [3] "Age at diagnosis"       NA                      
-# [5] "Pathologic T status"    NA                      
-# [7] "Pathologic N status"    NA                      
-# [9] "Pathologic M status"    NA                      
-# [11] "Pathologic Stage"       NA                      
+# [5] "clinical T status"    NA                      
+# [7] "clinical N status"    NA                      
+# [9] "clinical M status"    NA                      
+# [11] "clinical Stage"       NA                      
 # [13] "Surgical Margin status" NA     
 rownames(tableChi1) <- nrow_tableChi1 # duplicate 'row.names' are not allowed
 # "margin" at column 8 of osccCleanNA
@@ -1056,13 +564,24 @@ xlsx.addLineBreak(sheet, 1)
 # legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
 # # # debug
 
-xlsx.addPlot.OS<-function( wb, sheet, startRow=NULL,startCol=2,
+# below code was copied from cutofFinder_func.R
+mysurv <- Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) #1==dead
+# Test for difference (log-rank test) between groups (by PMM1_median 0 vs 1)
+tryCatch(surv_OS1 <- survdiff(mysurv ~ as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric"), data=osccCleanNA), error = function(e) return(NA)) # PMM1 high or low
+# pchisq gives the distribution function
+#p_OS1 <- format(pchisq(surv_OS1$chisq, length(surv_OS1$n)-1, lower.tail = FALSE), digits=3)
+# (p_OS1 == p_OS0) is TRUE
+#cases_OS1 <- surv_OS1$n[1]
+OS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
+
+xlsx.addPlot.OS<-function(OS.km, surv_OS1, wb, sheet, startRow=NULL, startCol=2,
                         width=480, height=480,... )
 { # OS KM plot
   #library("xlsx")
+  
   png(filename = "plot.png", width = width, height = height,...)
-  plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-  legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
+  plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+  legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:1, col=c("blue","red"))
   
   dev.off() 
   #Append plot to the sheet
@@ -1076,17 +595,20 @@ xlsx.addPlot.OS<-function( wb, sheet, startRow=NULL,startCol=2,
   res<-file.remove("plot.png")
 }
 # calling
-xlsx.addPlot.OS(wb, sheet)
+xlsx.addPlot.OS(OS.km, surv_OS1, wb, sheet)
 
 #
-xlsx.addPlot.RFS<-function( wb, sheet, startRow=NULL,startCol=2,
+# below code was copied from cutofFinder_func.R
+#RFS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
+
+xlsx.addPlot.RFS<-function(RFS.km, surv_RFS1, wb, sheet, startRow=NULL, startCol=2,
                            width=480, height=480,... )
 {  # RFS KM plot
   #library("xlsx")
   png(filename = "plot.png", width = width, height = height,...)
   # plot fuction here
-  plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("p-value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-  legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:2, col=c("blue","red"))
+  plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+  legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:1, col=c("blue","red"))
   
   dev.off() 
   #Append plot to the sheet
@@ -1099,26 +621,54 @@ xlsx.addPlot.RFS<-function( wb, sheet, startRow=NULL,startCol=2,
   xlsx.addLineBreak(sheet, round(width/20)+1)
   res<-file.remove("plot.png")
 }
-# calling
-xlsx.addPlot.RFS(wb, sheet)
-#
+# # NOT calling
+# xlsx.addPlot.RFS(RFS.km, surv_RFS1, wb, sheet)
+# #
 
 xlsx.addLineBreak(sheet, 8)
 
+
+
 # plot cumulative p-value from cutoff finder
-xlsx.addPlot.OSpval<-function( wb, sheet, startRow=NULL,startCol=2,
+xlsx.addPlot.OSpval<-function(OS, case50_n, p_OS0, wb, sheet, startRow=NULL,startCol=2,
                             width=480, height=480,... )
 {   # OS P-values dots plot
   #library("xlsx")
   png(filename = "plot.png", width = width, height = height,...)
   # plot fuction here
-  pOS <- ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
-    scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-    scale_y_discrete(breaks = c(0, 0.05, 0.10, 0.50, 0.99)) + #, labels = c("0", "0.05", "0.10", "0.50", "0.99")) +
-    coord_trans(y = "log10") +
-    ggtitle(paste("Cutoff Finder: Cumulative P value curves for OS under ", geneName, " expression \n", "(cutoff at ", surv_OS1$n[1], " )", sep = "")) +
-    xlab("# of patients") + ylab("P-value(log10)") +
-    geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T)
+  g1<- subset(OS, cases_OS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_OS0)
+  
+  if (g1$p_OS<=0.05) {
+    pOS <- ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
+      #  xlim(70, cutoff_n[2]) +
+      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+      #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
+      scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
+      #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
+      #  coord_trans(y = "log10") +
+      ggtitle(paste("Cumulative P-Value plot for OS under", geneName, "expression")) +
+      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+      geom_point(data=g1, color="red") +  # this adds a red point
+      geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
+    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+  } else { #(g1$p_OS > 0.05)
+    pOS <- ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
+      #  xlim(70, cutoff_n[2]) +
+      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+      #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
+      #scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
+      #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
+      #  coord_trans(y = "log10") +
+      ggtitle(paste("Cumulative P-value plot for OS under", geneName, "expression")) +
+      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+      geom_point(data=g1, color="yellow") +  # this adds a red point
+      geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
+    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+    
+  }
+  
   print(pOS) # export to xlsx
   dev.off() 
   #Append plot to the sheet
@@ -1132,25 +682,47 @@ xlsx.addPlot.OSpval<-function( wb, sheet, startRow=NULL,startCol=2,
   res<-file.remove("plot.png")
 }
 # calling
-xlsx.addPlot.OSpval(wb, sheet)
+xlsx.addPlot.OSpval(OS, case50_n, p_OS0, wb, sheet)
 #
 #
 #
 #
-xlsx.addPlot.RFSpval<-function( wb, sheet, startRow=NULL,startCol=2,
+xlsx.addPlot.RFSpval<-function(RFS, case50_n, p_RFS0, wb, sheet, startRow=NULL,startCol=2,
                                width=480, height=480,... )
 {   # RFS P-values dots plot
   #library("xlsx")
   png(filename = "plot.png", width = width, height = height,...)
   # plot fuction here
-  pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
-    scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-    scale_y_discrete(breaks = c(0, 0.05, 0.10, 0.50, 0.99)) + #, labels = c("0", "0.05", "0.10", "0.50", "0.99")) +
-    coord_trans(y = "log10") +
-    ggtitle(paste("Cutoff Finder: Cumulative P value curves for RFS under ", geneName, " expression \n", "(cutoff at ", surv_RFS1$n[1], " )", sep = "")) +
-    xlab("# of patients") + ylab("P-value(log10)") +
-    geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T)
-  geom_vline(xintercept=150, color = "green", size=2, show.legend = T)
+  g1<- subset(RFS, cases_RFS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_RFS0)
+  
+  if (g1$p_RFS<=0.05) {
+    pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
+      #  xlim(70, cutoff_n[2]) +
+      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+      #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
+      scale_y_log10(breaks=c(p_RFS0, 1e-05, 1e-03, 0.05), labels=c(p_RFS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
+      #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
+      #  coord_trans(y = "log10") +
+      ggtitle(paste("Cumulative P-Value plot for RFS under", geneName, "expression")) +
+      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+      geom_point(data=g1, color="red") +  # this adds a red point
+      geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
+    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+  } else { #(g1$p_OS > 0.05)
+    pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
+      #  xlim(70, cutoff_n[2]) +
+      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+
+      ggtitle(paste("Cumulative P-value plot for RFS under", geneName, "expression")) +
+      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+      geom_point(data=g1, color="yellow") +  # this adds a red point
+      geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
+    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+    
+  }
+  
   print(pRFS) # export to xlsx
   #  ggsave("plot.png", width=4, height=4, dpi=100) # save as .png
   #  dev.off() # "R, plot is done, please print it instead of on-screen device."
@@ -1165,9 +737,9 @@ xlsx.addPlot.RFSpval<-function( wb, sheet, startRow=NULL,startCol=2,
   xlsx.addLineBreak(sheet, round(width/20)+1)
   res<-file.remove("plot.png")
 }
-# calling
-xlsx.addPlot.RFSpval(wb, sheet)
-#
+# # NOT calling
+# xlsx.addPlot.RFSpval(RFS, case50_n, p_RFS0, wb, sheet)
+# #
 
 
 ##
@@ -1182,10 +754,10 @@ xlsx.addPlot.RFSpval(wb, sheet)
 
 xlsx.addLineBreak(sheet, 5) 
 # export the p-value from Cutoff Finding
-xlsx.addTable(wb, sheet, data =OS[OS$p_OS <= 0.05, ], fontSize=12, startCol=8,
+xlsx.addTable(wb, sheet, data = subset(OS, p_OS <= 0.05)[order(subset(OS, p_OS <= 0.05)$p_OS),], fontSize=12, startCol=8,
               row.names = F, col.names = T)
 #View(OS[OS$p_OS <= 0.05,1:2])
-xlsx.addTable(wb, sheet, data =RFS[RFS$p_RFS <= 0.05, ], fontSize=12, startCol=9,
+xlsx.addTable(wb, sheet, data = subset(RFS, p_RFS <= 0.05)[order(subset(RFS, p_RFS <= 0.05)$p_RFS),], fontSize=12, startCol=9,
               row.names = F, col.names = T)
 #View(RFS[RFS$p_RFS <= 0.05,1:2])
 #
@@ -1200,51 +772,25 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 
 
 ## 
-## save to append an object to an R data file.####
-# append.Rda <- function(x, file) {
-#   old.objects <- load(file, new.env())
-#   save(list = c(old.objects, deparse(substitute(x))), file = file)
-# }
-#
-# # re-do ?in OS
-# OS <- data.frame(cases_OS, as.numeric(p_OS))
-# # removal of duplicated item
-# OS <- OS[!duplicated(OS),]
-# colnames(OS)[2] <- "p_OS"
-# OS_pvalue <- OS[OS$p_OS <= 0.05,1:2]
-# # *** appending survival
-# #append.Rda(OS[OS$p_OS <= 0.05,1:2], paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
-# 
-# # re-do ? in RFS
-# RFS <- data.frame(cases_RFS, as.numeric(p_RFS))
-# # removal of duplicated item
-# RFS <- RFS[!duplicated(RFS),]
-# colnames(RFS)[2] <- "p_RFS"
-# RFS_pvalue <- RFS[RFS$p_RFS <= 0.05,1:2]
-# # *** appending survival
-# #append.Rda(RFS[RFS$p_RFS <= 0.05,1:2], paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
+## save to  individual gene to an R data file.####
 
 # Added code for table 2, table 3, table 4 and survival p-value save as .Rda
-# save(list = c("tableChi1", "tableOS1", "tableRFS1"), file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda"))
+# save(list = c("tableChi1", "tableOS1", "tableRFS1"), file=paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
 
 #tryCatch(
-  RFS_pvalue <- OS_pvalue #:-) for LUAD only
-  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_marginFree_", geneName, ".Rda", sep=""))
-  # save _marginFree_ or _marginS_
-  #, error = function(e) return(NA))
-#print(paste("Create", paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""), "successfully."))
+  RFS_pvalue <- OS_pvalue #:-) for HNSCC only
+  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("xlsx/HNSCC_survivalAnalysis_marginFree_", geneName, ".Rda", sep=""))
+#, error = function(e) return(NA))
+#print(paste("Create", paste("LUAD_survivalAnalysis_marginFree_", geneName, ".Rda", sep=""), "successfully."))
 
-
-## (9.) Adding code for google spreadsheet export (with adds-on into a single file)  ####
+ 
 ## 
-## 
-## 
-# Final Return
+# Final Return ####
   if (nrow(OS_pvalue) > 0)  { # we hit one gene with P-value < 0.05 in KM plot
     return(which.min(OS_pvalue$p_OS))} else {return(0)}
 
 #  ) #system.time end
-} # function END (survival_marginS)
+} # function END (survival_marginFree)
 ##-- -- -- -- --
 
 

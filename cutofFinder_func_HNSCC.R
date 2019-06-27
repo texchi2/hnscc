@@ -8,8 +8,8 @@
 cutofFinder_func <- function(geneName, marginTag) {
 # marginTag == "_marginS_" or == "_marginFree_"
 # geneName
+
 # to assembly osccCleanNA data.frame
-#
 #load(file="TMU_TA51BCDE_T70_clinical_fullFeatures13_dichotomized.Rda") # as oscc (without margin feature)
 # or ***
 load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, as clean6_oscc
@@ -88,12 +88,14 @@ oscc_n427 <- osccCleanNA # n=427; removal of NA cases; spare data
 
 osccCleanNA <- oscc_n427
 
-# by marginTag
-if (marginTag == "_marginS_") {} else if (marginTag == "_marginFree_") {
-  # surgical margin status: keeping 0 and excluding + margin (as 1; n=11)
+# by marginTag:   # surgical margin status
+if (marginTag == "_marginS_") {
+  
+  } else if (marginTag == "_marginFree_") {
   osccCleanNA_freeMargin <- osccCleanNA[osccCleanNA$margin == 0, ] # margin==0
-  # margin free cohort (n=245): ### 
-  osccCleanNA <- osccCleanNA_freeMargin}
+  # margin free cohort (n=245): keeping 0(-) and excluding 1(or +) margin ### 
+  osccCleanNA <- osccCleanNA_freeMargin
+  }
 #
 
 
