@@ -35,6 +35,7 @@ MSC:
 - MSC code 2    
 
 # Abstract {#abstract}
+  A gene expression–based prognostic markers for HNSCC, 442 samples were collected from 6 institutions and processed at 1 of 4 laboratories using a single, reproducible protocol, and data were organized by TCGA and were analyzed using a validation step by Tex.
   Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment. 
 	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of EGFR and VEGF in HNSCC cancer tissues. 
 	This distribution of these important biomarkers is analyzed and correlated with immunohistologically determined EGFR status.
@@ -49,8 +50,13 @@ BMC Bioinformatics, impact factor 2 (https://www.letpub.com/index.php?page=journ
 https://www.biomedcentral.com/journals#Life-Sciences
 
 # Introduction {#intro}
+Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
+Clinical validation assesses the strength of association between the assay results and the clinical outcome of interest, whether it is diagnostic, prognostic, or predictive. 
+A large number of measures are used to assess these associations. Although measures of sta- tistical signi cance are important, robust measures of the strength of association, such as receiver opera- tor characteristic (ROC) curves, the area under the curve of ROC analysis, and the sensitivity, speci c- ity, and positive predictive value of assays, are criti- cal to understanding the strength of their clinical association and help bridge analysis to clinical util- ity (discussed later). These analyses address whether one can be sure the clinical state is positive if the test is positive (positive predictive power), and vice versa (negative predictive power).
+
 Biomarker discovery is in hurry for immunotherapy of HNSCC.
-TCGA survival analysis in global genome scanning manner.
+TCGA survival analysis in global genome scanning manner. with margin free tissue coort is mandidatate. close, indeterminate, or positive margins.
+
 Optimzed cutoff finding (reproducible survival analysis: more than clicking, coping and pasting, which crossing 20500 whole genomes. We might get the same result in each run of R script)
 The aim of Reproducible Bioinformatics project is the creation of easy to use Bioinformatics workflows that fullfill the following roles (Sandve et al. PLoS Comp Biol. 2013): to provide Public Access to Scripts, Runs, and Results.
 Rules: creating a portable project (.Rproj in Rstudio environment), using code/script (R) to automate data manipulation steps and analyses, connecting the results to dynamic text (R Markdown, knitr and LaTex), with version control (git) al scripts, figures and documents.
@@ -198,7 +204,8 @@ HNSCC_survivalAnalysis_marginFree_
 #   save(list = c(old.objects, deparse(substitute(x))), file = file)
 # }
 }
-
+start to run [2019/06/28]
+HNSCC_survivalAnalysis_marginPlus_
 
 by Joy Su
 *P value <0.05 was considered statistically significant (Student’s t test for continuous variables and Pearson’s chi-square test for variables). SD represents the standard deviation. The tumor stage, tumor, lymph node, and distal metastasis status were classified according to the international system for staging HNSCC
@@ -271,9 +278,10 @@ as required. Don't forget to give each section
 and subsection a unique label (see Sect. \ref{sec:1}).
 
 # Discussion {#sec:4}
+Clinical utility of a biomarker refers to the ability of the assay to improve clinical decision-making and patient outcomes. The cluster of biomarkers we found clearly distinguishes outcomes between "positive" and "negative" groups, however there is no differential treatment available for those two groups of patient. 
 TMU-biobank@tmu.edu.tw
 ***published and TMU biobank (Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
-tumor-homing stem cells (EGF, VEGF cytokines)
+Immunotherapy: tumor-homing stem cells (EGF, VEGF cytokines)
 tumor-specific antigen (CD4 CD8)
 =Dato 評估一下
 Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.
@@ -285,7 +293,7 @@ Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atlas 
 
 =professor 陳志榮
 biological meanings (surgical margin is an artificial factor)
-=> margin (-) vs margin (+) 比較才公平
+=> margin (-) vs margin (+) 比較才公平? (run it since [2019/06/28]) # i4-marginPlus
 
 =Michael2
 Dato 共同第一作者: 成大 n=44 microarray

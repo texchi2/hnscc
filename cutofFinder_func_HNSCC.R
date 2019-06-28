@@ -6,7 +6,7 @@
 # # Start the survival analysis for each individual gene
  
 cutofFinder_func <- function(geneName, marginTag) {
-# marginTag == "_marginS_" or == "_marginFree_"
+# marginTag == "_marginS_" or == "_marginFree_" or == "_marginPlus_"
 # geneName
 
 # to assembly osccCleanNA data.frame
@@ -93,8 +93,12 @@ if (marginTag == "_marginS_") {
   
   } else if (marginTag == "_marginFree_") {
   osccCleanNA_freeMargin <- osccCleanNA[osccCleanNA$margin == 0, ] # margin==0
-  # margin free cohort (n=245): keeping 0(-) and excluding 1(or +) margin ### 
+  # margin free cohort (n=351): keeping 0(-) and excluding 1(or +) margin ### 
   osccCleanNA <- osccCleanNA_freeMargin
+  } else if (marginTag == "_marginPlus_") {
+    osccCleanNA_PlusMargin <- osccCleanNA[osccCleanNA$margin == 1, ] # margin==1 (close, indeterminate, or positive margins)
+    # margin positive cohort (n=109): keeping  1(or +) margin ### 
+    osccCleanNA <- osccCleanNA_PlusMargin
   }
 #
 
