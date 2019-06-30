@@ -99,6 +99,10 @@ https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 # library("devtools")
 # devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
 
+to use a lookup table to manage datas: source("addNewData.r")
+# library(devtools, quietly=TRUE)
+# source_gist("https://gist.github.com/dfalster/5589956")
+# addNewData("dataNew.csv", myData, allowedVars)
 
 #[Survival analysis] {#sec:2}
 install linux on GCP with ssh connection
