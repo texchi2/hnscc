@@ -22,6 +22,7 @@ authors:
 keywords:
 - HNSCC
 - TCGA
+- ICGC
 - survival
 - cutoff
 - biomarker
@@ -39,7 +40,7 @@ MSC:
   A gene expression–based prognostic markers for HNSCC, 442 samples were collected from 6 institutions and processed at 1 of 4 laboratories using a single, reproducible protocol, and data were organized by TCGA and were analyzed using a validation step by Tex.
   Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment.
 	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. 
-	This protocol describes using R Markdown and RStudio, user-friendly tools for statistical analysis and reproducible research in bioinformatics, to analyze and document analysis of an RNA-Seq data set of TCGA cohort, which were suffered from HNSCC.\cite{Loraine2015}
+	This protocol describes using R Markdown and RStudio, user-friendly tools for statistical analysis and reproducible research in bioinformatics, to analyze and document analysis of an RNA-Seq data set of TCGA cohort, which were suffered from HNSCC\cite{Loraine2015}, as well as ICGC cohort (https://dcc.icgc.org).
 	While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of EGFR and VEGF in HNSCC cancer tissues. 
 	This distribution of these important biomarkers is analyzed and correlated with immunohistologically determined EGFR status.
 
@@ -54,8 +55,9 @@ https://www.biomedcentral.com/journals#Life-Sciences
 
 # Introduction {#intro}
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
+Currently, there is no global view of the expression profiles of the human cancer genes expression obtained from next-generation sequencing (NGS) technologies such as RNA sequencing (RNA-seq). The expression data is available from a large-scale studies like The Cancer Genome Atlas (TCGA: http://cancergenome.nih.gov/).
 Clinical validation assesses the strength of association between the assay results and the clinical outcome of interest, whether it is diagnostic, prognostic, or predictive. 
-A large number of measures are used to assess these associations. Although measures of sta- tistical signi cance are important, robust measures of the strength of association, such as receiver opera- tor characteristic (ROC) curves, the area under the curve of ROC analysis, and the sensitivity, speci c- ity, and positive predictive value of assays, are criti- cal to understanding the strength of their clinical association and help bridge analysis to clinical util- ity (discussed later). These analyses address whether one can be sure the clinical state is positive if the test is positive (positive predictive power), and vice versa (negative predictive power).
+A large number of measures are used to assess these associations. Although measures of statistical signi cance are important, robust measures of the strength of association, such as receiver opera- tor characteristic (ROC) curves, the area under the curve of ROC analysis, and the sensitivity, speci c- ity, and positive predictive value of assays, are criti- cal to understanding the strength of their clinical association and help bridge analysis to clinical util- ity (discussed later). These analyses address whether one can be sure the clinical state is positive if the test is positive (positive predictive power), and vice versa (negative predictive power).
 
 Biomarker discovery is in hurry for immunotherapy of HNSCC.
 TCGA survival analysis in global genome scanning manner. with margin free tissue coort is mandidatate. close, indeterminate, or positive margins.
@@ -72,12 +74,14 @@ https://github.com/texchi2/docker4seq
 # Material and method {#sec:1}
 <!-- # since the date [2019/05/13] after -->
 set up a data science environment on Google Cloud Platform (GCP)
-it is also fine: 
+it is also fine:
+# Data Processing
+TCGA data portal
+TCGA-Assembler was used to download RNA-seq data from TCGA data portal. Raw counts data with paired samples (tumor and normal) were extracted and analyzed using DEseq R package with default parameters: method1⁄4‘blind’, sharingMode1⁄4‘fit-only’, fitType1⁄4‘local’. DEseq normalization method has been reported to outperform other normalization methods. Fold changes, not absolute expression values, are displayed based on analysis described above. False discovery rates are not defined due to the low number of replicates for samples. This approach allows the user to determine the significance of differentially expressed genes on an individual basis.\cite{Wan2015}
 # [FirebrowseR] data preparation {#sec:2}
 manuscript and TCGA survival analysis Interpretation ##
 #https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
-#integrating gene expression (RNASeq) data Why would you want to do survival
-#analysis based on gene expression data? Well, let's say you have a number of GDCRNATools;
+#integrating gene expression (RNASeq) data Why would you want to do survival analysis based on gene expression data? Well, let's say you have a number of GDCRNATools;
 
 #genes that you are interested in and they are differentially expressed between
 #tumor and normal samples, it would be very powerful to show that alteration in
@@ -241,6 +245,7 @@ The nonparametric Mann–Whitney U test was used to analyze the statistical sign
 Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
 1) Implementation under Rstudio server! run .R code
 github as a version control
+https://icgc.org/icgc/cgp/63/509/70269: TCGA, GDC...
 workflow: data access GDC portal, data cleaning, clinicopathologic features determination, extraction RNAseq for each gene, run100 for Cutoff Determination with P-value plot, ranking by fold change and significant P-value. wenn diagram => yield a table of candidate genes.
 ROC curve
 The optimal cutoff is defined as the point with the most
@@ -265,6 +270,7 @@ since [2019/06/26]
 post1 process table1 (KM): candidate_sample(KM) 
 楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
 # Bonferroni correction (adjustment) sets the significance cut-off at α/n 
+the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018}
 # {
 alpha_HNSCC <- 0.05
 Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni) 
@@ -306,10 +312,10 @@ and subsection a unique label (see Sect. \ref{sec:1}).
 
 # Discussion {#sec:4}
 Clinical utility of a biomarker refers to the ability of the assay to improve clinical decision-making and patient outcomes. The cluster of biomarkers we found clearly distinguishes outcomes between "positive" and "negative" groups, however there is no differential treatment available for those two groups of patient. 
-TMU-biobank@tmu.edu.tw
+
 ***published # Excluding the HNSCC cancer driver genes list??? ##
 #BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
-***and TMU biobank (Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
+***and TMU biobank TMU-biobank@tmu.edu.tw(Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
 Immunotherapy: tumor-homing stem cells (EGF, VEGF cytokines)
 tumor-specific antigen (CD4 CD8)
 =Dato 評估一下
@@ -327,13 +333,14 @@ biological meanings (surgical margin is an artificial factor)
 =Michael2
 Dato 共同第一作者: 成大 n=44 microarray
 Scientific Report; template from 把joy的paper拿來學
-Rationale of PMM1: metabolic genes (yes, this is publishable) => PMM1 in HNSCC re-run  cutoff finder
+Rationale of PMM1: metabolic genes (yes, this is publishable) => PMM1 in HNSCC 
+re-run  cutoff finder(done)
 Broader gene candidate (first 100)
 gene signature from betel nut
 GO, demographic
 Tracy (Glioma genes)
 IHC lung test slide
-TFs 1,500 to 3,000 Non coding 10,000
+TFs 1,500 to 3,000 Non-coding 10,000
 
 #### Paragraph headings 
 

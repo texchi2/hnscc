@@ -2875,9 +2875,10 @@ detach(HNSCC_OS_marginS_THREE_pvalue005)
 
 #{ [pickup1] (bad guy genes)#### 
 # from HNSCC_OS_marginS_THREE_pvalue005; Bonferroni_cutoff
-# Cox HR (>1 or >=2.5) 
+# Broader gene candidate (first 100): Cox HR (>1.5 or >=2.5), bad_FC fold change 
 # x (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
 # Bonferroni_cutoff = 5.31011e-06 is too restricted in this cohort
+bad_FC <- 1.5
 HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (uni_P_value <= alpha_HNSCC) & (uni_HR >=2.5), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # or
@@ -3364,22 +3365,10 @@ setwd(path_cohort)
 # the END of R2Excel ###
 #}
 
-# Pathway analysis by DAVID
-# https://david.ncifcrf.gov/conversion.jsp?VFROM=NA DAVID pathway analysis
-david_bad <- merge(candidate_bad_uni_HR2p5, candidate_bad_multi_HR2p5, by="gene_id", all=TRUE) #joint by union
-# FAM111B (Family With Sequence Similarity 111 Member B) => converting to Entrez Gene ID(374393)
-# > david_bad$gene_id
-# [1] CYTSB   DKK1    EIF5AL1 FAM111B KIF14   PLCD3   RRM2    TFAP2A 
-# [9] TFF1    UCK2    DUSP5
-# 
-david_good <- merge(candidate_good_uni_HR0p5, candidate_good_multi_HR0p5, by="gene_id", all=TRUE) #joint by union
-# > david_good$gene_id
-# [1] CRHR2     DBP       LOC284440 MYLIP     NUP210L  
-# [6] PDK2      TXNDC11   ZNF709    PXMP4     SLC11A2  
-# [11] ZNF682    
 
 
-#*** ok and tar until here (refinement ok) ####
+# >mainA finish; tar until here (refinement ok) ####
+# R4> options(prompt="R4_plus>")
 # tar
 #{
 #好用的工具
@@ -3387,9 +3376,15 @@ david_good <- merge(candidate_good_uni_HR0p5, candidate_good_multi_HR0p5, by="ge
 # # list today's files
 # https://www.howtogeek.com/248780/how-to-compress-and-extract-files-using-the-tar-command-on-linux/
 #   https://www.gnu.org/software/tar/manual/tar.html
+
+# =tar and scp from a list of files .xlsx 
+# (download
+# generated genes list .xlsx and ZSWIM2_free_archive.Rda; 
+# analysis -> .tiff, HNSCC_OS_marginS_candidates_Venn.xlsx, HNSCC_OS_marginS_THREE_pvalue005.Rda)
+# $ ls HNSCC_survivalAnalysis_marginS_*.* > marginS_list.txt
+# $ tar -czvf ~/R/marginPlus_xlsx.tar.gz -T marginPlus_list.txt   # or  list as many directories
 # $ info tar # tar -t --list  —remove-file...
-# =tar and scp from a list of files .xlsx (candidate genes list); $ 
-#   $ tar -czvf ~/marginS_xlsx.tar.gz -T ~/marginS_list.txt   # or  list as many directories
+# 
 # $ scp  tex@35.201.169.0:~/margin*_xlsx.tar.gz ./
 #   } tex@instance-4:$ ~/R/LUAD_Peter_survival$ sudo mv LUAD_survivalAnalysis_marginS*.* ./survivalAnalysis_marginS/
 #   tar -xzvf archive.tar.gz -C /tmp # to extract them to /tmp
@@ -3412,10 +3407,10 @@ setwd(cur_wd)
 # (OK done)
 #}
 
-# venn for adeno genes or lung genes
+# venn for adeno genes or lung genes; LUAD
 # Peter: lncRNA or ncRNA
 #source("https://bioconductor.org/biocLite.R")
-#biocLite("GDCRNATools")
+#biocLite("GDCRNATools") ####
 install_github("Jialab-UCR/GDCRNATools")
 
 #{from pubmed.mineR text mining
@@ -3453,7 +3448,12 @@ aks_genes <- getBM(attributes = c('hgnc_symbol'),
 # 
 aks_genes %in% unlist(candidates_Bonferroni_pvalue$Gene_id)
 # False (none of them within)
-##################################################
+# 
+# ICGC ####
+# icgc-get client
+# https://docs.icgc.org/download/icgc-get/
+# 
+##-------------------------------------------------#
 
 
 
@@ -4465,8 +4465,10 @@ xlsx::saveWorkbook(wb, filenamex)
 # the END of R2Excel ###
 #}
 
-# (skip) [mainC _marginPlus_]
+# (skip) [mainC _marginPlus_]####
 
+
+# DAVID ####
 # https://david.ncifcrf.gov/conversion.jsp?VFROM=NA DAVID pathway analysis
 david_bad <- merge(candidate_bad_uni_HR2p5, candidate_bad_multi_HR2p5, by="gene_id", all=TRUE) #joint by union
 # ? (Family With Sequence Similarity 111 Member B) => converting to Entrez Gene ID(374393)
