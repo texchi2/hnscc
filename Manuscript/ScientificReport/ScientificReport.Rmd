@@ -54,6 +54,7 @@ BMC Bioinformatics, impact factor 2 (https://www.letpub.com/index.php?page=journ
 https://www.biomedcentral.com/journals#Life-Sciences
 
 # Introduction {#intro}
+https://www.cancer.gov/types/head-and-neck/hp HNSCC
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
 Currently, there is no global view of the expression profiles of the human cancer genes expression obtained from next-generation sequencing (NGS) technologies such as RNA sequencing (RNA-seq). The expression data is available from a large-scale studies like The Cancer Genome Atlas (TCGA: http://cancergenome.nih.gov/).
 Clinical validation assesses the strength of association between the assay results and the clinical outcome of interest, whether it is diagnostic, prognostic, or predictive. 

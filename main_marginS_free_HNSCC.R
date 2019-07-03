@@ -3386,9 +3386,9 @@ setwd(path_cohort)
 # $ info tar # tar -t --list  —remove-file...
 # 
 # $ scp  tex@35.201.169.0:~/margin*_xlsx.tar.gz ./
-#   } tex@instance-4:$ ~/R/LUAD_Peter_survival$ sudo mv LUAD_survivalAnalysis_marginS*.* ./survivalAnalysis_marginS/
-#   tar -xzvf archive.tar.gz -C /tmp # to extract them to /tmp
-# tar -xzf archive.tar.gz --overwrite
+# tex@instance-4:$ ~/R/LUAD_Peter_survival$ sudo mv LUAD_survivalAnalysis_marginS*.* ./survivalAnalysis_marginS/
+# $ tar -xzvf archive.tar.gz -C /tmp # to extract them to /tmp
+# $ tar -xzf archive.tar.gz --overwrite
 
 # $ cd run04_marginS_/
 cur_wd <- getwd()
