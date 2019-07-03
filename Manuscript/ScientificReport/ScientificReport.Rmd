@@ -285,15 +285,18 @@ e.x. cox proportional hazard ratio in AACSL
 {
 ??
 }
-#pickup1 n=7 from HNSCC_OS_marginS_THREE_pvalue005; 
-# Cox HR (>1 or >=2.5) (bad guy genes) 
+#pickup1 n=11 from HNSCC_OS_marginS_THREE_pvalue005; 
+# Cox HR (>=2.5) (bad guy genes) (Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
 # & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
 c pickup2 from HNSCC_OS_marginS_THREE_pvalue005
-#* Cox HR <0.4 or <0.8 (good guy genes)
+#* Cox HR <=0.5 (good_FC) (good guy genes) (Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
 venn diagram for intersection of them:
 candidate genes: bad buy 7 and good guy 13
 #
-#
+#Export r2excel and .Rda
+The z-score summary plot: HNSCC_OS_marginS_candidates_Venn.xlsx was exported successfully. 
+The Venn diagram (bad guy) and the candidate genes on HNSCC_OS_marginS_candidates_Venn.xlsx , which was exported successfully.
+
 
 ## [Results] _marginsF_ {#sec:3}
 since [2019/06/26]
@@ -304,7 +307,9 @@ and subsection a unique label (see Sect. \ref{sec:1}).
 # Discussion {#sec:4}
 Clinical utility of a biomarker refers to the ability of the assay to improve clinical decision-making and patient outcomes. The cluster of biomarkers we found clearly distinguishes outcomes between "positive" and "negative" groups, however there is no differential treatment available for those two groups of patient. 
 TMU-biobank@tmu.edu.tw
-***published and TMU biobank (Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
+***published # Excluding the HNSCC cancer driver genes list??? ##
+#BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
+***and TMU biobank (Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
 Immunotherapy: tumor-homing stem cells (EGF, VEGF cytokines)
 tumor-specific antigen (CD4 CD8)
 =Dato 評估一下

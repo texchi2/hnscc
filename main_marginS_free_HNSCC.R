@@ -2873,37 +2873,29 @@ detach(HNSCC_OS_marginS_THREE_pvalue005)
 # To get the list of gene present in each Venn compartment we can use the gplots package
 #library(gplots) # capture the list of genes from venn
 
-#{ [pickup1] (bad guy genes) 
+#{ [pickup1] (bad guy genes)#### 
 # from HNSCC_OS_marginS_THREE_pvalue005; Bonferroni_cutoff
 # Cox HR (>1 or >=2.5) 
-# & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
-HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >=1), 
+# x (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
+# Bonferroni_cutoff = 5.31011e-06 is too restricted in this cohort
+HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (uni_P_value <= alpha_HNSCC) & (uni_HR >=2.5), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # or
 #HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >=2.5), 
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=7
-# {
-#   $`uni_Cox HR >=2.5`
-#   [1] "TFF1"    "UCK2"    "RRM2"    "EIF5AL1" "DKK1"   
-#   [6] "FAM111B" "ECT2"    "KIF20A"  "KIF23"   "DSCC1" 
-# # > HNSCC_OS_marginS_uni_CoxHR2p5$gene_id #manuscript: with Bonferroni_cutoff, n=10; however, genes list is not the same :-)
-# [1] "PLCD3"   "CYTSB"   "TFF1"    "TFAP2A"  "UCK2"    "RRM2"   
-# [7] "KIF14"   "EIF5AL1" "DKK1"    "FAM111B"
-# }
-
+# n=13
 
 # multi_HR >=1 or 2.5 # & (uni_P_value <= 0.05) & (multi_P_value <= 0.05) 
-HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (p_value <= Bonferroni_cutoff) & (multi_HR >=1), 
+HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (uni_P_value <= alpha_HNSCC) & (multi_HR >=2.5), 
                                          select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=7
+# n=12; uni and multi could not be identical gene list :-)
 
 
 # venn1 diagram of HR>=1 of Uni & Multi ###
 #for list of genes by grouping; library(gplots)
 venn_HR2p5 <- list(HNSCC_OS_marginS_uni_CoxHR2p5$gene_id, HNSCC_OS_marginS_multi_CoxHR2p5$gene_id)
 # cutoff by Bonferroni_cutoff
-names_HR2p5 <- c("uni_Cox HR >=1", "multi_Cox HR >=1")
+names_HR2p5 <- c("uni_Cox HR >=2.5", "multi_Cox HR >=2.5")
 library(gplots)
 tmp <- venn(venn_HR2p5, names=names_HR2p5, show.plot=F) #library(gplots); the group count matrix alone
 isect_HR2p5 <- attr(tmp, "intersections")
@@ -2916,20 +2908,12 @@ venn(venn_HR2p5, snames=names_HR2p5,
 #      predefined colors if "style"
 #http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
 # meta-language 1 0 or -
-title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(Bonferroni_cutoff, 3)), sep = "", collapse = "\n")
+title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(alpha_HNSCC, 3)), sep = "", collapse = "\n")
 #coords <- unlist(getCentroid(getZones(venn_HR2p5, snames="uni_CoxHR>=2p5, multi_CoxHR>=2p5")))
 # coords[1], coords[2], 
 text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
-# n=7
-#{
-# # $`uni_Cox HR >=2.5:multi_Cox HR >=2.5`
-# [1] "PLCD3"    "CYTSB"    "TFAP2A"   "KIF14"    "C9orf140"
-# [6] "RG9MTD2" 
-# $`uni_Cox HR >=2.5:multi_Cox HR >=2.5`; 
-# n=4 #manuscript: with Bonferroni_cutoff
-# [1] "PLCD3"  "CYTSB"  "TFAP2A" "KIF14" 
-# 
-#}
+# n=11
+
 
 #https://stackoverflow.com/questions/43324180/adding-legend-to-venn-diagram
 #legend("top", legend=c("B:multi_Cox HR >=2.5", "A:uni_Cox HR >=2.5"), lty=1:2, col=c("blue","red"), cex=0.7) # box and font size
@@ -2938,39 +2922,40 @@ text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 
 
 #===
-#{ [pickup2]  (good guy genes)
+#{ [pickup2]  (good guy genes) ####
 # from HNSCC_OS_marginS_THREE_pvalue005
-#* Cox HR <0.4 or <0.8
+#* Cox HR <0.4 or <0.5 # good_FC <- 0.5
 
 #...
 #HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_P_value <= 0.05) & (multi_P_value <= 0.05) & (uni_HR <0.0), 
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=0 while (uni_P_value <= 0.05) & (multi_P_value <= 0.05) & (uni_HR <0.0)
 # 
-HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_P_value <= 0.05) & (uni_HR <0.8), 
+good_FC <- 0.5
+HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR <good_FC), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 print(nrow(HNSCC_OS_marginS_uni_CoxHR0p5))
-# n=13 while (uni_P_value <= 0.05) & (uni_HR <0.8)
-# 
-# {
-#  # $`uni_Cox HR <0.4`
-# [1] "DBP"     "TXNDC11" "ZNF709"  "PDK2"    "PLEKHB1"
-# # > HNSCC_OS_marginS_uni_CoxHR0p5$gene_id #manuscript Bonferroni_cutoff => n=10
-# [1] "DBP"       "CRHR2"     "MYLIP"     "ZNF682"    "TXNDC11"  
-# [6] "SLC11A2"   "ZNF709"    "NUP210L"   "PDK2"      "LOC284440"
-# }
+# n=56 while (uni_P_value <= 0.05) & (uni_HR <0.3)
+# x R4> HNSCC_OS_marginS_uni_CoxHR0p5$gene_id
+# [1] "ZNF557"   "IL19"     "EVPLL"    "ZNF266"   "MYO1H"    "ZNF846"   "MASP1"    "DOT1L"   
+# [9] "UTY"      "FAM162B"  "KLRA1"    "FLT3"     "TP53INP1"
+# # 
 
 # ...
-HNSCC_OS_marginS_multi_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (multi_P_value <= 0.05) & (multi_HR <0.8), 
+HNSCC_OS_marginS_multi_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR <good_FC), 
                                          select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=13
 
+# n=51 while (uni_P_value <= 0.05) & (uni_HR <0.3)
+# x R4> HNSCC_OS_marginS_multi_CoxHR0p5$gene_id
+# [1] "ZNF557"   "IL19"     "EVPLL"    "ZNF266"   "MYO1H"    "ZNF846"   "MASP1"    "DOT1L"   
+# [9] "UTY"      "FAM162B"  "KLRA1"    "FLT3"     "TP53INP1"
+# # 
 
 
 # venn2 diagram of HR < 0.8 of Uni & Multi ###
 #for list of genes by grouping; library(gplots)
 venn_HR0p5 <- list(HNSCC_OS_marginS_uni_CoxHR0p5$gene_id, HNSCC_OS_marginS_multi_CoxHR0p5$gene_id)
-names_HR0p5 <- c("uni_Cox HR < 0.8", "multi_Cox HR < 0.8")
+names_HR0p5 <- c(paste("uni_Cox HR <", good_FC), paste("multi_Cox HR <", good_FC))
 library(gplots)
 tmp <- venn(venn_HR0p5, names=names_HR0p5, show.plot=F) #library(gplots); the group count matrix alone
 isect_HR0p5 <- attr(tmp, "intersections")
@@ -2982,18 +2967,11 @@ venn(venn_HR0p5, snames=names_HR0p5,
      ilabels = T, counts = T, ellipse = FALSE,  zcolor = "forestgreen, darkolivegreen1", opacity = 0.6, size = 15, cexil = 0.6, cexsn = 0.85, borders = TRUE)
 #      predefined colors if "style"
 # meta-language 1 0 or -, https://cran.r-project.org/web/packages/gplots/vignettes/venn.pdf
-title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(Bonferroni_cutoff, 3)), sep = "", collapse = "\n")
+title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(alpha_HNSCC, 3)), sep = "", collapse = "\n")
 text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 
-#{ intersection of them (HR <0.4), n=8
-# $`uni_Cox HR <0.4:multi_Cox HR <0.4`
-# [1] "CRHR2"        "MYLIP"        "ZNF682"       "SLC11A2"
-# [5] "NUP210L"      "LOC284440"    "LOC100130093" "ZKSCAN4"
-# 
-#   # $`uni_Cox HR < 0.4:multi_Cox HR < 0.4` #manuscript Bonferroni_cutoff => n=6
-# [1] "CRHR2"     "MYLIP"     "ZNF682"    "SLC11A2"   "NUP210L"  
-# [6] "LOC284440"
-# }
+# signif(Bonferroni_cutoff, 3)
+
 
 #x #library(VennDiagram)
 # VENN.LIST <- list(HNSCC_OS_marginS_uni_CoxHR0p5$gene_id, HNSCC_OS_marginS_multi_CoxHR0p5$gene_id)
@@ -3011,7 +2989,7 @@ text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 
 
 
-# Excluding the HNSCC cancer driver genes list??? ##
+# Excluding the HNSCC cancer driver genes list??? ####
 #BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
 
 
@@ -3121,7 +3099,7 @@ xlsx.addPlot.candidates<-function( wb, sheet, startRow=NULL,startCol=2,
 
 # calling
 currentRow <- xlsx.addPlot.candidates(wb, sheet) # startRow + a plot
-print(paste("The z-score summary plot: ", filenamex, " was exported successfully."))
+print(paste("The z-score summary plot:", filenamex,"was exported successfully."))
 
 
 
@@ -3169,18 +3147,25 @@ print(paste("The Venn diagram (bad guy) and the candidate genes on", filenamex, 
 
 # *generate (bad) prognostic features of those genes on lists in TCGA HNSCC cohort ####
 # store KM_sig remrark as a Byte; converted as base10 in list_KM_sigBin
-load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda")) # as candidate_cox (a list), since 2018/05/16; with KM_sig, Remark
+load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda")) # as candidate_cox (a list), since 2019/07/03; with KM_sig, Remark
 # candidate_sample, candidate_cox, n_percent_Bonferroni
 load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_THREE_pvalue005.Rda") )# as as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff
 
 #.. bad guy gene candidate
 # => see "remark=1"; "which" or NOT "which", the order is wrong.
-# isect_HR2p5 is a list
-#geneid_bad_uni_HR2p5 <- c(isect_HR2p5$`A:B`, isect_HR2p5$`A`) # from venn_HR2p5: A + A:B = group uni_
+# isect_HR2p5 is a list, which comes from line 2909
+#x geneid_bad_uni_HR2p5 <- c(isect_HR2p5$`A:B`, isect_HR2p5$`A`) # from venn_HR2p5: A + A:B = group uni_
+# R4> isect_HR2p5
+# $`uni_Cox HR >=1:multi_Cox HR >=1`
+# [1] "CAMK2N1" "USP10"   "PGK1"    "SURF4"   "EFNB2"   "EIF2AK1" "STC2"   
+# 
+# R4> isect_HR2p5
+# $`uni_Cox HR >=1:multi_Cox HR >=1`
+# [1] "CAMK2N1" "USP10"   "PGK1"    "SURF4"   "EFNB2"   "EIF2AK1" "STC2"   
 geneid_bad_uni_HR2p5 <- c(isect_HR2p5[[3]], isect_HR2p5[[1]])
 # whole_genome[which(whole_genome %in% geneid_bad_uni_HR2p5)]
-# [1] "DKK1"    "DSCC1"   "ECT2"    "EIF5AL1" "FAM111B" "KIF20A"  "KIF23"  
-# [8] "RRM2"    "TFF1"    "UCK2" 
+#  [1] "CD1A"    "CENPN"   "COX7A2L" "ERCC6"   "HIGD1B"  "HMGN5"   "NEK6"    "NUF2"   
+# [9] "PA2G4P4" "PCTP"    "PLOD2"   "RRAS2"   "SFXN1" 
 candidate_bad_uni_HR2p5 <- cbind(data.frame(gene_id=geneid_bad_uni_HR2p5), HNSCC_OS_marginS_THREE_pvalue005[which(HNSCC_OS_marginS_THREE_pvalue005$gene_id %in% geneid_bad_uni_HR2p5), 3:7])
 #as.binary(candidate_cox[which(whole_genome %in% geneid_bad_uni_HR2p5)]$KM_sig, n=7, logic=T) # store KM_sig remrark as a Byte
 # can NOT use "whole_genome" any more
@@ -3376,11 +3361,10 @@ xlsx::saveWorkbook(wb, filenamex)
 setwd(path_cohort)
 #xlsx.openFile(filenamex) # open file to review
 
-
-#*** ok and tar until here (refinement ok) ####
 # the END of R2Excel ###
 #}
 
+# Pathway analysis by DAVID
 # https://david.ncifcrf.gov/conversion.jsp?VFROM=NA DAVID pathway analysis
 david_bad <- merge(candidate_bad_uni_HR2p5, candidate_bad_multi_HR2p5, by="gene_id", all=TRUE) #joint by union
 # FAM111B (Family With Sequence Similarity 111 Member B) => converting to Entrez Gene ID(374393)
@@ -3394,6 +3378,8 @@ david_good <- merge(candidate_good_uni_HR0p5, candidate_good_multi_HR0p5, by="ge
 # [6] PDK2      TXNDC11   ZNF709    PXMP4     SLC11A2  
 # [11] ZNF682    
 
+
+#*** ok and tar until here (refinement ok) ####
 # tar
 #{
 #好用的工具
@@ -3467,6 +3453,10 @@ aks_genes <- getBM(attributes = c('hgnc_symbol'),
 # 
 aks_genes %in% unlist(candidates_Bonferroni_pvalue$Gene_id)
 # False (none of them within)
+##################################################
+
+
+
 
 ####(skip) [mainB process #part B] { margin free ####
 # genome-wide scan for margin 0 only cohort ###
