@@ -2,7 +2,8 @@
 title: A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
 Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
 subtitle: A Optimizated Cutoff Finder for Biomarker Discovery for Head and Neck Squamous Cell Carcinoma
-titlerunning: Short form of title (if too long for head)
+titlerunning: 
+Analysis of RNA-Seq expression data using RStudio, and Bioconductor\cite{Loraine2015}.
 authorrunning: Short form of author list if too long for running head
 thanks: | 
     Grants or other notes about the article that should go on the front 
@@ -36,8 +37,10 @@ MSC:
 
 # Abstract {#abstract}
   A gene expression–based prognostic markers for HNSCC, 442 samples were collected from 6 institutions and processed at 1 of 4 laboratories using a single, reproducible protocol, and data were organized by TCGA and were analyzed using a validation step by Tex.
-  Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment. 
-	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of EGFR and VEGF in HNSCC cancer tissues. 
+  Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment.
+	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. 
+	This protocol describes using R Markdown and RStudio, user-friendly tools for statistical analysis and reproducible research in bioinformatics, to analyze and document analysis of an RNA-Seq data set of TCGA cohort, which were suffered from HNSCC.\cite{Loraine2015}
+	While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of EGFR and VEGF in HNSCC cancer tissues. 
 	This distribution of these important biomarkers is analyzed and correlated with immunohistologically determined EGFR status.
 
 bibliography: bibliography.bib
@@ -56,6 +59,8 @@ A large number of measures are used to assess these associations. Although measu
 
 Biomarker discovery is in hurry for immunotherapy of HNSCC.
 TCGA survival analysis in global genome scanning manner. with margin free tissue coort is mandidatate. close, indeterminate, or positive margins.
+
+*** significant! https://www.ebsco.com/e/zh-tw/blog/whats-so-significant-about-statistical-significance1?utm_medium=email&utm_source=med_cp_tw&utm_campaign=med_insights-health-2019-jun_20190629&mkt_tok=eyJpIjoiWmpRek9ETmxZekkwTnpSbSIsInQiOiJtc3VnRGVsOE85MGxtbk5PN256cXJXT2p2aXdITHgrOWhhbXFmMGxNdzFOOEtzdG45eUt1UVViZVRMcWVlNlhFQTVjUThDZnF0a2laS3FRUFwvY1BnMkdwZlh2NFhCdEFZQXRzTXFGWVhHRUZwNCtDMzJsY29LNHlTRWhXRllCWFoifQ%3D%3D
 
 Optimzed cutoff finding (reproducible survival analysis: more than clicking, coping and pasting, which crossing 20500 whole genomes. We might get the same result in each run of R script)
 The aim of Reproducible Bioinformatics project is the creation of easy to use Bioinformatics workflows that fullfill the following roles (Sandve et al. PLoS Comp Biol. 2013): to provide Public Access to Scripts, Runs, and Results.
@@ -262,18 +267,33 @@ post1 process table1 (KM): candidate_sample(KM)
 # Bonferroni correction (adjustment) sets the significance cut-off at α/n 
 # {
 alpha_HNSCC <- 0.05
-Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni) # as 5.302486e-06
-# => 4.786521e-06 (run04)
-# if no Bonferroni: 
-#Bonferroni_cutoff <- alpha_HNSCC / 1
+Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni) 
+# as 5.31011e-06 (2019 run01)
 # } Bonferroni end
-a candidate table, with "number of P-value" under cutoff finding (becoming z-score: bigger, much more significant cutoff "sites")
+turn the "number" frequency to z-scores ("Z" because the normal distribution is also known as the "Z distribution").
+a candidate table (HNSCC_OS_marginS_pvalue1e_6_zscore0_6), with "number of P-value" under cutoff finding (becoming z-score: bigger, much more significant cutoff "sites")
 # => a kind of local minimal or global minimal of curve fitting (Levenberg-Marquardt Optimization)?
+# subsetting the candidated genes table, according P-value (Bonferroni_cutoff) and Z-score
+# ***after Bonferroni correction => n=26 in _marginS_
+# ***after Bonferroni correction => n=? in _marginFree_
 
+post2 process: add table2 (new variable: KM + Cox): candidate_cox
+Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 (n=1408, KM P-value only (NOT by Bonferroni_cutoff))
 
-post2 process: add table2 (cox): candidate_cox
-line 2831: reproducible research
+line 2832: reproducible research
 e.x. cox proportional hazard ratio in AACSL 
+{
+??
+}
+#pickup1 n=7 from HNSCC_OS_marginS_THREE_pvalue005; 
+# Cox HR (>1 or >=2.5) (bad guy genes) 
+# & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
+c pickup2 from HNSCC_OS_marginS_THREE_pvalue005
+#* Cox HR <0.4 or <0.8 (good guy genes)
+venn diagram for intersection of them:
+candidate genes: bad buy 7 and good guy 13
+#
+#
 
 ## [Results] _marginsF_ {#sec:3}
 since [2019/06/26]
