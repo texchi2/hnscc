@@ -1,4 +1,9 @@
---- 
+---
+# Preparing your manuscript
+# of BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript (BioMedCentral_article temple of Tex)
+# TypesetIO: https://www.typeset.io/edit/51a7cf1a-1a39-4a40-94c1-6f47608286ff BMC Cancer
+#*** sharlatex and overleaf, sync with Github (vim): https://www.overleaf.com/project/5d1f4419460443357489e46f
+# 
 title: A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
 Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
 subtitle: A Optimizated Cutoff Finder for Biomarker Discovery for Head and Neck Squamous Cell Carcinoma
@@ -47,10 +52,16 @@ MSC:
 bibliography: bibliography.bib
 output: rticles::springer_article
 ---
-target journal: https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
-BBRC: Biochemical and Biophysical Research Communications https://www.journals.elsevier.com/biochemical-and-biophysical-research-communications
+target journal:
+BMC Cancer
+https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
+BBRC: Biochemical and Biophysical Research Communications 
+impact factor 2.559
+https://www.journals.elsevier.com/biochemical-and-biophysical-research-communications
 https://bmcbioinformatics.biomedcentral.com 
-BMC Bioinformatics, impact factor 2 (https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
+BMC Bioinformatics, impact factor 2
+https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript
+(https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
 https://www.biomedcentral.com/journals#Life-Sciences
 
 # Introduction {#intro}
@@ -77,6 +88,18 @@ https://github.com/texchi2/docker4seq
 set up a data science environment on Google Cloud Platform (GCP)
 it is also fine:
 # Data Processing
+Work flow
+{
+Data management
+Save the raw data.
+Ensure that raw data are backed up in more than one location.
+Create the data you wish to see in the world.
+Create analysis-friendly data.
+Record all the steps used to process data.
+Anticipate the need to use multiple tables, and use a unique identifier for every record.
+Submit data to a reputable DOI-issuing repository so that others can access and cite it.
+
+}
 TCGA data portal
 TCGA-Assembler was used to download RNA-seq data from TCGA data portal. Raw counts data with paired samples (tumor and normal) were extracted and analyzed using DEseq R package with default parameters: method1⁄4‘blind’, sharingMode1⁄4‘fit-only’, fitType1⁄4‘local’. DEseq normalization method has been reported to outperform other normalization methods. Fold changes, not absolute expression values, are displayed based on analysis described above. False discovery rates are not defined due to the low number of replicates for samples. This approach allows the user to determine the significance of differentially expressed genes on an individual basis.\cite{Wan2015}
 # [FirebrowseR] data preparation {#sec:2}
@@ -133,6 +156,7 @@ TCGA_HNSCC_marginFree.R
 TCGA_HNSCC_marginS.R  
 cutofFinder_func_HNSCC.R  
 main_marginS_free_HNSCC.R
+analysis_export.R
 https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0
 Features selection:
 pathologic_T => clinical_T of coln_osccT
@@ -162,6 +186,8 @@ to find lowest P-value according to KM survival analysis at optimized cutoff
 run survival analysis: OS by mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1)
  [survfit] - Kaplan-Meier curve, KM P-value, or KM plot of OS
 contingency table to find significant clinicopathological features
+Statistics:
+ The agreement between judgments of the enhancement patterns was assessed by the 2 radiologists and was evaluated using the kappa consistency test. Kappa values ≥0.81, 0.61–0.80, and ≤0.60 were considered to reflect excellent, good, and poor agreement, respectively. Additionally, log-rank analyses of Kaplan–Meier survival curves were performed to compare the PFS and OS of the cohort. Factors that were significant (P < .05) in univariate analysis were entered into multivariate survival analysis based on the Cox proportional hazard ratio (HR) model.
       # contingency P-value
 # Kaplan-Meier curve + Log-rank test, + Cox proportional regression
     # textbook: David Kleinbaum???Survival analysis: A self-learning text

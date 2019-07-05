@@ -1,11 +1,11 @@
 # [Results]  ####
-#====== Analysis of output .Rda of _marginS_ on GCE i-4 or _marginFree_ on GCE i-4Free
+#= Analysis of output .Rda of _marginS_ on GCE i-4 or _marginFree_ on GCE i-4Free
 # or i-4Plus
-marginTag <- "_marginS_"
-marginTag <- "_marginFree_"
-marginTag <- "_marginPlus_"
+marginTag <- "_marginS_" #at ./marginS
+marginTag <- "_marginFree_" #at ./marginFree
+marginTag <- "_marginPlus_" #at ./marginPlus
 # [2019/07/03] they are stored at ./xlsx
-path_ZSWIM2 <- file.path(path_cohort, "xlsx")
+path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag)) # e.x. marginS
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
 # 3 hours for 1,000 genes to be scanned under GCP Rstudio server
@@ -70,7 +70,7 @@ error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group 
 # HNSCC (marginS), from all HNSCC_survival*.Rda ####
 # _marginFree_ or _marginS_ from .Rda
 #x # [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
-SFree <- "_marginS_"
+SFree <- marginTag  #"_marginS_"
 #OR _marginFree_ ###
 #SFree <- "_marginFree_"
 
@@ -201,7 +201,7 @@ save(candidate_sample, candidate_cox, n_percent_Bonferroni, file=file.path(path_
 setwd(path_cohort) 
 #_marginS_ by SFree
 # saved file="HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda" above
-#_marginFree_ by SFree
+#_marginFree_, _marginPlus_by SFree
 #save(candidate_sample, candidate_cox, n_percent_Bonferroni, file="HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda") #ok; with KM_sig and Remark
 
 
@@ -290,9 +290,9 @@ detach(HNSCC_OS_marginS_pvalue005_sorted) # n=17
 # > colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
 # [1] "gene_id"   "p_value"   "z_score"   "number_01"
 # 
-# _marginS_ (ok)
-save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, Bonferroni_cutoff, file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue1e_6_zscore0_6.Rda")) # cutoff by Bonferroni_cutoff
-save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue005_sorted.Rda"))
+# _marginS_ (ok) as marginTag
+save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue1e_6_zscore0_6.Rda", sep=""))) # cutoff by Bonferroni_cutoff
+save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue005_sorted.Rda", sep="")))
 # x # # *** OR _marginFree_ (x not here)
 # HNSCC_OS_marginFree_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6
 # save(HNSCC_OS_marginFree_pvalue1e_6_zscore0_6, file="HNSCC_OS_marginFree_pvalue1e_6_zscore0_6.Rda")
@@ -303,7 +303,6 @@ save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, "HNSCC_OS_ma
 
 
 
-## _marginS_
 ## Post2 process and add table2 (cox): candidate_cox ####
 # "sig" marking for significant P-value (<=0.05)
 # [uni_cox_pvalue, uni_HR, uni_sig]
@@ -312,8 +311,8 @@ save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, "HNSCC_OS_ma
 # to generate HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR.Rda; n=??
 
 #HNSCC_OS_marginS_pvalue005_sorted # n=6601
-load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue005_sorted.Rda")) # as HNSCC_OS_marginS_pvalue005_sorted
-load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda")) # as candidate_cox (a list, Bonferroni_cutoff), since 2018/05/16
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue005_sorted.Rda", sep=""))) # as HNSCC_OS_marginS_pvalue005_sorted
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalueKM_candidate_cox.Rda", sep=""))) # as candidate_cox (a list, Bonferroni_cutoff), since 2018/05/16
 # candidate_sample, candidate_cox, n_percent_Bonferroni
 
 # new variable: KM + Cox, n=6601
@@ -349,7 +348,7 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
 
 ##
 # save table1 + table2 (ok) [2019/07/01]
-save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR.Rda"))
+save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
 
 #save(list(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, ???))
 # x[i], or might be x[i:j]
@@ -373,11 +372,11 @@ save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM
 HNSCC_OS_marginS_THREE_pvalue005 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
                                            select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=1408, KM P-value only (NOT by Bonferroni_cutoff)
-save(HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff, file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_THREE_pvalue005.Rda")) 
+save(HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "THREE_pvalue005.Rda", sep=""))) 
 # as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff <- 5.31011e-06
 
 #*** RR>reproducible research resume: ####
-load(file=file.path(path_ZSWIM2,"HNSCC_OS_marginS_THREE_pvalue005.Rda"))
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "THREE_pvalue005.Rda", sep="")))
 # <<<
 
 # plot uni_HR, n=1408
@@ -420,21 +419,25 @@ detach(HNSCC_OS_marginS_THREE_pvalue005)
 # To get the list of gene present in each Venn compartment we can use the gplots package
 #library(gplots) # capture the list of genes from venn
 
+
+
+
+
 #{ [pickup1] (bad guy genes)#### 
 # from HNSCC_OS_marginS_THREE_pvalue005; Bonferroni_cutoff
 # Broader gene candidate (first 100): Cox HR (>1.5 or >=2.5), bad_FC fold change 
 # x (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
 # Bonferroni_cutoff = 5.31011e-06 is too restricted in this cohort
-bad_FC <- 1.5
-HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (uni_P_value <= alpha_HNSCC) & (uni_HR >=2.5), 
+bad_FC <- 1
+HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (uni_P_value <= Bonferroni_cutoff) & (uni_HR >= bad_FC), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # or
-#HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >=2.5), 
+#HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= 2.5), 
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=13
 
 # multi_HR >=1 or 2.5 # & (uni_P_value <= 0.05) & (multi_P_value <= 0.05) 
-HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (uni_P_value <= alpha_HNSCC) & (multi_HR >=2.5), 
+HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (uni_P_value <= Bonferroni_cutoff) & (multi_HR >= bad_FC), 
                                           select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=12; uni and multi could not be identical gene list :-)
 
@@ -479,7 +482,7 @@ text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=0 while (uni_P_value <= 0.05) & (multi_P_value <= 0.05) & (uni_HR <0.0)
 # 
-good_FC <- 0.5
+good_FC <- 0.9
 HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR <good_FC), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 print(nrow(HNSCC_OS_marginS_uni_CoxHR0p5))
