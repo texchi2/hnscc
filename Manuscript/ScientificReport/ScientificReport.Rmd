@@ -63,13 +63,16 @@ BMC Bioinformatics, impact factor 2
 https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript
 (https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
 https://www.biomedcentral.com/journals#Life-Sciences
-
+(TCGA publication guideline: https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)
 # Introduction {#intro}
 https://www.cancer.gov/types/head-and-neck/hp HNSCC
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
 Currently, there is no global view of the expression profiles of the human cancer genes expression obtained from next-generation sequencing (NGS) technologies such as RNA sequencing (RNA-seq). The expression data is available from a large-scale studies like The Cancer Genome Atlas (TCGA: http://cancergenome.nih.gov/).
 Clinical validation assesses the strength of association between the assay results and the clinical outcome of interest, whether it is diagnostic, prognostic, or predictive. 
-A large number of measures are used to assess these associations. Although measures of statistical signi cance are important, robust measures of the strength of association, such as receiver opera- tor characteristic (ROC) curves, the area under the curve of ROC analysis, and the sensitivity, speci c- ity, and positive predictive value of assays, are criti- cal to understanding the strength of their clinical association and help bridge analysis to clinical util- ity (discussed later). These analyses address whether one can be sure the clinical state is positive if the test is positive (positive predictive power), and vice versa (negative predictive power).
+A large number of measures are used to assess these associations. Although measures of statistical signi cance are important, robust measures of the strength of association, such as receiver operator characteristic (ROC) curves, the area under the curve of ROC analysis, and the sensitivity, speci c- ity, and positive predictive value of assays, are criti- cal to understanding the strength of their clinical association and help bridge analysis to clinical util- ity (discussed later). These analyses address whether one can be sure the clinical state is positive if the test is positive (positive predictive power), and vice versa (negative predictive power).
+https://www.ncbi.nlm.nih.gov/pubmed/29190934 (ROC)
+(ROC) All codes and instructions can be found at https://osf.io/ef7na/#
+=> 
 
 Biomarker discovery is in hurry for immunotherapy of HNSCC.
 TCGA survival analysis in global genome scanning manner. with margin free tissue coort is mandidatate. close, indeterminate, or positive margins.
@@ -90,7 +93,7 @@ it is also fine:
 # Data Processing
 Work flow
 {
-Data management
+Data management: dummy coding for category data (gender, age...)
 Save the raw data.
 Ensure that raw data are backed up in more than one location.
 Create the data you wish to see in the world.
@@ -104,6 +107,7 @@ TCGA data portal
 TCGA-Assembler was used to download RNA-seq data from TCGA data portal. Raw counts data with paired samples (tumor and normal) were extracted and analyzed using DEseq R package with default parameters: method1⁄4‘blind’, sharingMode1⁄4‘fit-only’, fitType1⁄4‘local’. DEseq normalization method has been reported to outperform other normalization methods. Fold changes, not absolute expression values, are displayed based on analysis described above. False discovery rates are not defined due to the low number of replicates for samples. This approach allows the user to determine the significance of differentially expressed genes on an individual basis.\cite{Wan2015}
 # [FirebrowseR] data preparation {#sec:2}
 manuscript and TCGA survival analysis Interpretation ##
+head and neck squamous cell carcinoma (HNSC)
 #https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
 #integrating gene expression (RNASeq) data Why would you want to do survival analysis based on gene expression data? Well, let's say you have a number of GDCRNATools;
 
@@ -131,13 +135,34 @@ https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 # install.packages("devtools")
 # library("devtools")
 # devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
-
+Data analysis
+RNA sequencing (RNA-seq) data from head and neck squamous cell carcinoma (HNSCC) in The Cancer Genome Atlas (TCGA) datasets were obtained from the UCSC Cancer Genomics Browser (https://genome-cancer.ucsc.edu). Quantitative variables were analyzed using Student’s t-test. Survival was analyzed using the log-rank test for two group comparisons. Values of P<0.05 (two-sided) were considered statistically significant. Statistical analyses were carried out using EZR version 1.32 (Saitama Medical Center, Jichi Medical University, Saitama, Japan)51.
 to use a lookup table to manage datas: source("addNewData.r")
+https://www.hindawi.com/journals/bmri/2019/5450617/
+In the present study, the integrated RNA expression profiles of HNSCC patients along with their clinical outcomes were obtained from the TCGA database to construct a lncRNA–miRNA–mRNA ceRNA network for HNSCC. 
+In 2011, Salmena et al. proposed a competing endogenous RNA (ceRNA) hypothesis that depicts a complicated posttranscriptional regulatory network, in which lncRNAs act as ‘sponges’, soaking up miRNAs by binding to miRNA response elements, thereby unsuppressing the target genes of the respective miRNAs.
+
 # library(devtools, quietly=TRUE)
 # source_gist("https://gist.github.com/dfalster/5589956")
 # addNewData("dataNew.csv", myData, allowedVars)
 
 #[Survival analysis] {#sec:2}
+Statistical analysis
+All statistical analysis were performed with R (https://www.r-project.org/, v3.0.1) and R packages. Normalization of Affymetrix microarray data were implemented with R package “limma”26. The survival analysis, cox univariate regression, cox multivariate regression and cox probability hazard model were carried out on R package “survival”30. Random forest variable hunting was performed with package “randomForestSRC”. The ROC curve was plotted with R package “pROC”31, and the nomogram were plotted with R package “rms”32.
+
+A 1-year, 3-year, 5-year, and 10-year time-dependent receiver operating characteristic (ROC) curve analysis were performed using "survival-ROC" package in R software to assess the predictive value of the risk score for time-dependent outcomes [13, 14]. The ROC curve was used to evaluate the sensitivity and specificity of HNSCC-specific signatures for predicting overall survival of HNSCC patients.
+
+Descriptive statistics were used to summarize patient and treatment characteristics. NLR was calculated as NLR=ANC/ALC and dNLR was calculated as dNLR=ANC/(WBC−ALC). Progression-free survival (PFS) was determined from the first cycle of treatment to disease progression documented by imaging, or death (event), or last follow-up (censored). Overall survival (OS) was calculated from the first cycle of treatment to death (event) or last follow-up (censored). Multivariate Cox proportional hazard models were used to investigate associations of NLR with survival, adjusted for baseline characteristics. Results were presented as hazard ratios (HR) with 95% confidence intervals (CIs).
+All statistical analyses were performed using SPSS v21.0 (Beijing Stats Data CO. Ltd, Beijing China) and R 2.15.1 (http://www.r-project.org/). A two-sided P<0.05 was considered statistically significant.
+Student’s t-test and the χ2 test were used for the comparison to baseline clinical characteristics and dietary information between the derivation data and validation data. In this study, noninvasive risk factors were defined as factors that could be measured without taking a blood sample. The variables included in the model were divided into classic risk factors and dietary predictors. Classic risk factors included age, gender, BMI, waist circumference, regular exercise, labor intensity, alcohol consumption, cigarette smoking, education, hypertension and a family history of diabetes. Dietary predictors included the 14 food groups in the FFQ and total calorie intake. Their adjusted odds ratio (OR) and 95% confidence intervals (95% CI) were estimated using a multivariate backward logistic regression analysis. The diabetes risk score was developed for the two multivariate logistic regression models: a classic noninvasive risk score and a diet-containing risk score, and points were assigned to each variable based on the magnitude of its regression coefficient [22]. In the diabetes risk score system, we transformed the unit of diet consumption from gram per day to liang per day, to facilitate its use in China. The dietary predictors except diary in the risk model were continuous in order to use the full information for dietary predictors. The risk score allows decimal value if the weight is not in round number. For the dairy products, because 24.4% and 29.4% of the total subjects in the derivation data and validation data were never consume milk and its products, we transformed the dairy and its products variable into binary variable in the risk model. A total diabetes risk score for each individual was calculated as the sum of the points for each variable.
+
+The classic noninvasive risk model and the diet-containing risk model were compared with Akaike’s information criterion (AIC), area under curve (AUC), IDI, NRI and the Hosmer-Lemeshow goodness-of-fit test (HL test) for model performance, discrimination and predictive ability, and general calibration in derivation data and validation data separately. An AIC difference between two models of 10 or greater was considered to be significant with a lower AIC value indicating a better model performance [23]. AUC, IDI and NRI were calculated to evaluate the model discrimination and predictive ability [24]. To apply NRI in the logistic regression model, we adopted the approach proposed by Pencina et al [25]. The Hosmer-Lemeshow goodness-of-fit test (HL test) was used to examine how well the predicted prevalence matched the observed prevalence of type 2 diabetes, and P-values of 0.01 or greater from the test were considered to indicate a good calibration.
+# https://stats.idre.ucla.edu/r/dae/logit-regression/ Logit Regression
+The best cutoff was derived using Cutoff Finder software [15] based on an R routine which optimized the significance of the split between Kaplan-Meier survival curves measured by the log-rank test. Statistical analyses were performed with Rstudio server on GCE.
+he medians of the independent data groups were compared by using nonparametric Mann-Whitney (2 groups) and Kruskal-Wallis test (>2 groups). Correlation between stromal and intra-tumoral Treg numbers was assess by Spearman’s rho test. The optimal cutoff points of the population were calculated by using the Cutoff finder web application [22]. Recurrence-free survival (RFS) and overall survival (OS) analyses were performed using Kaplan-Meier curves. Univariate and multivariate Cox regression models were applied to calculate hazard ratio, 95% confidence interval and significance, and to assess the independent contributions of each factor to the RFS and OS. P-values < 0.05 were considered statistically significant. All statistical analyses were performed by using the IBM SPSS Statistics 23 (IBM, Ehningen, Germany).
+The patients in the training data set were divided into two groups (high- and low-risk) according to the cutoff value for risk using Cutoff Finder. Survival times were compared between the two groups using the Kaplan-Meier analysis and log-rank test.
+
+.
 install linux on GCP with ssh connection
 install R base and Rstudio server
 install R packages on CRAN repository and Github
@@ -274,7 +299,7 @@ Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
 github as a version control
 https://icgc.org/icgc/cgp/63/509/70269: TCGA, GDC...
 workflow: data access GDC portal, data cleaning, clinicopathologic features determination, extraction RNAseq for each gene, run100 for Cutoff Determination with P-value plot, ranking by fold change and significant P-value. wenn diagram => yield a table of candidate genes.
-ROC curve
+ROC curve: install.packages("pROC")
 The optimal cutoff is defined as the point with the most
 significant (log-rank test) split. Hazard ratios (HRs) including
 95% confidence intervals are calculated.
@@ -291,7 +316,8 @@ IHC to convince and validate those genes
 not related with known HNSCC genes
 
 
-*** the receiver operating characteristics (ROC) curves of single risk factor for diagnosing bone metastases in patients with HNSCC cancer. 
+*** the receiver operating characteristics (ROC) curves of single risk factor for diagnosing bone metastases in patients with HNSCC cancer.
+
 ## [Results] _marginsS_ {#sec:2}
 since [2019/06/26]
 post1 process table1 (KM): candidate_sample(KM) 
@@ -338,7 +364,16 @@ as required. Don't forget to give each section
 and subsection a unique label (see Sect. \ref{sec:1}).
 
 # Discussion {#sec:4}
+AUC: https://dasanlin888.pixnet.net/blog/post/465238196-預測模型使用auc的限制~~晨晰統計林星帆顧問
+biomarker: A加上baseline risk score之後，預測有增值效果（incremental value）; discrimination 回答以上四個問題時，常常以Receiver Operating Characteristic（ROC）的曲線下面積（Area under the curve, AUC）作為主要的統計方法。例如A與B的AUC分別是88%跟85%，此時可以使用DeLong test檢定兩個曲線下面積的差異是否達統計顯著，倘若A的面積顯著大於B（P < 0.05），那麼作者則宣稱A的預測表現優於B。
+
+然而讀者需要先瞭解到何謂AUC（又稱為C-index or C-statistics）
+https://dasanlin888.pixnet.net/blog/post/465996605-預測模型的新指標－idi與nri（第1篇，共2篇）~
+https://dasanlin888.pixnet.net/blog/post/466650818-如何評估預測模型的表現（第2篇，共3篇）-~
+https://www.rdocumentation.org/packages/PredictABEL/versions/1.2-2/topics/reclassification
+
 Clinical utility of a biomarker refers to the ability of the assay to improve clinical decision-making and patient outcomes. The cluster of biomarkers we found clearly distinguishes outcomes between "positive" and "negative" groups, however there is no differential treatment available for those two groups of patient. 
+PROGgene http://genomics.jefferson.edu/proggene/; cancer prognostic database
 
 ***published # Excluding the HNSCC cancer driver genes list??? ##
 #BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
@@ -346,9 +381,28 @@ Clinical utility of a biomarker refers to the ability of the assay to improve cl
 Immunotherapy: tumor-homing stem cells (EGF, VEGF cytokines)
 tumor-specific antigen (CD4 CD8)
 =Dato 評估一下
-Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.
-你的方法跟..之間有和差異嗎? prognoscan, cutoff finder (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
+Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.(The role of long non-coding RNA (lncRNA) expression in human head and neck squamous cell carcinoma (HNSCC) is still poorly understood. In this study, UCSD researchers aimed at establishing the onco-lncRNAome profiling of HNSCC and to identify lncRNAs correlating with prognosis and patient survival.)
+eukaryotic long non-coding RNAs (lncRNAs)
+https://github.com/Jialab-UCR/GDCRNATools
+#TANRIC database: https://www.tanric.org; https://ibl.mdanderson.org/tanric/_design/basic/download.html; The Atlas of Noncoding RNAs in Cancer: It characterizes the expression profiles of lncRNAs in large patient cohorts of 20 cancer types including TCGA, CCLE and other independent datasets. (Reference: http://cancerres.aacrjournals.org/content/75/18/3728)
+http://biophy.dzu.edu.cn/EVLncRNAs
+http://www.bio-bigdata.com/lnc2cancer/(2.0, lncRNAs regulated by microRNA (miRNA), Transcription factor (TF), variant and methylation): HOTAIR, lnc-JPH1-7 in HNSCC. (experimentally validated)
+www.oncolnc.org, OncoLnc lets you see survival correlations for 21 cancers at a time for mRNAs, miRNAs, and lncRNAs.
+TCGA-SARC: sarcoma:(The project has controlled access data which requires dbGaP Access.) https://portal.gdc.cancer.gov/projects/TCGA-SARC
+[Using TCGA HNSCC RNA-sequencing data from 426 HNSCC and 42 adjacent normal tissues, the researchers found 728 lncRNA transcripts significantly and differentially expressed in HNSCC. Among the 728 lncRNAs, 55 lncRNAs were significantly associated with poor prognosis, such as overall survival and/or disease-free survival.]https://www.lncrnablog.com/unraveling-the-oral-cancer-lncrnaome/
+Long non-coding RNAs (lncRNAs) have important biological functions and can be used as prognostic biomarkers in cancer. To identify a lncRNA prognostic signature for head and neck squamous cell carcinoma (HNSCC).
+GDCRNAtools to conduct advanced
+analyses of RNA-seq and miRNA-seq data in GDC data portal for identification of
+lncRNA-miRNA-mRNA competing triplets in cancer.
+Researchers at the Shanghai Jiao Tong University School of Medicine analysed RNA-seq data derived from the TANRIC database to identify a lncRNA prognostic signature model using the orthogonal partial least squares discrimination analysis (OPLS-DA) and 1.5-fold expression change criterion methods. The prognosis prediction model based on the lncRNA signatures and clinical parameters were evaluated using the 5-fold cross validation method.
+A total of 84 out of 3199 lncRNAs were significantly associated with the survival of patients with HNSCC. Using the OPLS-DA and 1.5-fold change selection criterion, 5 lncRNAs (KTN1-AS1, LINC00460, GUSBP11, LINC00923 and RP5-894A10.6) were further selected. The prediction power of each combination of the 5 lncRNAs was evaluated through the receiver operating characteristic (ROC) curve and a three-lncRNA panel (KTN1-AS1, LINC00460 and RP5-894A10.6) achieved the highest prognostic prediction power in the cohort. The patients were categorized into high- and low-risk groups based on their three-lncRNA profiles. Patients with high-risk scores had worse overall survival than those with low risk scores in the cohort. Multivariable Cox regression analyses showed that the lncRNA signature and tumour grade were independent prognostic factors for patients with HNSCC.
+
+你的方法跟..之間有和差異嗎? prognoscan, 1.cutoff finder (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
 http://molpath.charite.de/cutoff/index.jsp
+utility by
+https://www.nature.com/articles/s41598-017-09333-8, DAVID
+2.Findcut\cite{Chang2017a}
+
 Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atlas 有 TCGA最適跟中切
 跟FireBrowse: http://firebrowse.org/# => TCGA 有預後跟臨床關係的相關性 其中有顯著意義的probe
 你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA
@@ -377,8 +431,9 @@ Use paragraph headings as needed.
 a^2+b^2=c^2
 \end{align}
 
-
-
-
+# Acknowledgements
+The results shown here are in whole or part based upon data generated by the TCGA Research Network: https://www.cancer.gov/tcga.
+The authors gratefully acknowledge contributions from the TCGA Research Network and its TCGA Pan-Cancer Analysis Working Group.
+https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga/using-tcga/citing-tcga
 
 # References

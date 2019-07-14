@@ -1182,7 +1182,7 @@ options(repos="http://cran.csie.ntu.edu.tw/") # or http://cran.ism.ac.jp/; yzu i
 biocLite("GenomicDataCommons") # tibble, https://github.com/Bioconductor/GenomicDataCommons
 
 # >[categorizing the survival data from clinical features] ####
-# from osccT to oscc
+#  "dummy coding" from osccT to oscc
 # i= from 20499(ZZZ3) to 1(A1BG)
 oscc <- data.frame()
 oscc <- subset(osccT, select=c("tcga_participant_barcode", "gender")) # gender: male as 1, female as 2
@@ -1952,7 +1952,14 @@ colUni_0 <- c("Female",
 # create correlation table 1 with P-value by chisq.test
 library(reshape)
 library(data.table)
-#library(ca) # for Simple correspondence analysis
+# RR relative risk: comparing 2 success propotions
+#A common approach to comparing proportions is to subtract one from the other and look at the difference. Of course if our data is a sample, the calculated difference in proportions is just an estimate. If we were take another sample and calculate the difference in proportions we would get a different estimate. So we need to calculate a standard error for the difference in proportions to give us some indication of its variability. Then we can use that standard error to form a confidence interval.
+# prop.table(), epitools::riskratio() # for relative risk of 2 proportions
+# Odds are another way of expressing the likelihood of “success”
+# epitools::oddsratio
+# the estimated odds of MI were 83% higher for the placebo group.
+# https://data.library.virginia.edu/comparing-proportions-with-relative-risk-and-odds-ratios/
+# library(ca) # for Simple correspondence analysis
 contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100"; do not need cutoff1 here
   
   #!!!!!# L <- 2 ("Gender"); R <- 8 ("margin") # in HNSCC
@@ -2038,6 +2045,8 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # 2   1   1   1   1 
     #print(ii) # debug
     
+# xtabs(~ PMM1 + variable[ii], data = mydata)    
+# to two-way contingency table of categorical outcome and predictors
     # >table(t)
     # 50 57 62 76 
     # 1  1  1  1 
@@ -3409,9 +3418,18 @@ setwd(cur_wd)
 
 # venn for adeno genes or lung genes; LUAD
 # Peter: lncRNA or ncRNA
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("GDCRNATools") ####
+# R version 3.6.1 (Action of the Toes)[2019-07-05]
+source("https://bioconductor.org/biocLite.R")
+biocLite("BiocManager") ####
+# or
+library("devtools")
 install_github("Jialab-UCR/GDCRNATools")
+#or
+#if (!requireNamespace("BiocManager", quietly=TRUE))
+#  install.packages("BiocManager")
+library("BiocManager")
+BiocManager::install("GDCRNATools")
+library(GDCRNATools)
 
 #{from pubmed.mineR text mining
 venn_lung_adeno <- list(lung_genes$V1[!duplicated(lung_genes)], adeno_genes$V1[!duplicated(adeno_genes)])

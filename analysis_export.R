@@ -369,8 +369,10 @@ save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM
 # [4] "z_score"       "number_01"     "uni_HR"       
 # [7] "uni_P_value"   "uni_sig"       "multi_HR"     
 # [10] "multi_P_value" "multi_sig"
-HNSCC_OS_marginS_THREE_pvalue005 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
+HNSCC_OS_marginS_THREE_pvalue005 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, 
                                            select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
+#HNSCC_OS_marginS_THREE_pvalue005 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
+#                                           select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=1408, KM P-value only (NOT by Bonferroni_cutoff)
 save(HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "THREE_pvalue005.Rda", sep=""))) 
 # as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff <- 5.31011e-06
@@ -428,18 +430,18 @@ detach(HNSCC_OS_marginS_THREE_pvalue005)
 # Broader gene candidate (first 100): Cox HR (>1.5 or >=2.5), bad_FC fold change 
 # x (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
 # Bonferroni_cutoff = 5.31011e-06 is too restricted in this cohort
-bad_FC <- 1
-HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (uni_P_value <= Bonferroni_cutoff) & (uni_HR >= bad_FC), 
+bad_FC <- 1.2
+HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= bad_FC), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # or
 #HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= 2.5), 
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=13
+# n=9
 
 # multi_HR >=1 or 2.5 # & (uni_P_value <= 0.05) & (multi_P_value <= 0.05) 
-HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (uni_P_value <= Bonferroni_cutoff) & (multi_HR >= bad_FC), 
+HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (p_value <= Bonferroni_cutoff) & (multi_HR >= bad_FC), 
                                           select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=12; uni and multi could not be identical gene list :-)
+# n=9; uni and multi could not be identical gene list :-)
 
 
 # venn1 diagram of HR>=1 of Uni & Multi ###
