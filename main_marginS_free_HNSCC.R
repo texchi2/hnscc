@@ -2007,8 +2007,11 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     # useNA = "ifany"; "always" is for "margin" (with n=0 count)
     chiT[ii, 1] <- colnames(osccCleanNA_conTCGA[ii]) # name list of feature variables from L to R
     
-    # unbalanced data issue: chisq.test or fisher.test
-    
+    # unbalanced data issue: chisq.test -> fisher.test
+    # small sample size (any cell < 5 or 10): fisher.test; https://en.wikipedia.org/wiki/Fisher%27s_exact_test
+    # how about Yate's correction of chisq.test?
+    # set "correct=TRUE" to turn on Yate's continuity correction of chisq.test
+# https://onlinelibrary.wiley.com/doi/full/10.1002/sim.8294#
     #h0test <- chisq.test(t)
     if (any((chisq.test(t)$expected<5)==TRUE)) { # if warming: Chi-squared approximation may be incorrect.
       h0test <- fisher.test(t) # using Fisher's exact test instead

@@ -1,10 +1,26 @@
 # [Results]  ####
 #= Analysis of output .Rda of _marginS_ on GCE i-4 or _marginFree_ on GCE i-4Free
 # or i-4Plus
-marginTag <- "_marginS_" #at ./marginS
-marginTag <- "_marginFree_" #at ./marginFree
-marginTag <- "_marginPlus_" #at ./marginPlus
-# [2019/07/03] they are stored at ./xlsx
+# >*** [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
+#marginTag <- "_marginS_" #at ./marginS
+#marginTag <- "_marginFree_" #at ./marginFree
+#marginTag <- "_marginPlus_" #at ./marginPlus
+raw <- 
+  readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
+select_margin <- function(x) {
+  switch(x,
+         s = "_marginS_",
+         f = "_marginFree_",
+         p = "_marginPlus_",
+         S = "_marginS_",
+         #         F = "_marginFree_",
+         P = "_marginPlus_",
+         stop("Unknown input")
+  )
+}
+marginTag <- select_margin(raw)
+rm(raw)
+# [2019/07/03] they are stored at ./xlsx => rename as ./marginS
 path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag)) # e.x. marginS
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
@@ -24,7 +40,7 @@ path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag)) # e.x. marginS
 
 
 
-#*** Dissection of ZSWIM2 #
+#(at the first time) Dissection of ZSWIM2 #
 #1) KM plot is not at best cutoff, why??
 #2) ZSWIM2 should be saved by appending.
 #3)
@@ -66,13 +82,9 @@ error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group 
 
 
 
-# (Both) Retrieving the summary table to form z-score in 
+# >Retrieving the summary table to form z-score in 
 # HNSCC (marginS), from all HNSCC_survival*.Rda ####
-# _marginFree_ or _marginS_ from .Rda
-#x # [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
-SFree <- marginTag  #"_marginS_"
-#OR _marginFree_ ###
-#SFree <- "_marginFree_"
+# _marginFree_ or _marginS_ or _marginPlus_ from .Rda
 
 # get_Rda_pvalue <- function(geneName) {
 #   load(file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
@@ -96,7 +108,7 @@ aa <- LUAD_n; bb<- 1
 #{ declare empty data.frame and list
 #*
 candidate_sample <- data.frame(matrix(data = NA, nrow = aa, ncol = 3)) # for num, gene ID and it's P-value
-colnames(candidate_sample) <- c("number", "gene_id", "p_value") # OS P-value only (in HNSCC); 
+colnames(candidate_sample) <- c("number", "gene_id", "p_value") # KM OS P-value only (in HNSCC); 
 #"number" position in ZSWIM2
 #candidate_sample$number <- data.frame(which(ZSWIM2$X3==0)) # gene "number"
 candidate_sample$gene_id <- whole_genome[bb:aa] # retrieving gene name from whole_genome; return() at X2
@@ -105,7 +117,7 @@ candidate_sample$gene_id <- whole_genome[bb:aa] # retrieving gene name from whol
 #* a list for all cox survival datas
 # http://www.cookbook-r.com/Manipulating_data/Converting_between_data_frames_and_contingency_tables/
 # column name might be created by variable: e.x. df.sex[,"per"] <- df.sex$count1/sum(df.sex$count1); # df.sex$per
-candidate_cox <- replicate(aa, list()) # it doesn't need colnames
+candidate_cox <- replicate(aa, list()) # empty list(), which doesn't need colnames
 #data.table(matrix(data = NA, nrow = aa, ncol = 3)) # for num, gene ID and it's P-value
 # colnames(candidate_cox) <- c( "Features", "HR",       "P_value_uni",  "sig",      "Features", "HR",      
 #                               "P_value_multi",  "sig",      "Features", "P_value_KM",  "sig" )
@@ -120,7 +132,7 @@ for (ip in (bb:aa)) {
   #[choice ONE]: _marginFree_ or _marginS_ loading from .Rda
   #  _marginS_
   
-  load_filename <- file.path(paste("HNSCC_survivalAnalysis", SFree, geneName, ".Rda", sep=""))
+  load_filename <- file.path(paste("HNSCC_survivalAnalysis", marginTag, geneName, ".Rda", sep=""))
   #OR (automatically defined)
   #_marginFree_
   #load_filename <- paste("HNSCC_survivalAnalysis", SFree, geneName, ".Rda", sep="")
@@ -133,7 +145,7 @@ for (ip in (bb:aa)) {
     #  load(file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
     # load list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue")
     # a example: geneName <- "TRIP13"
-    print(paste(SFree, "with how many OS P-values: ", nrow(OS_pvalue)))
+    print(paste(marginTag, "with how many OS P-values: ", nrow(OS_pvalue)))
     if (nrow(OS_pvalue) > 0) {
       candidate_sample$p_value[ip] <- min(OS_pvalue$p_OS)
       candidate_sample$number[ip] <- nrow(OS_pvalue) #number of OS P-values in this gene
@@ -197,11 +209,11 @@ for (ip in (bb:aa)) {
 
 
 #_marginS_ or _marginFree_ by SFree; saving on ./run04_marginS_, files => 17030
-save(candidate_sample, candidate_cox, n_percent_Bonferroni, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalueKM_candidate_cox.Rda", sep=""))) #ok; with KM_sig and Remark, and Cox HR
+save(candidate_sample, candidate_cox, n_percent_Bonferroni, file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) #ok; with KM_sig and Remark, and Cox HR
 setwd(path_cohort) 
-#_marginS_ by SFree
+#_marginS_ by marginTag
 # saved file="HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda" above
-#_marginFree_, _marginPlus_by SFree
+#_marginFree_, _marginPlus_by marginTag
 #save(candidate_sample, candidate_cox, n_percent_Bonferroni, file="HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda") #ok; with KM_sig and Remark
 
 
@@ -219,13 +231,33 @@ setwd(path_cohort)
 # 楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
 # https://www.stat.berkeley.edu/~mgoldman/Section0402.pdf
 # newdata <- mtcars[order(mpg, -cyl),]
-load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda")) # as candidate_sample with candidate_cox and n_percent_Bonferroni 
+# >*** [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
+#marginTag <- "_marginS_" #at ./marginS
+#marginTag <- "_marginFree_" #at ./marginFree
+#marginTag <- "_marginPlus_" #at ./marginPlus 
+raw <- 
+  readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
+select_margin <- function(x) {
+  switch(x,
+         s = "_marginS_",
+         f = "_marginFree_",
+         p = "_marginPlus_",
+         S = "_marginS_",
+#         F = "_marginFree_",
+         P = "_marginPlus_",
+         stop("Unknown input")
+  )
+ }
+marginTag <- select_margin(raw)
+rm(raw) 
+#
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # as candidate_sample with candidate_cox and n_percent_Bonferroni 
 attach(candidate_sample)
 HNSCC_OS_marginS_pvalue_sorted <- candidate_sample[order(p_value, -number),] # sorting by order(ascending)
 detach(candidate_sample)
 
 attach(HNSCC_OS_marginS_pvalue_sorted)
-# ***Bonferroni correction (adjustment) sets the significance cut-off at α/n 
+# ***no Bonferroni correction (adjustment) sets the significance cut-off at α/n 
 # {
 alpha_HNSCC <- 0.05
 Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni)
@@ -253,14 +285,16 @@ attach(HNSCC_OS_marginS_pvalue005_sorted)
 HNSCC_OS_marginS_pvalue005_sorted$z_score <- scale(number, scale = T) # "number" frequency to z-scores ("Z" because the normal distribution is also known as the "Z distribution").
 HNSCC_OS_marginS_pvalue005_sorted$number_01 <- scales:::rescale(z_score, to = c(0, 1)) # rescaled to range minnew to maxnew (aka. 0 to 1 for binomial glm)
 
-plot(p_value, number_01, type="p", ylab="Z-score", xlab="P-value from KM survival analysis \n (cutoff by Bonferroni correction)", log="x") # log scale x or y
+# number_01 as Z-score
+plot(p_value, number_01, type="p", ylab="Z-score", xlab="P-value plot of KM survival analysis", log="x") # log scale x or y
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
-abline(h=0.6, lty=2, col="red")
-abline(v=Bonferroni_cutoff, lty=2, col="red") # *** as 5.31011e-06
+abline(h=0.6, lty=2, col="blue")
+abline(v=alpha_HNSCC, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-06
+
 # run a logistic regression model (categorical 0 vs 1)
-g <- glm(number_01 ~ p_value, family=poisson, data=HNSCC_OS_marginS_pvalue005_sorted)
+#g <- glm(number_01 ~ p_value, family=poisson, data=HNSCC_OS_marginS_pvalue005_sorted)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
-curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
+#curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
 
 # x# run a non-linear regression: non-linear least squares approach (function nls in R) ; A nice feature of non-linear regression in an applied context is that the estimated parameters have a clear interpretation (Vmax in a Michaelis-Menten model is the maximum rate) which would be harder to get using linear models on transformed data for example.
 # # the Levenberg-Marquardt algorithm for nonlinear regression
@@ -273,7 +307,7 @@ curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue"
 # curve(predict(m, data.frame(p_value = x), type="response", col="green"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
 # #lines(p_value, predict(m), lty=2, col="green", lwd=3)
 
-legend("topright", legend=c(paste("LR"), paste("Cutoff")), lty=1:2, col=c("blue","red"), cex=0.7) # box and font size
+legend("topright", legend=c(paste("Z-score at 0.06"), paste("P-value at ", alpha_HNSCC)), lty=1:2, col=c("blue","red"), cex=0.7) # box and font size
 # figure legend: logistic regression, LR, by Generalized linear model, glm
 #detach(HNSCC_OS_marginS_pvalue005_sorted)
 
@@ -284,16 +318,16 @@ legend("topright", legend=c(paste("LR"), paste("Cutoff")), lty=1:2, col=c("blue"
 # ***after Bonferroni correction => n=26 in _marginS_
 # ***after Bonferroni correction => n=33 in _marginFree_
 #attach(HNSCC_OS_marginS_pvalue005_sorted)
-HNSCC_OS_marginS_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue005_sorted[which(p_value<=Bonferroni_cutoff & z_score>=0.6), 2:5]
+HNSCC_OS_marginS_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue005_sorted[which(p_value<=alpha_HNSCC & z_score>=0.6), 2:5]
 HNSCC_OS_marginS_pvalue1e_6_zscore0_6[, 2] <- signif(HNSCC_OS_marginS_pvalue1e_6_zscore0_6[, 2], 3)
 detach(HNSCC_OS_marginS_pvalue005_sorted) # n=17
 # > colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
 # [1] "gene_id"   "p_value"   "z_score"   "number_01"
 # 
 # _marginS_ (ok) as marginTag
-save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue1e_6_zscore0_6.Rda", sep=""))) # cutoff by Bonferroni_cutoff
-save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue005_sorted.Rda", sep="")))
-# x # # *** OR _marginFree_ (x not here)
+save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalue1e_6_zscore0_6.Rda", sep=""))) # cutoff by alpha_HNSCC
+save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalue005_sorted.Rda", sep="")))
+
 # HNSCC_OS_marginFree_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6
 # save(HNSCC_OS_marginFree_pvalue1e_6_zscore0_6, file="HNSCC_OS_marginFree_pvalue1e_6_zscore0_6.Rda")
 # HNSCC_OS_marginFree_pvalue005_sorted <- HNSCC_OS_marginS_pvalue005_sorted
@@ -311,8 +345,8 @@ save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste("HNSCC
 # to generate HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR.Rda; n=??
 
 #HNSCC_OS_marginS_pvalue005_sorted # n=6601
-load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue005_sorted.Rda", sep=""))) # as HNSCC_OS_marginS_pvalue005_sorted
-load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalueKM_candidate_cox.Rda", sep=""))) # as candidate_cox (a list, Bonferroni_cutoff), since 2018/05/16
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalue005_sorted.Rda", sep=""))) # as HNSCC_OS_marginS_pvalue005_sorted
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # as candidate_cox (a list, Bonferroni_cutoff), since 2018/05/16
 # candidate_sample, candidate_cox, n_percent_Bonferroni
 
 # new variable: KM + Cox, n=6601
@@ -347,8 +381,8 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
 # add colname as HRs, "uni_cox"/"multi_cox", sig ... for HRs, P-values, sig of RNAseq(z-score)
 
 ##
-# save table1 + table2 (ok) [2019/07/01]
-save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
+# save table1 + table2 (ok) [2019/07/01], n= 6601
+save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
 
 #save(list(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, ???))
 # x[i], or might be x[i:j]
@@ -362,8 +396,7 @@ save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM
 
 
 # ** Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 ####
-# _marginS_
-# [2019/07/02]
+# _marginS_ on [2019/07/02]
 # > colnames(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)
 # [1] "number"        "gene_id"       "p_value"      
 # [4] "z_score"       "number_01"     "uni_HR"       
@@ -374,12 +407,138 @@ HNSCC_OS_marginS_THREE_pvalue005 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_p
 #HNSCC_OS_marginS_THREE_pvalue005 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
 #                                           select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=1408, KM P-value only (NOT by Bonferroni_cutoff)
-save(HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "THREE_pvalue005.Rda", sep=""))) 
+save(HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "THREE_pvalue005.Rda", sep=""))) 
 # as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff <- 5.31011e-06
 
-#*** RR>reproducible research resume: ####
-load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", SFree, "THREE_pvalue005.Rda", sep="")))
-# <<<
+##*** RR>reproducible research resume: ####
+#load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
+## <<<
+
+# >pubmed.mineR ####
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
+# https://www.rdocumentation.org/packages/pubmed.mineR/versions/1.0.1
+# Excluding Cancer Gene Census (such as TRIM24, ...) from GDC data portal: d/l Cancer Gene Census (575 genes)
+# [2019/07/17] downloaded, n=575
+# load genes.2019-07-17.json
+install.packages("jsonlite")
+library(jsonlite)
+cc_gene575 <- fromJSON("~/R/genes.2019-07-17.json", simplifyDataFrame=TRUE)
+# subsetting by omitting row
+cc_Index <- which(HNSCC_OS_marginS_THREE_pvalue005$gene_id %in% cc_gene575$symbol)
+View(HNSCC_OS_marginS_THREE_pvalue005$gene_id[cc_Index]) # n=213
+HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005[-cc_Index, ] # removal
+# now n=6388
+# ***Is there any updated HNSCC related gene? 
+# searching keywoard:"((((marker[Abstract] OR biomarker[Abstract])) AND (HNSCC OR HNSC OR "oral"))) AND (prognostic[Title] OR prognosis[Title])"
+install.packages("pubmed.mineR") #  two formats (text and XML) from PubMed
+# scp /Users/apple/Downloads/pmc_result_HNSCC_genes1486_MEDLINE.txt tex@35.201.169.0:~/R/
+# *** export MEDLINE format (with abstract)
+library(pubmed.mineR) # http://ramuigib.blogspot.com
+install.packages(c("rentrez", "XML"))
+library(rentrez)
+library(XML)
+# gene_atomization(), official_fn(gene_atomization, abs, filename, terms), 
+#abs <- xmlreadabs("~/R/pmc_result_HNSCC_genes1486.xml") #an S4 object of class Abstracts containing journals, abstracts and PMID
+#abs <- read.table("~/R/pmc_result_HNSCC_genes1486.xml", sep="|") #an S4 object of class Abstracts containing journals, abstracts and PMID
+abs <- readabs("~/R/pmc_result_HNSCC_genes1486_MEDLINE.txt") # Abstracts <- .txt; the slot operator @ 
+# # 5.5Mb; objects of class "Abstracts" have 3 slots, Journal, Abstract, and PMID
+# readabs(), xmlgene_atomizations(m)
+# x pub_hnscc_genes <- xmlgene_atomizations(abs)
+#pub_hnscc_genes <- gene_atomization(abs) # n=615; however, "FAU" "T" "GC" "HR" are not gene symbol
+## (there is misleading data)
+#pub_Index <- which(pub_hnscc_genes[ , 1] %in% whole_genome) # curation1; n=611
+#pub_hnscc_genes <- pub_hnscc_genes[pub_Index, ] # n=611
+# https://www.rdocumentation.org/packages/pubmed.mineR/versions/1.0.1
+# https://omictools.com/pubtator-tool PubTator
+#x curation2 <- mapply(Give_Sentences, pub_hnscc_genes[ , 2], abs@Abstract) # or searchabsT
+#x curation2 <- mapply(searchabsT, abs, include=pub_hnscc_genes[ , 2]) # or searchabsT
+#  getabs(abs, pub_hnscc_genes[1, 2], FALSE)
+
+pubmed_hnscc_PMID <- entrez_search(db="pubmed", 
+                                   term="((((((((marker[Abstract] OR biomarker[Abstract])) AND (prognostic[Title] OR prognosis[Title]))))) AND (((Upper Aerodigestive) OR HNSCC OR (oral cancer)))))) NOT ((salivary OR bladder OR breast OR bone OR kidney OR leukoplakia OR dysplasia))", retmax=2000, use_history=TRUE)
+# n=1325
+# x=> refinement with ((D006258[MeSH Major Topic]) OR D006258[MeSH Terms]) <= Head and Neck Neoplasms
+#x pubmed_hnscc_PMID <- entrez_search(db="pubmed", term="((((marker[Abstract] OR biomarker[Abstract])) AND ((D006258[MeSH Major Topic]) OR D006258[MeSH Terms]) AND (prognostic[Title] OR prognosis[Title])", retmax=5000)
+# MESH is not universal available :-)
+
+# paper_links <- entrez_link(dbfrom="pubmed", id=25500142, cmd="llinks")
+# paper_links$linkouts; linkout_urls(paper_links)
+# entrez_fetch(); entrez_summary()
+# error: download abstracts (HTTP failure 414, the request is too large. For large requests, try using "web history" as described in the rentrez tutorial)
+# "web history" { , use_history=TRUE => web_history object
+#upload_ncbi <- entrez_post(db="pubmed", id = pubmed_hnscc_PMID$ids)
+#upload_ncbi
+
+pubmed_hnscc_abs <- entrez_fetch(db="pubmed", web_history=pubmed_hnscc_PMID$web_history,
+                       rettype="xml", retmax=2000, parsed = T)
+#R4> str(pubmed_hnscc_abs)
+#Classes 'XMLInternalDocument', 'XMLAbstractDocument' <externalptr> 
+# *.txt generated
+# /Users/apple/Downloads/dataout.txt => gene without abstract available
+# /Users/apple/Downloads/newabs.txt => abstracts
+# /Users/apple/Downloads/result.txt => ditto with pubmed_hnscc_PMID_list **
+# /Users/apple/Downloads/table.txt => genes list
+# }
+
+# x pubmed_hnscc_abs <- entrez_fetch(db = "pubmed", id = pubmed_hnscc_PMID$ids,
+#                rettype = "xml", parsed = T)
+
+# >text annotation uisng online PubTator (rentrez::pubtator_function)
+#pub_hnscc_PMID <- lapply(abs@PMID, pubtator_function) # Gene, Chemical, Disease and PMID
+# ** ditto with result.txt from entrez_fetch
+pubmed_hnscc_PMID_list <- lapply(pubmed_hnscc_PMID$ids, pubtator_function) # Gene, Chemical, Disease and PMID
+# => n=1325; list of Genes, Diseases, ... and PMID
+# e.x. 
+# R4> pubmed_hnscc_PMID_list[[555]]$Diseases
+#$Diseases
+#[1] "cancer>MESH:D009369"                  
+#[2] "hematopoiesis>MESH:C536227"           
+#[3] "inflammation>MESH:D007249"            
+#[4] "tumor>MESH:D009369"                   
+#[5] "squamous cell carcinoma>MESH:D002294" 
+#[6] "squamous cell carcinomas>MESH:D002294"
+#[7] "tumors>MESH:D009369" 
+# e.x. pubmed_hnscc_PMID[[555]]$Genes is TATA-binding protein>6908 => Entrez Gene: 6908
+#pub_hnscc_table <- pubtator_result_list_to_table(pub_hnscc_PMID) # to exclude HNSCC "disease"
+# check genes with HNSCC OR HNSC OR "oral cancer" related
+pubmed_hnscc_df <- as.data.frame(matrix(NA, nrow=length(pubmed_hnscc_PMID_list), ncol=3))
+colnames(pubmed_hnscc_df) <- c("PMID", "Diseases", "Genes")
+for (pubtator_i in 1: length(pubmed_hnscc_PMID_list)) {
+  if (pubmed_hnscc_PMID_list[[pubtator_i]] == " No Data ") {next}
+  else {pubmed_hnscc_df[pubtator_i, 1] <- pubmed_hnscc_PMID_list[[pubtator_i]]$PMID[1]}
+
+  tryCatch({
+    pubmed_hnscc_df[pubtator_i, 2] <- pubmed_hnscc_PMID_list[[pubtator_i]]$Diseases[1]
+    pubmed_hnscc_df[pubtator_i, 3] <- pubmed_hnscc_PMID_list[[pubtator_i]]$Genes[1]
+    }, error = function(err) {
+      # error handler picks up where error was generated
+      #print(paste("MY_ERROR:  ", err))
+      return()
+    }) # END tryCatch
+}
+
+pubmed_hnscc_abstractFull <- read.csv(file.path(path_ZSWIM2, "newabs.txt"), header=T) 
+# /Users/apple/Downloads/newabs.txt => abstracts
+# 29453876: ameloblastoma, Genes of FGF2, Bcl-2
+# excluding (salivary OR bladder OR breast OR bone OR kidney OR leukoplakia OR dysplasia) 
+
+# >rscopus for embase
+install.packages("rscopus")
+library(rscopus)
+if (have_api_key()) {
+  res = scopus_search(query = "all(gene)", max_count = 20,
+                      count = 10)
+  df = gen_entries_to_df(res$entries)
+  head(df$df)
+  sci_res = sciencedirect_search(query = "heart+attack AND text(liver)",
+                                 max_count = 30, count = 25)
+  sci_df = gen_entries_to_df(sci_res$entries)
+  
+  nt = sciencedirect_search(query = "title(neurotoxin)", max_count = 20,
+                            count = 10)
+  nt_df = gen_entries_to_df(nt$entries)
+  nt_df = nt_df$df
+}
 
 # plot uni_HR, n=1408
 attach(HNSCC_OS_marginS_THREE_pvalue005)
@@ -560,7 +719,7 @@ load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda"))
 library("xlsx")
 library("r2excel")
 # Create an Excel workbook. Both .xls and .xlsx file formats can be used.
-filenamex <- paste("HNSCC_OS", SFree, "candidates_Venn", ".xlsx", sep = "") # "HNSCC_OS_marginS_candidates_Venn.xlsx"
+filenamex <- paste("HNSCC_OS", marginTag, "candidates_Venn", ".xlsx", sep = "") # "HNSCC_OS_marginS_candidates_Venn.xlsx"
 wb <- createWorkbook(type="xlsx")
 
 # Create a sheet in that workbook
@@ -571,7 +730,7 @@ sheet <- xlsx::createSheet(wb, sheetName = paste("Survival_candidates"))
 library("tis") # by Brian Salzer
 # today(), arg must be ti, tis, ts, tif, or tifName
 author <- paste("Reported by Tex Li-Hsing Chi. \n",
-                "tex@gate.sinica.edu.tw \n", SFree, "\n", Sys.Date(), sep="")
+                "tex@gate.sinica.edu.tw \n", marginTag, "\n", Sys.Date(), sep="")
 xlsx.addParagraph(wb, sheet, value=author, isItalic=TRUE, colSpan=5, 
                   rowSpan=4, fontColor="darkgray", fontSize=24)
 xlsx.addLineBreak(sheet, 3)

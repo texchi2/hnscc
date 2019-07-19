@@ -419,7 +419,7 @@ rownames(tableChi1) <- nrow_tableChi1 # duplicate 'row.names' are not allowed
 #
 
 # header
-xlsx.addHeader(wb, sheet, value=paste("Table 2. The correlation of", geneName,  "expression and clinical features."),
+xlsx.addHeader(wb, sheet, value=paste("Table 2. The clinicopathological features of ", TCGA_cohort, " cohort and ", geneName,  " expression. (Chi square test)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
                level=5, color="red", underline=0) # total n is taken from surv_OS1$n

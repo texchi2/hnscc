@@ -65,6 +65,7 @@ https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your
 https://www.biomedcentral.com/journals#Life-Sciences
 (TCGA publication guideline: https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)
 # Introduction {#intro}
+project rationale: 人工決定 cutoff 需要天啟, it is difficult.
 https://www.cancer.gov/types/head-and-neck/hp HNSCC
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
 Currently, there is no global view of the expression profiles of the human cancer genes expression obtained from next-generation sequencing (NGS) technologies such as RNA sequencing (RNA-seq). The expression data is available from a large-scale studies like The Cancer Genome Atlas (TCGA: http://cancergenome.nih.gov/).
@@ -121,12 +122,7 @@ head and neck squamous cell carcinoma (HNSC)
 https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 # or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
 # FirebrowseR - Paper describing the R FirebrowseR package.
-# GenomicDataCommons - Paper describing the R GenomicDataCommons package.
-# 
-# https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
-# or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
-# FirebrowseR - Paper describing the R FirebrowseR package.
-# GenomicDataCommons - Paper describing the R GenomicDataCommons package.
+# GenomicDataCommons - Paper describing the R GenomicDataCommons package which might programmatically access GDC (Genomic Data Commons) Data Portal to retrieve TCGA data set.
 # 
 
 ## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
@@ -136,7 +132,17 @@ https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 # library("devtools")
 # devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
 Data analysis
-RNA sequencing (RNA-seq) data from head and neck squamous cell carcinoma (HNSCC) in The Cancer Genome Atlas (TCGA) datasets were obtained from the UCSC Cancer Genomics Browser (https://genome-cancer.ucsc.edu). Quantitative variables were analyzed using Student’s t-test. Survival was analyzed using the log-rank test for two group comparisons. Values of P<0.05 (two-sided) were considered statistically significant. Statistical analyses were carried out using EZR version 1.32 (Saitama Medical Center, Jichi Medical University, Saitama, Japan)51.
+
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3372940/#!po=2.54237 (FDR)?
+https://gdc.cancer.gov/about-data/data-harmonization-and-generation/genomic-data-harmonization-0#Overview
+https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
+RNA sequencing (RNA-seq) data from head and neck squamous cell carcinoma (HNSCC) in The Cancer Genome Atlas (TCGA) datasets were obtained from the UCSC Cancer Genomics Browser (https://genome-cancer.ucsc.edu).
+https://portal.gdc.cancer.gov/projects/TCGA-HNSC?primarySites_size=20
+RNA-Seq reads that have been aligned to the GRCh38 build.
+FPKM is A normalized expression value that takes into account each gene length and the number of reads mapped to all protein-coding genes
+
+
+Quantitative variables were analyzed using Student’s t-test. Survival was analyzed using the log-rank test for two group comparisons. Values of P<0.05 (two-sided) were considered statistically significant. Statistical analyses were carried out using EZR version 1.32 (Saitama Medical Center, Jichi Medical University, Saitama, Japan)51.
 to use a lookup table to manage datas: source("addNewData.r")
 https://www.hindawi.com/journals/bmri/2019/5450617/
 In the present study, the integrated RNA expression profiles of HNSCC patients along with their clinical outcomes were obtained from the TCGA database to construct a lncRNA–miRNA–mRNA ceRNA network for HNSCC. 
@@ -147,7 +153,33 @@ In 2011, Salmena et al. proposed a competing endogenous RNA (ceRNA) hypothesis t
 # addNewData("dataNew.csv", myData, allowedVars)
 
 #[Survival analysis] {#sec:2}
-Statistical analysis
+#https://data-flair.training/blogs/survival-analysis-in-r/
+# ***Work flow of survival analysis
+{
+there is no RFS data on HNSCC cohort
+cutoff finder, survival analysis => P-value
+=> in .xlsl: we have
+Table 2. The clinicopathological features of HNSCC cohort and ZZZ3 expression (chi square test).
+(tableChi1 <- contingencyBin(contingencyTCGA())) (RNAseq vs features), 
+v***by Chi-square test of association (P-value) or,
+***by R^2 (Spearman correlation coefficient, rho)
+cor(x, y, method=“spearman”)
+
+Table 3: Cox proportion hazard regression analysis, univariate and multipvariate => OS hazard ratio (HR), Cox P-value and its 95% confidence interval (CI)
+[table 4: RFS] ditto, omit
+Figures: KM plot, cumulative KM P-value plot
+Table of significant KM P-value
+}
+cor() in R:
+"pearson"
+"kendall"
+"spearman"
+-The Pearson correlation evaluates the linear relationship between two continuous variables. 
+-Spearman rank-order correlation 比較複雜
+monotonic, no constant rate
+
+
+#Statistical analysis
 All statistical analysis were performed with R (https://www.r-project.org/, v3.0.1) and R packages. Normalization of Affymetrix microarray data were implemented with R package “limma”26. The survival analysis, cox univariate regression, cox multivariate regression and cox probability hazard model were carried out on R package “survival”30. Random forest variable hunting was performed with package “randomForestSRC”. The ROC curve was plotted with R package “pROC”31, and the nomogram were plotted with R package “rms”32.
 
 A 1-year, 3-year, 5-year, and 10-year time-dependent receiver operating characteristic (ROC) curve analysis were performed using "survival-ROC" package in R software to assess the predictive value of the risk score for time-dependent outcomes [13, 14]. The ROC curve was used to evaluate the sensitivity and specificity of HNSCC-specific signatures for predicting overall survival of HNSCC patients.
@@ -174,6 +206,11 @@ margin issue
 whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
 clean and rearrange by geneID => whole_genome has 20500.
 # z-score calculation = [(value gene X in tumor Y)-(mean gene X in normal)]/(standard deviation X in normal)
+A z-score for a sample indicates the number of standard deviations away from the mean of expression in the reference.  The formula is : 
+
+z = (expression in tumor sample - mean expression in reference sample) / standard deviation of expression in reference sample
+
+TCGA states: "For mRNA and microRNA expression data, we typically compute the relative expression of an individual gene and tumor to the gene's expression distribution in a reference population. That reference population is either all tumors that are diploid for the gene in question, or, when available, normal adjacent tissue." (It is not always clear what the cell of origin of a tumor is, so the mRNA expression in normal adjacent tissue can sometimes be misleading, which is why expression is sometimes compared within the set of tumors only).
 
 
 introduce R scripts: 
@@ -319,24 +356,34 @@ not related with known HNSCC genes
 *** the receiver operating characteristics (ROC) curves of single risk factor for diagnosing bone metastases in patients with HNSCC cancer.
 
 ## [Results] _marginsS_ {#sec:2}
-since [2019/06/26]
+# ***Work flow of result analysis
+{
+Table 1: candidate genes by KM adjusted P-value (why?  Bonferroni correction is NOT necessary) => Z-score
+and its scatter plot
+Table 2A and 2B and 2C: bad guy candidate genes => KM P-value, Cox P-value and HR (>=2.5)
+and its venn diagram
+}
+how to z-score
+no need Bonferroni
+how about false discovery rate (FDR)?
+
+#since [2019/06/26]
 post1 process table1 (KM): candidate_sample(KM) 
 楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
-# Bonferroni correction (adjustment) sets the significance cut-off at α/n 
+#NO Bonferroni correction (adjustment) sets the significance cut-off at α/n 
 the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018}
 # {
-alpha_HNSCC <- 0.05
-Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni) 
-# as 5.31011e-06 (2019 run01)
-# } Bonferroni end
+
 turn the "number" frequency to z-scores ("Z" because the normal distribution is also known as the "Z distribution").
-a candidate table (HNSCC_OS_marginS_pvalue1e_6_zscore0_6), with "number of P-value" under cutoff finding (becoming z-score: bigger, much more significant cutoff "sites")
+a candidate table (HNSCC_OS_marginS_pvalue1e_6_zscore0_6), with "number of significant P-value" under cutoff finding (becoming z-score: bigger, much more significant cutoff "sites")
 # => a kind of local minimal or global minimal of curve fitting (Levenberg-Marquardt Optimization)?
-# subsetting the candidated genes table, according P-value (Bonferroni_cutoff) and Z-score
+# subsetting the candidated genes table, according to the P-value <= 0.05 (no Bonferroni_cutoff) and Z-score >= 0.6
 # ***after Bonferroni correction => n=26 in _marginS_
 # ***after Bonferroni correction => n=? in _marginFree_
 
-post2 process: add table2 (new variable: KM + Cox): candidate_cox
+post2 process: add table2 (new variable: KM + Cox): which yield n=6601 genes on the list.
+candidate_cox
+
 Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 (n=1408, KM P-value only (NOT by Bonferroni_cutoff))
 
 line 2832: reproducible research
@@ -372,12 +419,20 @@ https://dasanlin888.pixnet.net/blog/post/465996605-預測模型的新指標－id
 https://dasanlin888.pixnet.net/blog/post/466650818-如何評估預測模型的表現（第2篇，共3篇）-~
 https://www.rdocumentation.org/packages/PredictABEL/versions/1.2-2/topics/reclassification
 
+Table 2 討論，RNAseq expression vs patient's gender 有相關=> 強度為何? 相關的強度如何測: by ϕ係數 (phi coefficient), coefficient of contingency or Cramer’s V coefficient
+
 Clinical utility of a biomarker refers to the ability of the assay to improve clinical decision-making and patient outcomes. The cluster of biomarkers we found clearly distinguishes outcomes between "positive" and "negative" groups, however there is no differential treatment available for those two groups of patient. 
 PROGgene http://genomics.jefferson.edu/proggene/; cancer prognostic database
 
 ***published # Excluding the HNSCC cancer driver genes list??? ##
+We used R packages "rentrez" and "pubmed. mineR" to process the abstracts from PubMed. pubtator_function
+search keyword:
+"((((marker[Abstract] OR biomarker[Abstract])) AND (HNSCC OR HNSC OR oral))) AND (prognostic[Title] OR prognosis[Title])", retmax=2000
+
+***(OK)GDC data portal: d/l Cancer Gene Census (575 genes)
 #BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
 ***and TMU biobank TMU-biobank@tmu.edu.tw(Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
+
 Immunotherapy: tumor-homing stem cells (EGF, VEGF cytokines)
 tumor-specific antigen (CD4 CD8)
 =Dato 評估一下
