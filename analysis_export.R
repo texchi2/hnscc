@@ -531,7 +531,7 @@ pubmed_hnscc_abstractFull <- read.csv(file.path(path_ZSWIM2, "newabs.txt"), head
 # https://dev.elsevier.com/documentation/EmbaseAPI.wadl
 # https://www.rdocumentation.org/packages/rscopus/versions/0.6.3/topics/scopus_search
 #https://cran.r-project.org/web/packages/rscopus/rscopus.pdf
-install.packages("rscopus")
+#install.packages("rscopus")
 library(rscopus)
 library(pubmed.mineR) # http://ramuigib.blogspot.com
 #library(RISmed) # https://amunategui.github.io/pubmed-query/; 2017 no more read.ris()
@@ -542,22 +542,83 @@ library(pubmed.mineR) # http://ramuigib.blogspot.com
 # Type of search. See https://dev.elsevier.com/api_docs.html
 # [2019/07/20] my elsevier api_key = "9925b63f77af6f11b74b38a3d6a80f41" from web site
 # search in embase: (prognosis:ti OR prognostic:ti OR 'tumor marker') AND cancer:ti AND 'head and neck squamous cell carcinoma'
-# download .csv
+# download records.csv
 res_df <- read.csv(file=file.choose(), header=T) # with abstract, PUI as embase
-em_hnscc_PMID_list <- lapply(res_df$Medline.PMID, pubtator_function) # Gene, Chemical, Disease and PMID
-# => n=1325
-em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% em_hnscc_PMID_list$Gene)
+em_hnscc_PMID_list <- lapply(res_df$Medline.PMID, pubtator_function) # list of Gene, Chemical, Disease and PMID
+# => n=371 => 134; 503
+# e.x. The neuropeptide genes SST, TAC1, HCRT, NPY, and GAL are powerful epigenetic biomarkers in head and neck cancer: a site-specific analysis.
+#(PMID:29682090 PMCID:PMC5896056) => The somatostatin (SST)
+# parsing and pickup 1st: "PMID", "Diseases", "Genes"
+pubmed_hnscc_df <- as.data.frame(matrix(NA, nrow=length(em_hnscc_PMID_list), ncol=3))
+colnames(pubmed_hnscc_df) <- c("PMID", "Diseases", "Genes")
+for (pubtator_i in 1: length(em_hnscc_PMID_list)) {
+  print(pubtator_i)
+  if (em_hnscc_PMID_list[[pubtator_i]] == " No Data ") {next}
+  else {pubmed_hnscc_df[pubtator_i, 1] <- em_hnscc_PMID_list[[pubtator_i]]$PMID[1]}
+  
+  tryCatch({
+    pubmed_hnscc_df[pubtator_i, 2] <- em_hnscc_PMID_list[[pubtator_i]]$Diseases[1]
+    pubmed_hnscc_df[pubtator_i, 3] <- em_hnscc_PMID_list[[pubtator_i]]$Genes[1]
+  }, error = function(err) {
+    # error handler picks up where error was generated
+    #print(paste("MY_ERROR:  ", err))
+    return()
+  }) # END tryCatch
+}
+# find published HNSCC genes from Embase
+# pubmed_hnscc_df data cleaning: sorting by "Disease", manual curation
+pubmed_hnscc_df_sorted <- pubmed_hnscc_df[order(pubmed_hnscc_df$Diseases, na.last=NA), ] # NA removal, n=259
+pubmed_hnscc_df_sorted <- pubmed_hnscc_df_sorted[complete.cases(pubmed_hnscc_df_sorted$Genes), ] # n=169 => 64
+# n=244
+# loading all genes mentioned in each article
+pubmed_hnscc_genes <- as.data.frame(matrix(NA, nrow=nrow(pubmed_hnscc_df_sorted)*4, ncol=5))
+colnames(pubmed_hnscc_genes) <- c("No", "PMID", "Diseases", "GeneSymbol", "EntrezGene")
+No_i <- 1 # a serial number
+
+for (curation_i in 1: nrow(pubmed_hnscc_df_sorted)) {
+  print(curation_i)
+  No_j <- 1 # index of genes in each article
+  # em_hnscc_PMID_list is 1:371 from res_df$Medline.PMID; there is duplicated article (PMID:24565202)
+  res_index <- which(res_df$Medline.PMID==pubmed_hnscc_df_sorted$PMID[curation_i]) # always choice res_index[1], first PMID
+  for (No_j in 1:length(em_hnscc_PMID_list[[res_index[1]]]$Genes)) {
+    pubmed_hnscc_genes[No_i + No_j - 1, ] <- c((No_i + No_j - 1), pubmed_hnscc_df_sorted$PMID[curation_i], 
+                                pubmed_hnscc_df_sorted$Diseases[curation_i], 
+                                unlist(strsplit(em_hnscc_PMID_list[[res_index[1]]]$Genes[No_j], ">")))
+  }
+  No_i <- No_i + No_j
+# EntrezGene 4313 (MMP2), 4318 (MMP9); 83639 (TEX101) at PMID 23481573
+# Cancer Biomark. 2012-2013;12(3):141-8. doi: 10.3233/CBM-130302.
+#  [Overexpression of TEX101, a potential novel cancer marker, in head and neck squamous cell carcinoma.]
+} # from 1 to 976 entries in [pubmed_hnscc_genes]
+# there is NO GLUT4 nor TMSB4X => repeat searching including
+#  ('glucose transporter 4' OR 'thymosin beta 4') AND 'hsiao m.':au (yes)
+#  'mRNA expression level'
+#  if 'Chang W.-M' AND 'hsiao m.':au => 
+# resulting pubmed_hnscc_genes, 256 entries
+# \Sci Rep. 2017[Parathyroid Hormone-Like Hormone is a
+# Poor Prognosis Marker of Head and Neck Cancer and Promotes Cell Growth via RUNX2Regulation.]
+pubmed_hnscc_genes <- pubmed_hnscc_genes[complete.cases(pubmed_hnscc_genes$GeneSymbol), ]
+# There is n= 785 HNSCC related genes
+#  
+em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes$GeneSymbol)
+# R4> em_Index # n=75
+# [1]   26   67  206  284  427  484  530  609  809  971 1020 1067 1137 1178 1193
+# [16] 1365 1404 1423 1501 1518 1523 1698 1819 1881 2036 2104 2197 2212 2360 2380
+# [31] 2490 2696 2706 2759 2808 2926 2953 2992 3287 3392 3550 3700 3796 3848 3854
+# [46] 3938 3985 4076 4095 4125 4213 4246 4352 4360 4604 4667 4671 4677 4731 4742
+# [61] 4849 4900 4948 5034 5095 5550 5582 5657 5659 5699 5708 6018 6094 6153 6263
 HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[-em_Index, ] # removal
-# n=? genes
-# <done>
+# 6388 -> n=6313 genes
+# <done> [2019/07/20] anniversary for discovery of GLUT4 in HNSCC cell line [2014/07/20]
 
 
-# plot uni_HR, n=1408
+# plot uni_HR, n=1408 ####
+HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
 attach(HNSCC_OS_marginS_THREE_pvalue005)
-plot(p_value, uni_HR, type="p", ylab="Cox Uni_HR", xlab="P-value from KM survival", log="x")
+plot(p_value, uni_HR, type="p", ylab="Cox Uni_HR", xlab="P-value from KM survival", log="xy")
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
 abline(h=1, lty=2, col="red")
-abline(v=Bonferroni_cutoff, lty=2, col="red") #Bonferroni_cutoff
+abline(v=alpha_HNSCC, lty=2, col="red") #no Bonferroni_cutoff
 # run a logistic regression model (categorical 0 vs 1)
 #g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
@@ -573,7 +634,7 @@ attach(HNSCC_OS_marginS_THREE_pvalue005)
 plot(p_value, multi_HR, type="p", ylab="Cox Multi_HR", xlab="P-value from KM survival", log="x")
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
 abline(h=1, lty=2, col="red")
-abline(v=Bonferroni_cutoff, lty=2, col="red")
+abline(v=alpha_HNSCC, lty=2, col="red")
 # run a logistic regression model (categorical 0 vs 1)
 #g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
