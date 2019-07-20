@@ -416,6 +416,7 @@ save(HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff, file=file.path(path_ZS
 
 # >pubmed.mineR ####
 load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
+# [GDC data portal]
 # https://www.rdocumentation.org/packages/pubmed.mineR/versions/1.0.1
 # Excluding Cancer Gene Census (such as TRIM24, ...) from GDC data portal: d/l Cancer Gene Census (575 genes)
 # [2019/07/17] downloaded, n=575
@@ -428,8 +429,11 @@ cc_Index <- which(HNSCC_OS_marginS_THREE_pvalue005$gene_id %in% cc_gene575$symbo
 View(HNSCC_OS_marginS_THREE_pvalue005$gene_id[cc_Index]) # n=213
 HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005[-cc_Index, ] # removal
 # now n=6388
-# ***Is there any updated HNSCC related gene? 
-# searching keywoard:"((((marker[Abstract] OR biomarker[Abstract])) AND (HNSCC OR HNSC OR "oral"))) AND (prognostic[Title] OR prognosis[Title])"
+
+# ***Is there any updated HNSCC related gene from publication? ####
+# go to embase
+
+# [PubMed] search keywoard:"((((marker[Abstract] OR biomarker[Abstract])) AND (HNSCC OR HNSC OR "oral"))) AND (prognostic[Title] OR prognosis[Title])"
 install.packages("pubmed.mineR") #  two formats (text and XML) from PubMed
 # scp /Users/apple/Downloads/pmc_result_HNSCC_genes1486_MEDLINE.txt tex@35.201.169.0:~/R/
 # *** export MEDLINE format (with abstract)
@@ -522,23 +526,31 @@ pubmed_hnscc_abstractFull <- read.csv(file.path(path_ZSWIM2, "newabs.txt"), head
 # 29453876: ameloblastoma, Genes of FGF2, Bcl-2
 # excluding (salivary OR bladder OR breast OR bone OR kidney OR leukoplakia OR dysplasia) 
 
-# >rscopus for embase
+#[embase]
+# >embase search then exported .csv ####
+# https://dev.elsevier.com/documentation/EmbaseAPI.wadl
+# https://www.rdocumentation.org/packages/rscopus/versions/0.6.3/topics/scopus_search
+#https://cran.r-project.org/web/packages/rscopus/rscopus.pdf
 install.packages("rscopus")
 library(rscopus)
-if (have_api_key()) {
-  res = scopus_search(query = "all(gene)", max_count = 20,
-                      count = 10)
-  df = gen_entries_to_df(res$entries)
-  head(df$df)
-  sci_res = sciencedirect_search(query = "heart+attack AND text(liver)",
-                                 max_count = 30, count = 25)
-  sci_df = gen_entries_to_df(sci_res$entries)
-  
-  nt = sciencedirect_search(query = "title(neurotoxin)", max_count = 20,
-                            count = 10)
-  nt_df = gen_entries_to_df(nt$entries)
-  nt_df = nt_df$df
-}
+library(pubmed.mineR) # http://ramuigib.blogspot.com
+#library(RISmed) # https://amunategui.github.io/pubmed-query/; 2017 no more read.ris()
+# https://cran.r-project.org/web/packages/RefManageR/RefManageR.pdf
+
+#embase_retrieval(id, identifier = c("lui", "pii", "doi", "embase",
+#                                    "pubmed_id", "medline"), http_end = NULL, ...)
+# Type of search. See https://dev.elsevier.com/api_docs.html
+# [2019/07/20] my elsevier api_key = "9925b63f77af6f11b74b38a3d6a80f41" from web site
+# search in embase: (prognosis:ti OR prognostic:ti OR 'tumor marker') AND cancer:ti AND 'head and neck squamous cell carcinoma'
+# download .csv
+res_df <- read.csv(file=file.choose(), header=T) # with abstract, PUI as embase
+em_hnscc_PMID_list <- lapply(res_df$Medline.PMID, pubtator_function) # Gene, Chemical, Disease and PMID
+# => n=1325
+em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% em_hnscc_PMID_list$Gene)
+HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[-em_Index, ] # removal
+# n=? genes
+# <done>
+
 
 # plot uni_HR, n=1408
 attach(HNSCC_OS_marginS_THREE_pvalue005)

@@ -52,6 +52,7 @@ MSC:
 bibliography: bibliography.bib
 output: rticles::springer_article
 ---
+*** https://journalfinder.elsevier.com
 target journal:
 BMC Cancer
 https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
@@ -424,12 +425,16 @@ Table 2 討論，RNAseq expression vs patient's gender 有相關=> 強度為何?
 Clinical utility of a biomarker refers to the ability of the assay to improve clinical decision-making and patient outcomes. The cluster of biomarkers we found clearly distinguishes outcomes between "positive" and "negative" groups, however there is no differential treatment available for those two groups of patient. 
 PROGgene http://genomics.jefferson.edu/proggene/; cancer prognostic database
 
-***published # Excluding the HNSCC cancer driver genes list??? ##
-We used R packages "rentrez" and "pubmed. mineR" to process the abstracts from PubMed. pubtator_function
-search keyword:
-"((((marker[Abstract] OR biomarker[Abstract])) AND (HNSCC OR HNSC OR oral))) AND (prognostic[Title] OR prognosis[Title])", retmax=2000
-
+#***publication # Excluding the HNSCC cancer driver genes list??? ##
+[GDC data portal]
 ***(OK)GDC data portal: d/l Cancer Gene Census (575 genes)
+We used R packages "rentrez" and "pubmed.mineR" to process the abstracts from PubMed: pubtator_function
+[PubMed] search keyword
+"((((marker[Abstract] OR biomarker[Abstract])) AND (HNSCC OR HNSC OR oral))) AND (prognostic[Title] OR prognosis[Title])", retmax=2000
+[embase] search keyword: (prognosis:ti OR prognostic:ti OR 'tumor marker') AND cancer:ti AND 'head and neck squamous cell carcinoma'; excluding other cancer type via "disease filter"
+
+
+
 #BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
 ***and TMU biobank TMU-biobank@tmu.edu.tw(Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
 
