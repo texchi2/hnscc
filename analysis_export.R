@@ -609,21 +609,23 @@ em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pub
 # [61] 4849 4900 4948 5034 5095 5550 5582 5657 5659 5699 5708 6018 6094 6153 6263
 HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[-em_Index, ] # removal
 # 6388 -> n=6313 genes
+# Excluding the HNSCC cancer driver genes list: done from Embase
+# ?BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
 # <done> [2019/07/20] anniversary for discovery of GLUT4 in HNSCC cell line [2014/07/20]
 
 
 # plot uni_HR, n=1408 ####
 HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
 attach(HNSCC_OS_marginS_THREE_pvalue005)
-plot(p_value, uni_HR, type="p", ylab="Cox Uni_HR", xlab="P-value from KM survival", log="xy")
+plot(p_value, uni_HR, type="p", ylab="Cox Uni_HR", xlab="P-value from KM survival", log="y")
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
-abline(h=1, lty=2, col="red")
-abline(v=alpha_HNSCC, lty=2, col="red") #no Bonferroni_cutoff
+abline(h=2.0, lty=2, col="red") # HR
+abline(v=alpha_HNSCC, lty=2, col="blue") #no Bonferroni_cutoff
 # run a logistic regression model (categorical 0 vs 1)
 #g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
 #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-#legend("topright", legend=c(paste("LR"), paste("Cutoff")), lty=1:2, col=c("blue","red"), cex=0.7) # box and font size
+legend("topright", legend=c(paste("Harzard Ratio"), paste("Cutoff")), lty=1:2, col=c("red","blue"), cex=0.7) # box and font size
 # figure legend: logistic regression, LR, by Generalized linear model, glm
 detach(HNSCC_OS_marginS_THREE_pvalue005)
 
@@ -631,15 +633,15 @@ detach(HNSCC_OS_marginS_THREE_pvalue005)
 #plot(HNSCC_OS_marginS_THREE_pvalue005$p_value,  HNSCC_OS_marginS_THREE_pvalue005$uni_HR)
 # plot multi_HR, n=1408
 attach(HNSCC_OS_marginS_THREE_pvalue005)
-plot(p_value, multi_HR, type="p", ylab="Cox Multi_HR", xlab="P-value from KM survival", log="x")
+plot(p_value, multi_HR, type="p", ylab="Cox Multi_HR", xlab="P-value from KM survival", log="y")
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
-abline(h=1, lty=2, col="red")
-abline(v=alpha_HNSCC, lty=2, col="red")
+abline(h=2.0, lty=2, col="red")
+abline(v=alpha_HNSCC, lty=2, col="blue")
 # run a logistic regression model (categorical 0 vs 1)
 #g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
 #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-#legend("topright", legend=c(paste("LR"), paste("Cutoff")), lty=1:2, col=c("blue","red"), cex=0.7) # box and font size
+legend("topright", legend=c(paste("Harzard Ratio"), paste("Cutoff")), lty=1:2, col=c("red","blue"), cex=0.7) # box and font size
 # figure legend: logistic regression, LR, by Generalized linear model, glm
 detach(HNSCC_OS_marginS_THREE_pvalue005)
 
@@ -658,29 +660,28 @@ detach(HNSCC_OS_marginS_THREE_pvalue005)
 
 
 #{ [pickup1] (bad guy genes)#### 
-# from HNSCC_OS_marginS_THREE_pvalue005; Bonferroni_cutoff
+# from HNSCC_OS_marginS_THREE_pvalue005; no Bonferroni_cutoff
 # Broader gene candidate (first 100): Cox HR (>1.5 or >=2.5), bad_FC fold change 
 # x (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
 # Bonferroni_cutoff = 5.31011e-06 is too restricted in this cohort
-bad_FC <- 1.2
-HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= bad_FC), 
+bad_FC <- 1.5
+HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR >= bad_FC), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# or
+# n=295
 #HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= 2.5), 
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=9
 
 # multi_HR >=1 or 2.5 # & (uni_P_value <= 0.05) & (multi_P_value <= 0.05) 
-HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (p_value <= Bonferroni_cutoff) & (multi_HR >= bad_FC), 
+HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (p_value <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR >= bad_FC), 
                                           select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=9; uni and multi could not be identical gene list :-)
+# n=302; uni and multi could not be identical gene list :-)
 
 
 # venn1 diagram of HR>=1 of Uni & Multi ###
 #for list of genes by grouping; library(gplots)
 venn_HR2p5 <- list(HNSCC_OS_marginS_uni_CoxHR2p5$gene_id, HNSCC_OS_marginS_multi_CoxHR2p5$gene_id)
 # cutoff by Bonferroni_cutoff
-names_HR2p5 <- c("uni_Cox HR >=2.5", "multi_Cox HR >=2.5")
+names_HR2p5 <- c(paste("uni_Cox HR >=", bad_FC), paste("multi_Cox HR >=", bad_FC))
 library(gplots)
 tmp <- venn(venn_HR2p5, names=names_HR2p5, show.plot=F) #library(gplots); the group count matrix alone
 isect_HR2p5 <- attr(tmp, "intersections")
@@ -697,7 +698,7 @@ title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(alpha_HNSCC
 #coords <- unlist(getCentroid(getZones(venn_HR2p5, snames="uni_CoxHR>=2p5, multi_CoxHR>=2p5")))
 # coords[1], coords[2], 
 text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
-# n=11
+# n=231
 
 
 #https://stackoverflow.com/questions/43324180/adding-legend-to-venn-diagram
@@ -716,11 +717,11 @@ text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=0 while (uni_P_value <= 0.05) & (multi_P_value <= 0.05) & (uni_HR <0.0)
 # 
-good_FC <- 0.9
+good_FC <- 0.5
 HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR <good_FC), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 print(nrow(HNSCC_OS_marginS_uni_CoxHR0p5))
-# n=56 while (uni_P_value <= 0.05) & (uni_HR <0.3)
+# n=60
 # x R4> HNSCC_OS_marginS_uni_CoxHR0p5$gene_id
 # [1] "ZNF557"   "IL19"     "EVPLL"    "ZNF266"   "MYO1H"    "ZNF846"   "MASP1"    "DOT1L"   
 # [9] "UTY"      "FAM162B"  "KLRA1"    "FLT3"     "TP53INP1"
@@ -730,11 +731,8 @@ print(nrow(HNSCC_OS_marginS_uni_CoxHR0p5))
 HNSCC_OS_marginS_multi_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR <good_FC), 
                                           select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 
-# n=51 while (uni_P_value <= 0.05) & (uni_HR <0.3)
-# x R4> HNSCC_OS_marginS_multi_CoxHR0p5$gene_id
-# [1] "ZNF557"   "IL19"     "EVPLL"    "ZNF266"   "MYO1H"    "ZNF846"   "MASP1"    "DOT1L"   
-# [9] "UTY"      "FAM162B"  "KLRA1"    "FLT3"     "TP53INP1"
-# # 
+# n=61
+
 
 
 # venn2 diagram of HR < 0.8 of Uni & Multi ###
@@ -754,7 +752,7 @@ venn(venn_HR0p5, snames=names_HR0p5,
 # meta-language 1 0 or -, https://cran.r-project.org/web/packages/gplots/vignettes/venn.pdf
 title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(alpha_HNSCC, 3)), sep = "", collapse = "\n")
 text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
-
+# n= 43
 # signif(Bonferroni_cutoff, 3)
 
 
@@ -774,14 +772,10 @@ text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 
 
 
-# Excluding the HNSCC cancer driver genes list??? ####
-#BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
-
-
 
 
 ## Export r2excel and .Rda ####
-# _marginS_ [2019/07/03]
+# _marginS_ [2019/07/21]
 # sink() for .xlsx export as well :-) https://stackoverflow.com/questions/34038041/how-to-merge-multiple-data-frame-into-one-table-and-export-to-excel
 # HNSCC_OS_marginS_candidates_Venn.xlsx: show up Bonferroni_cutoff and 5e-6 (expression style).
 # 
