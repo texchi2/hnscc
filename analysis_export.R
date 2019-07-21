@@ -97,7 +97,7 @@ error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group 
 
 # candidate_sample(KM) and candidate_cox (Cox list), two parts
 # candidate_sample: Kaplan–Meier plots for genes significantly associated with survival.
-# Table1: list genes, which it's KM plot with P-value < 0.05, and ranking by P-value (ascending) and z-score
+# Table1: list genes, which it's KM plot with P-value < 0.05, and ranking by P-value (ascending) and z-score (decending)
 
 aa <- LUAD_n; bb<- 1
 #aa <- ZSWIM2_2$Freq[1]  # n=9416
@@ -108,8 +108,8 @@ aa <- LUAD_n; bb<- 1
 #*
 candidate_sample <- data.frame(matrix(data = NA, nrow = aa, ncol = 3)) # for num, gene ID and it's P-value
 colnames(candidate_sample) <- c("number", "gene_id", "p_value") # KM OS P-value only (in HNSCC); 
-#"number" position in ZSWIM2
-#candidate_sample$number <- data.frame(which(ZSWIM2$X3==0)) # gene "number"
+#x"number" position in ZSWIM2
+#xcandidate_sample$number <- data.frame(which(ZSWIM2$X3==0)) # gene "number"
 candidate_sample$gene_id <- whole_genome[bb:aa] # retrieving gene name from whole_genome; return() at X2
 #
 
@@ -134,7 +134,7 @@ for (ip in (bb:aa)) {
   load_filename <- file.path(paste("HNSCC_survivalAnalysis", marginTag, geneName, ".Rda", sep=""))
   #OR (automatically defined)
   #_marginFree_
-  #load_filename <- paste("HNSCC_survivalAnalysis", SFree, geneName, ".Rda", sep="")
+  #load_filename <- paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep="")
   #
   #
   if (load_filename %in% dir()) {
@@ -147,7 +147,8 @@ for (ip in (bb:aa)) {
     print(paste(marginTag, "with how many OS P-values: ", nrow(OS_pvalue)))
     if (nrow(OS_pvalue) > 0) {
       candidate_sample$p_value[ip] <- min(OS_pvalue$p_OS)
-      candidate_sample$number[ip] <- nrow(OS_pvalue) #number of OS P-values in this gene
+      candidate_sample$number[ip] <- nrow(OS_pvalue) 
+      #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
     }
     #candidate_sample$p_value[ip] <- get_Rda_pvalue(candidate_sample$gene_id[ip]) # retrieving P-value by gene name from .Rda; return() at X3
     #  print(paste(ip, geneName, ": ", candidate_sample$p_value[ip], sep=" "))
@@ -250,7 +251,8 @@ select_margin <- function(x) {
 marginTag <- select_margin(raw)
 rm(raw) 
 #
-load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # as candidate_sample with candidate_cox and n_percent_Bonferroni 
+load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) 
+# as candidate_sample with candidate_cox and n_percent_Bonferroni 
 attach(candidate_sample)
 HNSCC_OS_marginS_pvalue_sorted <- candidate_sample[order(p_value, -number),] # sorting by order(ascending)
 detach(candidate_sample)
@@ -264,7 +266,15 @@ Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni)
 # if no Bonferroni: 
 #Bonferroni_cutoff <- alpha_HNSCC / 1
 # } Bonferroni end
-
+# 
+# #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
+# higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
+plot(p_value, number, type="p", ylab="Frequency", xlab="P-value plot of KM survival analysis", log="x") # log scale x or y
+abline(h=150, lty=2, col="blue")
+abline(v=alpha_HNSCC, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-06
+legend("topright", legend=c(paste("Frequency at 150"), paste("P-value at ", alpha_HNSCC)), lty=1:2, col=c("blue","red"), cex=0.7) # box and font size
+#
+# KM P-value <= 0.05
 HNSCC_OS_marginS_pvalue005_sorted <- HNSCC_OS_marginS_pvalue_sorted[which(p_value<=alpha_HNSCC & !is.na(p_value)), 1:3]
 detach(HNSCC_OS_marginS_pvalue_sorted)  # keeping drawing
 # no correction: n=6601 in _marginS_; n=? in _marginFree_; and n=? in _marginPlus_
@@ -280,11 +290,14 @@ library(minpack.lm)
 attach(HNSCC_OS_marginS_pvalue005_sorted)
 # reg <- lm(number ~ p_value, data = HNSCC_OS_marginS_pvalue005_sorted)
 # abline(reg, col="blue")
-# or
-HNSCC_OS_marginS_pvalue005_sorted$z_score <- scale(number, scale = T) # "number" frequency to z-scores ("Z" because the normal distribution is also known as the "Z distribution").
+# n=6601 in HNSCC_OS_marginS_pvalue005_sorted
+HNSCC_OS_marginS_pvalue005_sorted$z_score <- scale(number, center=T, scale = T) 
+# "number" frequency standardize as z-score 
+# ("Z" because the normal distribution is also known as the "Z distribution").
+# => scale(): scale=TRUE, center=TRUE then scaling is done by dividing the (centered) columns of x by their standard deviations
 HNSCC_OS_marginS_pvalue005_sorted$number_01 <- scales:::rescale(z_score, to = c(0, 1)) # rescaled to range minnew to maxnew (aka. 0 to 1 for binomial glm)
 
-# number_01 as Z-score
+# number_01 (0~1) is not Z-score
 plot(p_value, number_01, type="p", ylab="Z-score", xlab="P-value plot of KM survival analysis", log="x") # log scale x or y
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
 abline(h=0.6, lty=2, col="blue")
@@ -318,6 +331,7 @@ legend("topright", legend=c(paste("Z-score at 0.06"), paste("P-value at ", alpha
 # ***after Bonferroni correction => n=33 in _marginFree_
 #attach(HNSCC_OS_marginS_pvalue005_sorted)
 HNSCC_OS_marginS_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue005_sorted[which(p_value<=alpha_HNSCC & z_score>=0.6), 2:5]
+# discard "number"
 HNSCC_OS_marginS_pvalue1e_6_zscore0_6[, 2] <- signif(HNSCC_OS_marginS_pvalue1e_6_zscore0_6[, 2], 3)
 detach(HNSCC_OS_marginS_pvalue005_sorted) # n=17
 # > colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
@@ -833,10 +847,12 @@ select_title <- function(x) {
 title_candidates_Venn_xlsx <- select_title(marginTag)
 author <- paste("Reported by Tex Li-Hsing Chi. \n",
                 "tex@gate.sinica.edu.tw \n", title_candidates_Venn_xlsx, "\n", Sys.Date(), sep="")
+cat(author)
 xlsx.addParagraph(wb, sheet, value=author, isItalic=TRUE, colSpan=5, 
                   rowSpan=4, fontColor="darkgray", fontSize=24)
 xlsx.addLineBreak(sheet, 3)
 # header
+# Z-score:a normalized number (frequency) of OS P-values, which KM P-value < 0.05, in each gene
 xlsx.addHeader(wb, sheet, value=paste("Table 1. The candiate genes expressed in ", TCGA_cohort,
                                       " (ranking by KM P-value, selected by Z-score > ", signif(0.6, 2), ") ", "\n" , sep=""),
                level=5, color="black", underline=0) # nrow(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
@@ -882,7 +898,7 @@ xlsx.addPlot.candidates<-function( wb, sheet, startRow=NULL,startCol=2,
   #{
   # plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
   # legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
-  load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue005_sorted.Rda")) # or HNSCC_OS_marginFree_pvalue005_sorted
+  load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted.Rda", sep=""))) # or HNSCC_OS_marginFree_pvalue005_sorted
   # "swap data" for following code running
   
   attach(HNSCC_OS_marginS_pvalue005_sorted) # number_01 is the Z-score rescaled as 0-1
@@ -921,44 +937,45 @@ currentRow <- xlsx.addPlot.candidates(wb, sheet) # startRow + a plot
 
 
 #..
-# Export Venn1 by plotFunction() ####
+# Export Venn1 (bad guy genes) by plotFunction() ####
 xlsx.addLineBreak(sheet, 1)
 
 # Define function
 xlsx.addPlot.venn<-function( wb, sheet, startRow=NULL,startCol=2,
                              width=480, height=480,... )
-{ # plot of venn digram"
+{ # plot of venn digram: Rplot09_venn_HR1.5.tiff"
   
-  png(filename = "plot1.png", width = width, height = height,...)
-  #{
-  venn(venn_HR2p5, snames=names_HR2p5,
-       ilabels = T, counts = T, ellipse = FALSE,  zcolor = "red, deeppink", opacity = 0.6, size = 15, cexil = 3, cexsn = 0.85, borders = TRUE)
-  #      predefined colors if "style"; cexil = 0.6 (default text size of counts)
-  title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(Bonferroni_cutoff, 3)), sep = "", collapse = "\n")
-  text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
+  # png(filename = "plot1.png", width = width, height = height,...)
+  # #{
+  # venn(venn_HR2p5, snames=names_HR2p5,
+  #      ilabels = T, counts = T, ellipse = FALSE,  zcolor = "red, deeppink", opacity = 0.6, size = 15, cexil = 3, cexsn = 0.85, borders = TRUE)
+  # #      predefined colors if "style"; cexil = 0.6 (default text size of counts)
+  # title <- paste(c(TCGA_cohort, " survival analysis", "KM P-Value <= ", signif(alpha_HNSCC, 3)), sep = "", collapse = "\n")
+  # text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
+  # 
+  # #}
+  # dev.off()
   
-  #}
-  dev.off()
   
-  
-  #Append plot1 to the sheet
+  #Append Rplot09_venn_HR1.5.tiff to the sheet
   if(is.null(startRow)){
     rows<- getRows(sheet) #list of row object
     startRow=length(rows)+1
   } 
-  # Add the file created previously
-  addPicture("plot1.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
+
+    # Add the file created previously
+  addPicture("Rplot09_venn_HR1.5.tiff", sheet=sheet,  startRow = startRow, startColumn = startCol) 
   xlsx.addLineBreak(sheet, round(width/20)+1)
-  res<-file.remove("plot1.png")
+  #res<-file.remove("plot1.png")
   
 } # end of Define function
 
 # calling
 #detach(package:gplots)
+#Append saved "Rplot09_venn_HR1.5.tiff" to the sheet
+#print(paste("The Venn diagram (bad guy) and the candidate genes on", filenamex, ", which was exported successfully."))
 library(venn)
 xlsx.addPlot.venn(wb, sheet)
-print(paste("The Venn diagram (bad guy) and the candidate genes on", filenamex, ", which was exported successfully."))
-
 
 
 
@@ -1023,7 +1040,7 @@ candidate_bad_unimulti_HR2p5 <- cbind(data.frame(gene_id=geneid_bad_unimulti_HR2
 # export tables
 xlsx.addLineBreak(sheet, 4) # 
 # header of candidate_bad_unimulti_HR2p5
-xlsx.addHeader(wb, sheet, value=paste("Table 2A. The ", nrow(candidate_bad_unimulti_HR2p5), " consensus candiate genes (uni_ & multi_CoxHR>2.5) in ", TCGA_cohort, "(bad guy)"),
+xlsx.addHeader(wb, sheet, value=paste("Table 2A. The ", nrow(candidate_bad_unimulti_HR2p5), " consensus candiate genes (uni_ & multi_CoxHR > ", bad_FC,") in ", TCGA_cohort, " (bad guy)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addLineBreak(sheet, 1) # add one blank line
 candidate_bad_unimulti_HR2p5[,2] <- formatC(candidate_bad_unimulti_HR2p5[,2], format = "e", digits = 2) #as.numeric(as.character
@@ -1034,7 +1051,7 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 xlsx.addLineBreak(sheet, 3)
 # header of candidate_bad_uni_HR2p5
-xlsx.addHeader(wb, sheet, value=paste("Table 2B. The candiate genes (uni_CoxHR>2.5) in ", TCGA_cohort, "(bad guy)"),
+xlsx.addHeader(wb, sheet, value=paste("Table 2B. The candiate genes (uni_CoxHR >", bad_FC,") in ", TCGA_cohort, " (bad guy)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addLineBreak(sheet, 1) # add one blank line
 candidate_bad_uni_HR2p5[,2] <- formatC(candidate_bad_uni_HR2p5[,2], format = "e", digits = 2) #as.numeric(as.character
@@ -1045,7 +1062,7 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 xlsx.addLineBreak(sheet, 3)
 # header of candidate_bad_multi_HR2p5
-xlsx.addHeader(wb, sheet, value=paste("Table 2C. The candiate genes (multi_CoxHR>2.5) in ", TCGA_cohort, "(bad guy)"),
+xlsx.addHeader(wb, sheet, value=paste("Table 2C. The candiate genes (multi_CoxHR >", bad_FC,") in ", TCGA_cohort, " (bad guy)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addLineBreak(sheet, 1) # add one blank line
 candidate_bad_multi_HR2p5[,2] <- formatC(candidate_bad_multi_HR2p5[,2], format = "e", digits = 2) #as.numeric(as.character
@@ -1064,33 +1081,32 @@ xlsx.addPlot.venn<-function( wb, sheet, startRow=NULL,startCol=2,
 { # plot of venn digram"
   
   
-  png(filename = "plot2.png", width = width, height = height,...)
-  #{
-  venn(venn_HR0p5, snames=names_HR0p5,
-       ilabels = T, counts = T, ellipse = FALSE, zcolor = "forestgreen, darkolivegreen1", opacity = 0.6, size = 15, cexil = 3, cexsn = 0.85, borders = TRUE)
-  #      predefined colors if "style"
-  title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(Bonferroni_cutoff, 3)), sep = "", collapse = "\n")
-  text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
+  # png(filename = "plot2.png", width = width, height = height,...)
+  # #{
+  # venn(venn_HR0p5, snames=names_HR0p5,
+  #      ilabels = T, counts = T, ellipse = FALSE, zcolor = "forestgreen, darkolivegreen1", opacity = 0.6, size = 15, cexil = 3, cexsn = 0.85, borders = TRUE)
+  # #      predefined colors if "style"
+  # title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(Bonferroni_cutoff, 3)), sep = "", collapse = "\n")
+  # text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
+  # 
+  # #}
+  # dev.off()
   
-  #}
-  dev.off()
-  
-  # append plot2
+  # append Rplot09_venn_HR0.5.tiff
   if(is.null(startRow)){
     rows<- getRows(sheet) #list of row object
     startRow=length(rows)+1
   } 
-  addPicture("plot2.png", sheet=sheet,  startRow = startRow , startColumn = startCol) 
-  # jump to next venn ?
+  addPicture("Rplot09_venn_HR0.5.tiff", sheet=sheet,  startRow = startRow , startColumn = startCol) 
   xlsx.addLineBreak(sheet, round(width/20)+1)
-  res<-file.remove("plot2.png")
+  #res<-file.remove("plot2.png")
 } # end of Define function
 
 # calling
 #detach(package:gplots)
 library(venn)
 xlsx.addPlot.venn(wb, sheet)
-print(paste("The Venn diagram2 and the candidate genes: ", filenamex, " were exported successfully."))
+#print(paste("The Venn diagram2 and the candidate genes (good guy): ", filenamex, " were exported successfully."))
 
 
 # *generate (good) prognostic features of those genes on lists in TCGA HNSCC cohort ####
@@ -1139,7 +1155,7 @@ candidate_good_unimulti_HR0p5 <- cbind(data.frame(gene_id=geneid_good_unimulti_H
 # export tables
 xlsx.addLineBreak(sheet, 4) # 
 # header of candidate_good_unimulti_HR0p5
-xlsx.addHeader(wb, sheet, value=paste("Table 3A. The ", nrow(candidate_good_unimulti_HR0p5), " consensus candiate genes (uni_ & multi_CoxHR<0.5) in ", TCGA_cohort, "(good guy)"),
+xlsx.addHeader(wb, sheet, value=paste("Table 3A. The ", nrow(candidate_good_unimulti_HR0p5), " consensus candiate genes (uni_ & multi_CoxHR < ", good_FC, ") in ", TCGA_cohort, " (good guy)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addLineBreak(sheet, 1) # add one blank line
 candidate_good_unimulti_HR0p5[,2] <- formatC(candidate_good_unimulti_HR0p5[,2], format = "e", digits = 2) #as.numeric(as.character
@@ -1150,7 +1166,7 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 xlsx.addLineBreak(sheet, 3)
 # header of candidate_good_uni_HR0p5
-xlsx.addHeader(wb, sheet, value=paste("Table 3B. The candiate genes (uni_CoxHR<0.5) in ", TCGA_cohort, "(good guy)"),
+xlsx.addHeader(wb, sheet, value=paste("Table 3B. The candiate genes (uni_CoxHR < ", good_FC, ") in ", TCGA_cohort, " (good guy)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addLineBreak(sheet, 1) # add one blank line
 candidate_good_uni_HR0p5[,2] <- formatC(candidate_good_uni_HR0p5[,2], format = "e", digits = 2) #as.numeric(as.character
@@ -1161,7 +1177,7 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 xlsx.addLineBreak(sheet, 3)
 # header of candidate_good_multi_HR0p5
-xlsx.addHeader(wb, sheet, value=paste("Table 3C. The candiate genes (multi_CoxHR<0.5) in ", TCGA_cohort, "(good guy)"),
+xlsx.addHeader(wb, sheet, value=paste("Table 3C. The candiate genes (multi_CoxHR < ", good_FC, ") in ", TCGA_cohort, " (good guy)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addLineBreak(sheet, 1) # add one blank line
 candidate_good_multi_HR0p5[,2] <- formatC(candidate_good_multi_HR0p5[,2], format = "e", digits = 2) #as.numeric(as.character
@@ -1173,7 +1189,7 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 ##..
 # save the workbook to an Excel file and write the file to disk.####
-setwd(path_ZSWIM2)
+setwd(path_ZSWIM2) # at /marginS/
 xlsx::saveWorkbook(wb, filenamex)
 setwd(path_cohort)
 #xlsx.openFile(filenamex) # open file to review

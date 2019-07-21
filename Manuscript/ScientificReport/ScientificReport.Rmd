@@ -3,7 +3,7 @@
 # of BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript (BioMedCentral_article temple of Tex)
 # TypesetIO: https://www.typeset.io/edit/51a7cf1a-1a39-4a40-94c1-6f47608286ff BMC Cancer
 #*** sharlatex and overleaf, sync with Github (vim): https://www.overleaf.com/project/5d1f4419460443357489e46f
-# 
+#
 title: A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
 Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
 subtitle: A Optimizated Cutoff Finder for Biomarker Discovery for Head and Neck Squamous Cell Carcinoma
@@ -231,14 +231,10 @@ install R packages on CRAN repository and Github
 load(file="whole_genome.Rda") # the name list of protein coding genome
 # below 2 lines: it needs to be modified for a function cal
 LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3", keep it LUAD_n as gene number
-margin issue
-16789 # SLC35E2 RNAseq has two measurement for each participants => there is two genes: SLC35E2A and SLC35E2B
+**margin issue
+**16789 # SLC35E2 RNAseq has two measurement for each participants => there is two genes: SLC35E2A and SLC35E2B
 whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
 clean and rearrange by geneID => whole_genome has 20500.
-# z-score calculation = [(value gene X in tumor Y)-(mean gene X in normal)]/(standard deviation X in normal)
-A z-score for a sample indicates the number of standard deviations away from the mean of expression in the reference.  The formula is : 
-
-z = (expression in tumor sample - mean expression in reference sample) / standard deviation of expression in reference sample
 
 TCGA states: "For mRNA and microRNA expression data, we typically compute the relative expression of an individual gene and tumor to the gene's expression distribution in a reference population. That reference population is either all tumors that are diploid for the gene in question, or, when available, normal adjacent tissue." (It is not always clear what the cell of origin of a tumor is, so the mRNA expression in normal adjacent tissue can sometimes be misleading, which is why expression is sometimes compared within the set of tumors only).
 
@@ -299,9 +295,26 @@ Table 3A and 3B and 3C: good guy candidate genes => KM P-value, Cox P-value and 
 }
 ***how to z-score{\todo}
 {
-convert the "number" frequency to z-scores ("Z" because the normal distribution is also known as the "Z distribution").
-a candidate table (HNSCC_OS_marginS_pvalue1e_6_zscore0_6), with "number of significant P-value" under cutoff finding (becoming z-score: bigger, much more significant cutoff "sites")
-# => a kind of local minimal or global minimal of curve fitting (Levenberg-Marquardt Optimization)?
+convert the "number" frequency to z-scores ("Z" because the standard normal distribution is also known as the "Z distribution").
+The Standard Normal Distribution is a specific instance of the Normal Distribution that has a mean of ‘0’ and a standard deviation of ‘1’.
+the Z-distribution is a way of naming the Standard Normal distribution.
+Z-score = ( x – µ ) / σ
+Standard Deviation denoted by the symbol (σ) , the greek letter for sigma, is nothing but the square root of the Variance. Whereas Variance is average of the squared differences from the Mean.\cite{Abraham de Moivre, 1738} https://www.ztable.net
+
+*** a candidate table (HNSCC_OS_marginS_pvalue1e_6_zscore0_6), with "number of significant P-values" from cutoff finding (becoming z-score: bigger, much more significant cutoff "sites" 愈多被發現的機會，隨便切在 30%~70% slicing 都是 significant，代表這個基因有比較高的機會是 truly prognostic impact)
+Z-score:a normalized number (frequency) of OS P-values
+=> number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
+# higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
+(x)z-score calculation = [(value gene X in tumor Y)-(mean gene X in normal)]/(standard deviation X in normal)
+A z-score for a sample indicates the number of standard deviations away from the mean of expression in the reference.  The formula is : 
+(x)z = (expression in tumor sample - mean expression in reference sample) / standard deviation of expression in reference sample
+
+
+
+
+# => a kind of local minimal or global minimal of curve fitting 
+
+x(Levenberg-Marquardt Optimization)? to be classified by neural networks. Learning or training stage is done by applied The Levenberg-Marquardt back propagation algorithm „trainlm‟ is a network learning function that updates weight and bias values according to Levenberg-Marquardt optimization.
 }
 
 ***how about false discovery rate (FDR)? (not for RNAseq)
