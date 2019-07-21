@@ -390,8 +390,8 @@ xlsx.addLineBreak(sheet, 3)
 
 # under optimized cutoff1
 # Part I: # Table 2 construction by Calling contingencyTCGA and contignecyBin ####
-# ??using tableChi2 by contigencyBin2 with c("Gender","ageDx", "pathologic_T", "pathologic_N", "pathologic_M", "stage","margin" )
-# under beset cutoff value (auto choosen)
+# x using tableChi2 by contigencyBin2 with c("Gender","ageDx", "pathologic_T", "pathologic_N", "pathologic_M", "stage","margin" )
+# under best cutoff value (auto choosen which has the smallest P-value)
 # Table 2: clinical correlation tables (tableChi1)
 contiT <- contingencyTCGA(osccCleanNA, geneName) # calling this function (OSCC cohort, PMM1) 2 parameters, no more cutoff1; 
 # "margin" at column 8 of oscc
@@ -502,7 +502,7 @@ for (i in 1:nrow(tableRFS)) {
 # # fontColor="darkgray"
 
 xlsx.addLineBreak(sheet, 5)
-xlsx.addHeader(wb, sheet, value=paste("Table 3. Univariate/Multivariate Cox proportional hazards regression analyses on OS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
+xlsx.addHeader(wb, sheet, value=paste("Table 3. Univariate/Multivariate Cox's proportional hazards regression analyses on OS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
 xlsx.addLineBreak(sheet, 1)
 # xlsx.addParagraph(wb, sheet, value = "Overall Survival", fontSize=12, isItalic=F, startCol=4,
 #                  colSpan=8, rowSpan=1)
@@ -514,7 +514,7 @@ xlsx.addTable(wb, sheet, data = tableOS1, startCol=2,
               rowFill=c("white", "lightblue"), row.names = TRUE
 )
 xlsx.addLineBreak(sheet, 5)
-xlsx.addHeader(wb, sheet, value=paste("Table 4. Univariate/Multivariate Cox proportional hazards regression analyses on RFS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
+xlsx.addHeader(wb, sheet, value=paste("Table 4. Univariate/Multivariate Cox's proportional hazards regression analyses on RFS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
 xlsx.addLineBreak(sheet, 1)
 xlsx.addTable(wb, sheet, data = t(data.frame(c("Univariate", "\t", "\t", "\t", "Multivariate"))), fontSize=12, startCol=4,
               row.names = F, col.names = F)

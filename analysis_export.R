@@ -82,8 +82,7 @@ error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group 
 
 
 
-# >Retrieving the summary table to form z-score in 
-# HNSCC (marginS), from all HNSCC_survival*.Rda ####
+# >A summary table with z-score from all HNSCC_survival*.Rda ####
 # _marginFree_ or _marginS_ or _marginPlus_ from .Rda
 
 # get_Rda_pvalue <- function(geneName) {
@@ -614,10 +613,15 @@ HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue00
 # <done> [2019/07/20] anniversary for discovery of GLUT4 in HNSCC cell line [2014/07/20]
 
 
-# plot uni_HR, n=1408 ####
+# P-values plot uni_HR, n=6313 ####
 HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
 attach(HNSCC_OS_marginS_THREE_pvalue005)
-plot(p_value, uni_HR, type="p", ylab="Cox Uni_HR", xlab="P-value from KM survival", log="y")
+#tiff("Rplot07_cox_uniHR.tiff", units="cm", width=5, height=5, res=300) 
+# x# saving as .tiff (by tiff()) => x y axis is too small in .tiff
+# adds a loess regression smoother to a scatter plot by smoothScatter
+#smoothScatter(p_value, uni_HR, nrpoints = 10000, cex=0.6, xlab="P-value (KM survival)", ylab="Cox's Harzard Ratios (univariate)", bandwidth=c(7, 7), nbin=20)
+plot(p_value, uni_HR, type="p", main=paste(TCGA_cohort, "Cox's Harzard Ratios (univariate)"), 
+     ylab="Cox's HR", xlab="P-value (KM survival)", log="y", cex=0.1, , cex.main=1.5, cex.lab=1.3, cex.axis=1)
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
 abline(h=2.0, lty=2, col="red") # HR
 abline(v=alpha_HNSCC, lty=2, col="blue") #no Bonferroni_cutoff
@@ -625,15 +629,18 @@ abline(v=alpha_HNSCC, lty=2, col="blue") #no Bonferroni_cutoff
 #g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
 #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-legend("topright", legend=c(paste("Harzard Ratio"), paste("Cutoff")), lty=1:2, col=c("red","blue"), cex=0.7) # box and font size
+legend("topright", legend=c(paste("HR at 2.0"), paste("P-value at", alpha_HNSCC)), lty=2:2, col=c("red","blue"), cex=1) # box and font size
+# text(500,900, labels=paste(TCGA_cohort, "KM P-value plot"), cex = 0.60) # (0,0) on bottom_left corner
 # figure legend: logistic regression, LR, by Generalized linear model, glm
+#dev.off()
 detach(HNSCC_OS_marginS_THREE_pvalue005)
 
 
 #plot(HNSCC_OS_marginS_THREE_pvalue005$p_value,  HNSCC_OS_marginS_THREE_pvalue005$uni_HR)
 # plot multi_HR, n=1408
 attach(HNSCC_OS_marginS_THREE_pvalue005)
-plot(p_value, multi_HR, type="p", ylab="Cox Multi_HR", xlab="P-value from KM survival", log="y")
+plot(p_value, multi_HR, type="p", main=paste(TCGA_cohort, "Cox's Harzard Ratios (multivariate) plot"), 
+     ylab="Cox's HR", xlab="P-value (KM survival)", log="y", cex=0.1, , cex.main=1.5, cex.lab=1.3, cex.axis=1)
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
 abline(h=2.0, lty=2, col="red")
 abline(v=alpha_HNSCC, lty=2, col="blue")
@@ -641,7 +648,7 @@ abline(v=alpha_HNSCC, lty=2, col="blue")
 #g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
 #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-legend("topright", legend=c(paste("Harzard Ratio"), paste("Cutoff")), lty=1:2, col=c("red","blue"), cex=0.7) # box and font size
+legend("topright", legend=c(paste("HR at 2.0"), paste("P-value at", alpha_HNSCC)), lty=2:2, col=c("red","blue"), cex=1) # box and font size
 # figure legend: logistic regression, LR, by Generalized linear model, glm
 detach(HNSCC_OS_marginS_THREE_pvalue005)
 
@@ -664,42 +671,48 @@ detach(HNSCC_OS_marginS_THREE_pvalue005)
 # Broader gene candidate (first 100): Cox HR (>1.5 or >=2.5), bad_FC fold change 
 # x (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
 # Bonferroni_cutoff = 5.31011e-06 is too restricted in this cohort
-bad_FC <- 1.5
+bad_FC <- 1.8
 HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR >= bad_FC), 
                                         select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=295
+# n=61
 #HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= 2.5), 
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 
 # multi_HR >=1 or 2.5 # & (uni_P_value <= 0.05) & (multi_P_value <= 0.05) 
 HNSCC_OS_marginS_multi_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005,  (p_value <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR >= bad_FC), 
                                           select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=302; uni and multi could not be identical gene list :-)
+# n=71; uni and multi could not be identical gene list :-)
 
 
 # venn1 diagram of HR>=1 of Uni & Multi ###
-#for list of genes by grouping; library(gplots)
+#for list of genes by grouping; 
 venn_HR2p5 <- list(HNSCC_OS_marginS_uni_CoxHR2p5$gene_id, HNSCC_OS_marginS_multi_CoxHR2p5$gene_id)
-# cutoff by Bonferroni_cutoff
-names_HR2p5 <- c(paste("uni_Cox HR >=", bad_FC), paste("multi_Cox HR >=", bad_FC))
+# no cutoff by Bonferroni_cutoff
+names_HR2p5 <- c(paste("Cox's HR(univariate) >=", bad_FC), paste("Cox's HR(multivariate) >=", bad_FC))
 library(gplots)
-tmp <- venn(venn_HR2p5, names=names_HR2p5, show.plot=F) #library(gplots); the group count matrix alone
-isect_HR2p5 <- attr(tmp, "intersections")
+tmp_bad <- venn(venn_HR2p5, names=names_HR2p5, show.plot=F) #library(gplots); the group count matrix alone
+isect_HR2p5 <- attr(tmp_bad, "intersections")
 #isect_HR2p5
 detach(package:gplots)
 
+
+# https://www.statmethods.net/advgraphs/parameters.html
 library(venn)
+# https://cran.r-project.org/web/packages/venn/venn.pdf
+tiff("Rplot09_venn_HR1.5.tiff", units="cm", width=5, height=5, res=300) 
+# # saving as .tiff (by tiff())
 venn(venn_HR2p5, snames=names_HR2p5,
-     ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, deeppink", opacity = 0.6, size = 15, cexil = 0.6, cexsn = 0.85, borders = TRUE)
+     ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, deeppink", opacity = 0.6, size = 15, cexil = 0.7, cexsn = 0.3, borders = TRUE)
 #      predefined colors if "style"
 #http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
 # meta-language 1 0 or -
-title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(alpha_HNSCC, 3)), sep = "", collapse = "\n")
+title <- c(paste(TCGA_cohort, "survival analysis"), paste("(KM P-Value <=", signif(alpha_HNSCC, 3), ")")) #, collapse = "\n")
 #coords <- unlist(getCentroid(getZones(venn_HR2p5, snames="uni_CoxHR>=2p5, multi_CoxHR>=2p5")))
 # coords[1], coords[2], 
-text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
-# n=231
-
+text(500,900, labels = title[1], cex = 0.60) # (0,0) on bottom_left corner
+text(500,855, labels = title[2], cex = 0.40) 
+# n=47
+dev.off() # saving instead of showing
 
 #https://stackoverflow.com/questions/43324180/adding-legend-to-venn-diagram
 #legend("top", legend=c("B:multi_Cox HR >=2.5", "A:uni_Cox HR >=2.5"), lty=1:2, col=c("blue","red"), cex=0.7) # box and font size
@@ -738,21 +751,31 @@ HNSCC_OS_marginS_multi_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_v
 # venn2 diagram of HR < 0.8 of Uni & Multi ###
 #for list of genes by grouping; library(gplots)
 venn_HR0p5 <- list(HNSCC_OS_marginS_uni_CoxHR0p5$gene_id, HNSCC_OS_marginS_multi_CoxHR0p5$gene_id)
-names_HR0p5 <- c(paste("uni_Cox HR <", good_FC), paste("multi_Cox HR <", good_FC))
+names_HR0p5 <- c(paste("Cox's HR(univariate) <", good_FC), paste("Cox's HR(multivariate) <", good_FC))
 library(gplots)
-tmp <- venn(venn_HR0p5, names=names_HR0p5, show.plot=F) #library(gplots); the group count matrix alone
-isect_HR0p5 <- attr(tmp, "intersections")
-isect_HR0p5
+tmp_good <- venn(venn_HR0p5, names=names_HR0p5, show.plot=F) #library(gplots); the group count matrix alone
+isect_HR0p5 <- attr(tmp_good, "intersections")
 detach(package:gplots)
 
 library(venn)
-venn(venn_HR0p5, snames=names_HR0p5,
-     ilabels = T, counts = T, ellipse = FALSE,  zcolor = "forestgreen, darkolivegreen1", opacity = 0.6, size = 15, cexil = 0.6, cexsn = 0.85, borders = TRUE)
+# venn(venn_HR0p5, snames=names_HR0p5,
+#      ilabels = T, counts = T, ellipse = FALSE,  zcolor = "forestgreen, darkolivegreen1", opacity = 0.6, size = 15, cexil = 0.6, cexsn = 0.85, borders = TRUE)
 #      predefined colors if "style"
-# meta-language 1 0 or -, https://cran.r-project.org/web/packages/gplots/vignettes/venn.pdf
-title <- paste(c("HNSCC survival analysis", "KM P-Value <= ", signif(alpha_HNSCC, 3)), sep = "", collapse = "\n")
-text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
-# n= 43
+tiff("Rplot09_venn_HR0.5.tiff", units="cm", width=5, height=5, res=300) 
+# # saving as .tiff (by tiff())
+venn(venn_HR0p5, snames=names_HR0p5,
+     ilabels = T, counts = T, ellipse = FALSE, zcolor = "forestgreen, darkolivegreen1", opacity = 0.6, size = 15, cexil = 0.7, cexsn = 0.3, borders = TRUE)
+#      predefined colors if "style"
+#http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+# meta-language 1 0 or -
+title <- c(paste(TCGA_cohort, "survival analysis"), paste("(KM P-Value <=", signif(alpha_HNSCC, 3), ")")) #, collapse = "\n")
+#coords <- unlist(getCentroid(getZones(venn_HR2p5, snames="uni_CoxHR>=2p5, multi_CoxHR>=2p5")))
+# coords[1], coords[2], 
+text(500,900, labels = title[1], cex = 0.60) # (0,0) on bottom_left corner
+text(500,855, labels = title[2], cex = 0.40) 
+# n=47
+dev.off() # saving instead of showing
+
 # signif(Bonferroni_cutoff, 3)
 
 
@@ -766,7 +789,9 @@ text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 # lapply(isect_HR0p5, head)
 #}
 
-
+# Embase HNSCC genes was removed; saved genes in left, right and intersection
+save(isect_HR2p5, isect_HR0p5, 
+     file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep="")))
 #} venn the end
 
 
@@ -781,12 +806,13 @@ text(500,900, labels = title, cex = 0.85) # (0,0) on bottom_left corner
 # 
 load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue1e_6_zscore0_6.Rda")) # in HNSCC_OS_marginS_pvalue1e_6_zscore0_6, cutoff by Bonferroni_cutoff
 load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda")) # in candidate_cox (a list), candidate_sample, candidate_cox, n_percent_Bonferroni
-
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep=""))) # isect_HR2p5, isect_HR0p5
 
 library("xlsx")
 library("r2excel")
 # Create an Excel workbook. Both .xls and .xlsx file formats can be used.
-filenamex <- paste("HNSCC_OS", marginTag, "candidates_Venn", ".xlsx", sep = "") # "HNSCC_OS_marginS_candidates_Venn.xlsx"
+filenamex <- paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn", ".xlsx", sep = "") 
+# "HNSCC_OS_marginS_candidates_Venn.xlsx"
 wb <- createWorkbook(type="xlsx")
 
 # Create a sheet in that workbook
@@ -796,15 +822,24 @@ sheet <- xlsx::createSheet(wb, sheetName = paste("Survival_candidates"))
 ## Add paragraph : Author
 library("tis") # by Brian Salzer
 # today(), arg must be ti, tis, ts, tif, or tifName
+select_title <- function(x) {
+  switch(x,
+         "_marginS_" = "The cohort with surgical margins status (0 or 1)",
+         "_marginFree_" = "The cohort with surgical margins free from tumor (0)",
+         "_marginPlus_" = "The cohort with surgical margins involving tumor (1)",
+         stop("Unknown input")
+  )
+}
+title_candidates_Venn_xlsx <- select_title(marginTag)
 author <- paste("Reported by Tex Li-Hsing Chi. \n",
-                "tex@gate.sinica.edu.tw \n", marginTag, "\n", Sys.Date(), sep="")
+                "tex@gate.sinica.edu.tw \n", title_candidates_Venn_xlsx, "\n", Sys.Date(), sep="")
 xlsx.addParagraph(wb, sheet, value=author, isItalic=TRUE, colSpan=5, 
                   rowSpan=4, fontColor="darkgray", fontSize=24)
 xlsx.addLineBreak(sheet, 3)
 # header
 xlsx.addHeader(wb, sheet, value=paste("Table 1. The candiate genes expressed in ", TCGA_cohort,
-                                      " (ranking by KM P-value, selected by Bonferroni cutoff, ", signif(Bonferroni_cutoff, 3), ") ", "\n", "n= ", nrow(HNSCC_OS_marginS_pvalue1e_6_zscore0_6), sep=""),
-               level=5, color="black", underline=0)
+                                      " (ranking by KM P-value, selected by Z-score > ", signif(0.6, 2), ") ", "\n" , sep=""),
+               level=5, color="black", underline=0) # nrow(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
 #xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
 #               level=5, color="red", underline=0) # total n is taken from surv_OS1$n
 
@@ -817,19 +852,19 @@ xlsx.addLineBreak(sheet, 1) # add one blank line
 # > colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
 # [1] "gene_id"   "p_value"   "z_score"   "number_01"
 colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6) <- c("Gene_id",   "P_value",   "z_score_raw",   "Z_score") # Z_score is rescaled as 0-1
-# Bonferroni_cutoff; [, c(1,2,4)]
-# in scientific notation: formatC of [, c(2)]
+# # no more Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
 attach(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
-candidates_Bonferroni_pvalue <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6[which(P_value<=Bonferroni_cutoff), c(1,2,4)]
+candidates_alpha_pvalue <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6[which(P_value<=alpha_HNSCC), c(1,2,4)]
 detach(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
 
-attach(candidates_Bonferroni_pvalue) # removal of as.factor (P_value)
-candidates_Bonferroni_pvalue$P_value <- formatC(as.numeric(as.character(P_value)), format = "e", digits = 2)
-candidates_Bonferroni_pvalue$Z_score <- signif(Z_score, digits=4)
-candidates_Bonferroni_pvalue <- candidates_Bonferroni_pvalue[order(P_value, -Z_score), ] #sorting by order(ascending)
-detach(candidates_Bonferroni_pvalue)
+attach(candidates_alpha_pvalue) # removal of as.factor (P_value)
+# in scientific notation: formatC of [, c(2)]
+candidates_alpha_pvalue$P_value <- formatC(as.numeric(as.character(P_value)), format = "e", digits = 2)
+candidates_alpha_pvalue$Z_score <- signif(Z_score, digits=4)
+candidates_alpha_pvalue <- candidates_alpha_pvalue[order(P_value, -Z_score), ] #sorting by order(ascending)
+detach(candidates_alpha_pvalue)
 
-xlsx.addTable(wb, sheet, data = candidates_Bonferroni_pvalue, startCol=2,
+xlsx.addTable(wb, sheet, data = candidates_alpha_pvalue, startCol=2,
               fontColor="darkblue", fontSize=12,
               rowFill=c("white", "white"), row.names = TRUE)
 
@@ -847,19 +882,19 @@ xlsx.addPlot.candidates<-function( wb, sheet, startRow=NULL,startCol=2,
   #{
   # plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
   # legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
-  load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue005_sorted.Rda")) # as HNSCC_OS_marginFree_pvalue005_sorted
+  load(file=file.path(path_ZSWIM2, "HNSCC_OS_marginS_pvalue005_sorted.Rda")) # or HNSCC_OS_marginFree_pvalue005_sorted
   # "swap data" for following code running
   
-  attach(HNSCC_OS_marginS_pvalue005_sorted)
-  plot(p_value, number_01, type="p", ylab="Z-score", xlab="P-value from KM survival analysis \n (cutoff by Bonferroni correction)", log="x") # log scale x or y
+  attach(HNSCC_OS_marginS_pvalue005_sorted) # number_01 is the Z-score rescaled as 0-1
+  plot(p_value, number_01, type="p", ylab="Z-score", xlab="P-value (KM survival analysis)", log="x") # log scale x or y
   #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
-  abline(h=0.6, lty=2, col="green")
-  abline(v=Bonferroni_cutoff, lty=2, col="red") # *** as 4.693073e-06
+  abline(h=0.6, lty=2, col="blue")
+  abline(v=alpha_HNSCC, lty=2, col="red") #
   # run a logistic regression model (categorical 0 vs 1)
-  g <- glm(number_01 ~ p_value, family=poisson, data=HNSCC_OS_marginS_pvalue005_sorted)
+  #g <- glm(number_01 ~ p_value, family=poisson, data=HNSCC_OS_marginS_pvalue005_sorted)
   # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
-  curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-  legend("topright", legend=c(paste("LR"), paste("Cutoff Z"), paste("Cutoff B")), lty=1:2, col=c("blue","green","red"), cex=0.9) # box and font size
+  #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
+  legend("topright", legend=c(paste("Z-score at 0.6"), paste("P-value at", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.9) # box and font size
   # figure legend: logistic regression, LR, by Generalized linear model, glm
   detach(HNSCC_OS_marginS_pvalue005_sorted)
   #}
@@ -870,15 +905,18 @@ xlsx.addPlot.candidates<-function( wb, sheet, startRow=NULL,startCol=2,
     rows<- getRows(sheet) #list of row object
     startRow=length(rows)+1
   } 
-  # Add the file created previously
+  # append to the file created previously
+  # or just add 
+  # Cox's Harzard Ratios (univariate) plot [Rplot07_cox_uniHR.tiff]
+  # Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff]
   addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
   xlsx.addLineBreak(sheet, round(width/20)+1)
-  res<-file.remove("plot.png")
+  res<-file.remove("plot.png") # Z-score vs P-value
 } # Define function
 
 # calling
 currentRow <- xlsx.addPlot.candidates(wb, sheet) # startRow + a plot
-print(paste("The z-score summary plot:", filenamex,"was exported successfully."))
+#print(paste("The z-score summary plot:", filenamex,"was exported successfully."))
 
 
 

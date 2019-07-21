@@ -41,7 +41,7 @@ MSC:
 - MSC code 1
 - MSC code 2    
 
-# Abstract {#abstract}
+abstract: {#abstract}
   A gene expression–based prognostic markers for HNSCC, 442 samples were collected from 6 institutions and processed at 1 of 4 laboratories using a single, reproducible protocol, and data were organized by TCGA and were analyzed using a validation step by Tex.
   Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment.
 	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. 
@@ -49,11 +49,10 @@ MSC:
 	While one of the methods for cutoff optimization is based solely on the distribution of the marker under investigation, other methods optimize the correlation of the dichotomization with respect to an outcome or survival variable. We illustrate the functionality of Cutoff Finder by the analysis of the gene expression of EGFR and VEGF in HNSCC cancer tissues. 
 	This distribution of these important biomarkers is analyzed and correlated with immunohistologically determined EGFR status.
 
-bibliography: bibliography.bib
-output: rticles::springer_article
+
 ---
 *** https://journalfinder.elsevier.com
-target journal:
+#target journal:
 BMC Cancer
 https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
 BBRC: Biochemical and Biophysical Research Communications 
@@ -65,7 +64,8 @@ https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your
 (https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
 https://www.biomedcentral.com/journals#Life-Sciences
 (TCGA publication guideline: https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)
-# Introduction {#intro}
+
+#Introduction {#intro}
 project rationale: 人工決定 cutoff 需要天啟, it is difficult.
 https://www.cancer.gov/types/head-and-neck/hp HNSCC
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
@@ -88,12 +88,12 @@ Rules: creating a portable project (.Rproj in Rstudio environment), using code/s
 - miRNAseq workflow
 - ChIPseq workflow
 https://github.com/texchi2/docker4seq
-# Material and method {#sec:1}
+
+# Material and method
 <!-- # since the date [2019/05/13] after -->
-set up a data science environment on Google Cloud Platform (GCP)
+#set up a data science environment on Google Cloud Platform (GCP) {#sec:1}
 it is also fine:
-# Data Processing
-Work flow
+# Data Processing (cleaning) Work flow
 {
 Data management: dummy coding for category data (gender, age...)
 Save the raw data.
@@ -105,9 +105,10 @@ Anticipate the need to use multiple tables, and use a unique identifier for ever
 Submit data to a reputable DOI-issuing repository so that others can access and cite it.
 
 }
-TCGA data portal
+#***TCGA data portal {#sec:2}
 TCGA-Assembler was used to download RNA-seq data from TCGA data portal. Raw counts data with paired samples (tumor and normal) were extracted and analyzed using DEseq R package with default parameters: method1⁄4‘blind’, sharingMode1⁄4‘fit-only’, fitType1⁄4‘local’. DEseq normalization method has been reported to outperform other normalization methods. Fold changes, not absolute expression values, are displayed based on analysis described above. False discovery rates are not defined due to the low number of replicates for samples. This approach allows the user to determine the significance of differentially expressed genes on an individual basis.\cite{Wan2015}
-# [FirebrowseR] data preparation {#sec:2}
+
+# [FirebrowseR] data preparation
 manuscript and TCGA survival analysis Interpretation ##
 head and neck squamous cell carcinoma (HNSC)
 #https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
@@ -153,7 +154,9 @@ In 2011, Salmena et al. proposed a competing endogenous RNA (ceRNA) hypothesis t
 # source_gist("https://gist.github.com/dfalster/5589956")
 # addNewData("dataNew.csv", myData, allowedVars)
 
-#[Survival analysis] {#sec:2}
+
+
+#[Survival analysis] {#sec:3}
 #https://data-flair.training/blogs/survival-analysis-in-r/
 # ***Work flow of survival analysis
 {
@@ -163,11 +166,17 @@ cutoff finder, survival analysis => P-value
 Table 2. The clinicopathological features of HNSCC cohort and ZZZ3 expression (chi square test).
 (tableChi1 <- contingencyBin(contingencyTCGA())) (RNAseq vs features), 
 v***by Chi-square test of association (P-value) or,
-***by R^2 (Spearman correlation coefficient, rho)
-cor(x, y, method=“spearman”)
+[***by R^2 (Spearman correlation coefficient, rho)
+cor(x, y, method=“spearman”)]
 
-Table 3: Cox proportion hazard regression analysis, univariate and multipvariate => OS hazard ratio (HR), Cox P-value and its 95% confidence interval (CI)
+Table 3: Cox's proportional hazards regression analysis, univariate and multipvariate => OS hazard ratio (HR), Cox P-value and its 95% confidence interval (CI)
+(xlsx.addHeader(wb, sheet, value=paste("Table 3. Univariate/Multivariate Cox's proportional hazards regression analyses on OS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
+xlsx.addLineBreak(sheet, 1))
+
 [table 4: RFS] ditto, omit
+(xlsx.addHeader(wb, sheet, value=paste("Table 4. Univariate/Multivariate Cox's proportional hazards regression analyses on RFS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
+xlsx.addLineBreak(sheet, 1))
+
 Figures: KM plot, cumulative KM P-value plot
 Table of significant KM P-value
 }
@@ -180,7 +189,7 @@ cor() in R:
 monotonic, no constant rate
 
 
-#Statistical analysis
+#Statistical analysis method
 All statistical analysis were performed with R (https://www.r-project.org/, v3.0.1) and R packages. Normalization of Affymetrix microarray data were implemented with R package “limma”26. The survival analysis, cox univariate regression, cox multivariate regression and cox probability hazard model were carried out on R package “survival”30. Random forest variable hunting was performed with package “randomForestSRC”. The ROC curve was plotted with R package “pROC”31, and the nomogram were plotted with R package “rms”32.
 
 A 1-year, 3-year, 5-year, and 10-year time-dependent receiver operating characteristic (ROC) curve analysis were performed using "survival-ROC" package in R software to assess the predictive value of the risk score for time-dependent outcomes [13, 14]. The ROC curve was used to evaluate the sensitivity and specificity of HNSCC-specific signatures for predicting overall survival of HNSCC patients.
@@ -190,12 +199,32 @@ All statistical analyses were performed using SPSS v21.0 (Beijing Stats Data CO.
 Student’s t-test and the χ2 test were used for the comparison to baseline clinical characteristics and dietary information between the derivation data and validation data. In this study, noninvasive risk factors were defined as factors that could be measured without taking a blood sample. The variables included in the model were divided into classic risk factors and dietary predictors. Classic risk factors included age, gender, BMI, waist circumference, regular exercise, labor intensity, alcohol consumption, cigarette smoking, education, hypertension and a family history of diabetes. Dietary predictors included the 14 food groups in the FFQ and total calorie intake. Their adjusted odds ratio (OR) and 95% confidence intervals (95% CI) were estimated using a multivariate backward logistic regression analysis. The diabetes risk score was developed for the two multivariate logistic regression models: a classic noninvasive risk score and a diet-containing risk score, and points were assigned to each variable based on the magnitude of its regression coefficient [22]. In the diabetes risk score system, we transformed the unit of diet consumption from gram per day to liang per day, to facilitate its use in China. The dietary predictors except diary in the risk model were continuous in order to use the full information for dietary predictors. The risk score allows decimal value if the weight is not in round number. For the dairy products, because 24.4% and 29.4% of the total subjects in the derivation data and validation data were never consume milk and its products, we transformed the dairy and its products variable into binary variable in the risk model. A total diabetes risk score for each individual was calculated as the sum of the points for each variable.
 
 The classic noninvasive risk model and the diet-containing risk model were compared with Akaike’s information criterion (AIC), area under curve (AUC), IDI, NRI and the Hosmer-Lemeshow goodness-of-fit test (HL test) for model performance, discrimination and predictive ability, and general calibration in derivation data and validation data separately. An AIC difference between two models of 10 or greater was considered to be significant with a lower AIC value indicating a better model performance [23]. AUC, IDI and NRI were calculated to evaluate the model discrimination and predictive ability [24]. To apply NRI in the logistic regression model, we adopted the approach proposed by Pencina et al [25]. The Hosmer-Lemeshow goodness-of-fit test (HL test) was used to examine how well the predicted prevalence matched the observed prevalence of type 2 diabetes, and P-values of 0.01 or greater from the test were considered to indicate a good calibration.
-# https://stats.idre.ucla.edu/r/dae/logit-regression/ Logit Regression
+
+https://stats.idre.ucla.edu/r/dae/logit-regression/ Logit Regression
 The best cutoff was derived using Cutoff Finder software [15] based on an R routine which optimized the significance of the split between Kaplan-Meier survival curves measured by the log-rank test. Statistical analyses were performed with Rstudio server on GCE.
 he medians of the independent data groups were compared by using nonparametric Mann-Whitney (2 groups) and Kruskal-Wallis test (>2 groups). Correlation between stromal and intra-tumoral Treg numbers was assess by Spearman’s rho test. The optimal cutoff points of the population were calculated by using the Cutoff finder web application [22]. Recurrence-free survival (RFS) and overall survival (OS) analyses were performed using Kaplan-Meier curves. Univariate and multivariate Cox regression models were applied to calculate hazard ratio, 95% confidence interval and significance, and to assess the independent contributions of each factor to the RFS and OS. P-values < 0.05 were considered statistically significant. All statistical analyses were performed by using the IBM SPSS Statistics 23 (IBM, Ehningen, Germany).
 The patients in the training data set were divided into two groups (high- and low-risk) according to the cutoff value for risk using Cutoff Finder. Survival times were compared between the two groups using the Kaplan-Meier analysis and log-rank test.
 
-.
+# statistics by Joy Su
+*P value <0.05 was considered statistically significant (Student’s t test for continuous variables and Pearson’s chi-square test for variables). SD represents the standard deviation. The tumor stage, tumor, lymph node, and distal metastasis status were classified according to the international system for staging HNSCC
+P-value notes:
+Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
+if <0.001 => mark as "***"
+
+ The agreement between judgments of the enhancement patterns was assessed by the 2 radiologists and was evaluated using the kappa consistency test. Kappa values ≥0.81, 0.61–0.80, and ≤0.60 were considered to reflect excellent, good, and poor agreement, respectively. Additionally, log-rank analyses of Kaplan–Meier survival curves were performed to compare the PFS and OS of the cohort. Factors that were significant (P < .05) in univariate analysis were entered into multivariate survival analysis based on the Cox proportional hazard ratio (HR) model.
+      # contingency P-value
+# Kaplan-Meier curve + Log-rank test, + Cox proportional regression
+    # textbook: David Kleinbaum???Survival analysis: A self-learning text
+Chi-square => Fisher exact test issue: the small cell values in the contingency table (unbalanced data) => Exact tests are preferred see e.g this for SPSS or this from Kang and Ahn 2008 which found that for highly unbalanced 2x2 tables a conditional exact test (e.g. Fisher's exact) is preferred. a rule of thumb: at least one of the counts <= 5.
+H0: the survival is independent of the expression level of the individual gene
+
+(As the p-value 0.04828 is less than the .05 significance level, we do reject the null hypothesis that the survival is independent of the expression level of the individual gene => the survival is associated of the expression level of the gene.)
+https://www.reddit.com/r/rstats/comments/4bnlor/getting_chisquared_approximation_may_be_incorrect/
+http://www.r-tutor.com/elementary-statistics/goodness-fit/chi-squared-test-independence
+
+
+
+# R code implementation on GCE  {#sec:4}
 install linux on GCP with ssh connection
 install R base and Rstudio server
 install R packages on CRAN repository and Github
@@ -214,7 +243,7 @@ z = (expression in tumor sample - mean expression in reference sample) / standar
 TCGA states: "For mRNA and microRNA expression data, we typically compute the relative expression of an individual gene and tumor to the gene's expression distribution in a reference population. That reference population is either all tumors that are diploid for the gene in question, or, when available, normal adjacent tissue." (It is not always clear what the cell of origin of a tumor is, so the mRNA expression in normal adjacent tissue can sometimes be misleading, which is why expression is sometimes compared within the set of tumors only).
 
 
-introduce R scripts: 
+#introduce R scripts: 
 TCGA_HNSCC_marginFree.R  
 TCGA_HNSCC_marginS.R  
 cutofFinder_func_HNSCC.R  
@@ -227,19 +256,16 @@ in table 3 and table 4: featuresUni
 
 
 
-run mainA (marginS) [since 2019/06/12]
- [mainA process #part A] 
-# genome-wide scan for margin 0 or 1 cohort ##
-# TCGA_HNSCC_marginS.R
+#run mainA (marginS) [since 2019/06/12]
+genome-wide scan for margin 0 or 1 cohort ##
+TCGA_HNSCC_marginS.R
 call function(survival_marginS) on TCGA_HNSCC_marginS.R, 
 
-
-
-core engine: cutofFinder_func_HNSCC.R, call, run100
+# Our core engine: cutofFinder_func_HNSCC.R, call, run100
 {  cutoffReturn <- cutofFinder_func(geneName, marginTag) 
 rename LUAD.mRNA.Exp., 139 load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, as clean6_oscc
-{
-marginS
+}
+
 generate HNSCC.clinico_mRNA.Fire for each gene
 *** check >70% RNAseq of a cohort is available in particular gene; e.x. XKRY, 100% is NaN
 check complete.cases of margin, H.score_T and OS_IND, data cleaning 
@@ -249,169 +275,97 @@ to find lowest P-value according to KM survival analysis at optimized cutoff
 run survival analysis: OS by mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1)
  [survfit] - Kaplan-Meier curve, KM P-value, or KM plot of OS
 contingency table to find significant clinicopathological features
-Statistics:
- The agreement between judgments of the enhancement patterns was assessed by the 2 radiologists and was evaluated using the kappa consistency test. Kappa values ≥0.81, 0.61–0.80, and ≤0.60 were considered to reflect excellent, good, and poor agreement, respectively. Additionally, log-rank analyses of Kaplan–Meier survival curves were performed to compare the PFS and OS of the cohort. Factors that were significant (P < .05) in univariate analysis were entered into multivariate survival analysis based on the Cox proportional hazard ratio (HR) model.
-      # contingency P-value
-# Kaplan-Meier curve + Log-rank test, + Cox proportional regression
-    # textbook: David Kleinbaum???Survival analysis: A self-learning text
-Chi-square => Fisher exact test issue: the small cell values in the contingency table (unbalanced data) => Exact tests are preferred see e.g this for SPSS or this from Kang and Ahn 2008 which found that for highly unbalanced 2x2 tables a conditional exact test (e.g. Fisher's exact) is preferred. a rule of thumb: at least one of the counts <= 5.
-H0: the survival is independent of the expression level of the individual gene
-
-(As the p-value 0.04828 is less than the .05 significance level, we do reject the null hypothesis that the survival is independent of the expression level of the individual gene => the survival is associated of the expression level of the gene.)
-https://www.reddit.com/r/rstats/comments/4bnlor/getting_chisquared_approximation_may_be_incorrect/
-http://www.r-tutor.com/elementary-statistics/goodness-fit/chi-squared-test-independence
-...
-margin_Free
-ditto
-}
-
-7)[COXPH modelling] with OS, RFS; HNSCC features: pathologic to clinical TNM
-rename LUAD.mRNA.Exp.
-export to .Rda and .XLS (appending is better) HNSCC_survivalAnalysis_marginS_
-# append.Rda <- function(x, file) {
-#   old.objects <- load(file, new.env())
-#   save(list = c(old.objects, deparse(substitute(x))), file = file)
-# }
-}
-R2Excel export
 
 
-OR (marinS or marginFree on main_) on main_marginS_free_HNSCC.R 手動選擇:-O
-.....
+[COXPH modelling] with OS, RFS; HNSCC features: pathologic to 
 
+#R2Excel export the optimized P-values for each genes
 
-run mainB (marginFree)
-call function(survival_marginFree) on  TCGA_HNSCC_marginFree.R, rename LUAD.mRNA.Exp., load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda")
+#run mainB (marginFree) ditto
+call function(survival_marginFree) on  TCGA_HNSCC_marginFree.R
 core engine: cutofFinder_func_HNSCC.R, call, run100
-{
-7)[COXPH modelling] with OS, RFS; ; HNSCC features: pathologic to clinical TNM
-rename LUAD.mRNA.Exp.
-export to .XLS (it could not be appended)
-export part I:
-# P-value notes:
-# Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
-# if <0.001 => mark as "***"
-export part II: R2Excel export
-{
- Table 2: clinical correlation tables (tableChi1)
- table 3 and table 4 
- plot: Kaplan-Meier survival estimate with optimized Cutoff
-}
-save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
 
-
-
+#run mainC (marginPlus) diito
 HNSCC_survivalAnalysis_marginFree_
-# append.Rda <- function(x, file) {
-#   old.objects <- load(file, new.env())
-#   save(list = c(old.objects, deparse(substitute(x))), file = file)
-# }
-}
 start to run [2019/06/28]
-HNSCC_survivalAnalysis_marginPlus_
-
-by Joy Su
-*P value <0.05 was considered statistically significant (Student’s t test for continuous variables and Pearson’s chi-square test for variables). SD represents the standard deviation. The tumor stage, tumor, lymph node, and distal metastasis status were classified according to the international system for staging HNSCC
 
 
-
-[IHC]
-Immunohistochemical staining
-
-Three representative 1-mm-diameter cores from each tumor, taken from formalin-fixed paraffin-embedded tissues, were selected for morphology typical of the diagnosis. Assessable cores were obtained in 90 cases. The histopathological diagnoses of all samples were reviewed and confirmed by a pathologist, Michael Hsiao. IHC staining was performed on serial 5-μm-thick tissue sections cut from the tissue microarray (TMA) using an automated immunostainer (Ventana, Tucson, AZ, USA). Briefly, the sections were first dewaxed in a 60 °C oven, deparaffinized in xylene, and rehydrated in graded alcohol. Antigens were retrieved by heat-induced antigen retrieval for 30 min in Tris-EDTA buffer. The slides were stained with a polyclonal rabbit anti-human GLUT4 antibody (1:750, Epitomics, Cambridge, MA, USA). The sections were subsequently counterstained with hematoxylin, dehydrated, and mounted. The IHC staining intensity was scored by two pathologists as follows: no cytoplasmic staining or cytoplasmic staining in <10% of tumor cells was defined as score 0; faint/barely perceptible partial cytoplasmic staining in >10% of tumor cells was defined as score 1+; moderate cytoplasmic staining in >10% of tumor cells was defined as score 2+; and strong cytoplasmic staining in >10% of tumor cells was defined as score 3+. Scores of 0 and 1+ were defined as low GLUT4 expression, while scores of 2+ and 3+ were defined as high GLUT4 expression.
-
-[Case selection]
-Case selection from TCGA and TMU cohort
-
-In total, 90 patients diagnosed with head and neck squamous cell carcinoma at the Taipei Medical University Hospital in Taiwan from 1991 to 2010 were included in this study. Patients who received preoperative chemotherapy or radiation therapy were excluded. Clinical information and pathology data were collected via a retrospective review of patient medical records. All cases were staged according to the 7th edition of the Cancer Staging Manual of the American Joint Committee on Cancer (AJCC), and the histological cancer type was classified according to the World Health Organization (WHO) 2004 classification guidelines. Follow-up data were available in all cases, and the longest clinical follow-up time was 190 months. Overall survival and disease-free survival were defined as the intervals from surgery to death caused by head and neck squamous cell carcinoma and recurrence or distant metastasis, respectively. The study was performed with the approval of the Institutional Review Board and with permission from the ethics committee of the institution involved (TMU-IRB 99049).
-
-[Statistical analysis]
-
-The nonparametric Mann–Whitney U test was used to analyze the statistical significance of results from three independent experiments. Statistical analyses were performed using SPSS (Statistical Package for the Social Sciences) 17.0 software (SPSS, Chicago, IL, USA). A paired t test was performed to compare the GLUT4 IHC expression levels in cancer tissues and in the corresponding normal adjacent tissues. The association between clinicopathological categorical variables and the GLUT4 IHC expression levels were analyzed by Pearson’s chi-square test. Estimates of the survival rates were calculated using the Kaplan–Meier method and compared using the log-rank test. The follow-up time was censored if the patient was lost during follow-up. Univariate and multivariate analyses were performed using Cox proportional hazards regression analysis with and without an adjustment for GLUT4 IHC expression level, tumor stage, lymph node stage, and recurrence status. For all analyses, a P value of <0.05 was considered significant.
-
-
-
-
-Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
-1) Implementation under Rstudio server! run .R code
-github as a version control
-https://icgc.org/icgc/cgp/63/509/70269: TCGA, GDC...
-workflow: data access GDC portal, data cleaning, clinicopathologic features determination, extraction RNAseq for each gene, run100 for Cutoff Determination with P-value plot, ranking by fold change and significant P-value. wenn diagram => yield a table of candidate genes.
-ROC curve: install.packages("pROC")
-The optimal cutoff is defined as the point with the most
-significant (log-rank test) split. Hazard ratios (HRs) including
-95% confidence intervals are calculated.
-
-2) manuscript in kniR.rmd r markdown or sweav to generate reproducible research article
-3) surgical margin issue in survival analysis (even it is not a biological feature, which somehow is an artificial result, there is the most important effect on patient's prognosis)
-4) Peter (a list with ranking) of mRNA (RNAseq) or LncRNA
-cTNM alone (in KM analysis);
-instead of pTNM, clinical features 不必多 (Joy's manuscript: smoking (±), betel nut)
-n=500 case number 要多一些
-The criteria of candidate genes: more 2500 genes (top 100); gene of non-coding RNA ?
-IHC to convince and validate those genes
-<30 published articles in pubmed
-not related with known HNSCC genes
-
-
-*** the receiver operating characteristics (ROC) curves of single risk factor for diagnosing bone metastases in patients with HNSCC cancer.
-
-## [Results] _marginsS_ {#sec:2}
-# ***Work flow of result analysis
+## [Results of _marginS_] {#sec:5}
+***Work flow of result analysis
 {
-Table 1: candidate genes by KM adjusted P-value (why?  Bonferroni correction is NOT necessary) => Z-score
-and its scatter plot
-Table 2A and 2B and 2C: bad guy candidate genes => KM P-value, Cox P-value and HR (>=2.5)
-and its venn diagram
+Table 1: candidate genes by KM adjusted P-value and Z-score summary with its scatter plot
+Table 2A and 2B and 2C: bad guy candidate genes => KM P-value, Cox P-value and HR (>=1.8) and its venn diagram
+Table 3A and 3B and 3C: good guy candidate genes => KM P-value, Cox P-value and HR (<0.5) and its venn diagram
 }
-how to z-score
-no need Bonferroni
-how about false discovery rate (FDR)?
-
-#since [2019/06/26]
-post1 process table1 (KM): candidate_sample(KM) 
-楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
-#NO Bonferroni correction (adjustment) sets the significance cut-off at α/n 
-the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018}
-# {
-
-turn the "number" frequency to z-scores ("Z" because the normal distribution is also known as the "Z distribution").
+***how to z-score{\todo}
+{
+convert the "number" frequency to z-scores ("Z" because the normal distribution is also known as the "Z distribution").
 a candidate table (HNSCC_OS_marginS_pvalue1e_6_zscore0_6), with "number of significant P-value" under cutoff finding (becoming z-score: bigger, much more significant cutoff "sites")
 # => a kind of local minimal or global minimal of curve fitting (Levenberg-Marquardt Optimization)?
-# subsetting the candidated genes table, according to the P-value <= 0.05 (no Bonferroni_cutoff) and Z-score >= 0.6
-# ***after Bonferroni correction => n=26 in _marginS_
-# ***after Bonferroni correction => n=? in _marginFree_
+}
 
-post2 process: add table2 (new variable: KM + Cox): which yield n=6601 genes on the list.
+***how about false discovery rate (FDR)? (not for RNAseq)
+
+
+#proceed since [2019/06/26] in detail
+post1 process table1 (KM): candidate_sample(KM) 
+楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
+***no need Bonferroni (adjustment) sets the significance cut-off at α/n 
+the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018} it is too restricted.
+
+
+# subsetting the candidated genes table, according to the P-value <= 0.05 (no Bonferroni_cutoff) and Z-score >= 0.6
+Table 1: candidate genes by KM adjusted P-value and Z-score summary with its scatter plot
+#x ***after Bonferroni correction => n=26 in _marginS_
+#x ***after Bonferroni correction => n=? in _marginFree_
+
+post2 process: append table2 (new variable: KM + Cox): which yield n=6601 genes on the list.
 candidate_cox
 
-Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 (n=1408, KM P-value only (NOT by Bonferroni_cutoff))
+#Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 
+***Excluded the HNSCC cancer driver genes list: data mining from Embase
+(n=6313, KM P-value)
+plot x2:
+Cox's Harzard Ratios (univariate) plot [Rplot07_cox_uniHR.tiff]
+Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff]
 
-line 2832: reproducible research
-e.x. cox proportional hazard ratio in AACSL 
-{
-??
-}
-#pickup1 n=11 from HNSCC_OS_marginS_THREE_pvalue005; 
-# Cox HR (>=2.5) (bad guy genes) (Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
-# & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
-c pickup2 from HNSCC_OS_marginS_THREE_pvalue005
-#* Cox HR <=0.5 (good_FC) (good guy genes) (Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
-venn diagram for intersection of them:
-candidate genes: bad buy 7 and good guy 13
+
+# pickup1 n=71 (bad guy genes) from HNSCC_OS_marginS_THREE_pvalue005; 
+# Cox HR (>=1.8) & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
+(Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
+venn diagram for intersection: [Rplot09_venn_HR1.5.tiff]
+Table 2A and 2B and 2C: bad guy candidate genes => KM P-value, Cox P-value and HR (>=1.8) and its venn diagram
+
+Table 3A and 3B and 3C: good guy candidate genes => KM P-value, Cox P-value and HR (<0.5) and its venn diagram
+# pickup2 n=47 (good guy genes) from HNSCC_OS_marginS_THREE_pvalue005
+#* Cox HR <=0.5 (good_FC)  & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
+(Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
+venn diagram for intersection: [Rplot09_venn_HR0.5.tiff]
+
 #
 #Export r2excel and .Rda
-The z-score summary plot: HNSCC_OS_marginS_candidates_Venn.xlsx was exported successfully. 
+The z-score summary plot(yes)
 The Venn diagram (bad guy) and the candidate genes on HNSCC_OS_marginS_candidates_Venn.xlsx , which was exported successfully.
 
 
-## [Results] _marginsF_ {#sec:3}
+## [Results of _marginFree_] {#sec:6}
 since [2019/06/26]
 
-as required. Don't forget to give each section
-and subsection a unique label (see Sect. \ref{sec:1}).
+## [Results of _marginPlus_] {#sec:7}
+since [2019/06/26]
 
-# Discussion {#sec:4}
+[as required. Don't forget to give each section
+and subsection a unique label (see Sect. \ref{sec:1}).]
+
+
+
+# Discussion
+ROC curve: install.packages("pROC"){\todo}
+The optimal cutoff is defined as the point with the most
+significant (log-rank test) split. Hazard ratios (HRs) including
+95% confidence intervals are calculated.
+*** the receiver operating characteristics (ROC) curves of single risk factor for diagnosing bone metastases in patients with HNSCC cancer.
+
 AUC: https://dasanlin888.pixnet.net/blog/post/465238196-預測模型使用auc的限制~~晨晰統計林星帆顧問
 biomarker: A加上baseline risk score之後，預測有增值效果（incremental value）; discrimination 回答以上四個問題時，常常以Receiver Operating Characteristic（ROC）的曲線下面積（Area under the curve, AUC）作為主要的統計方法。例如A與B的AUC分別是88%跟85%，此時可以使用DeLong test檢定兩個曲線下面積的差異是否達統計顯著，倘若A的面積顯著大於B（P < 0.05），那麼作者則宣稱A的預測表現優於B。
 
@@ -425,7 +379,12 @@ Table 2 討論，RNAseq expression vs patient's gender 有相關=> 強度為何?
 Clinical utility of a biomarker refers to the ability of the assay to improve clinical decision-making and patient outcomes. The cluster of biomarkers we found clearly distinguishes outcomes between "positive" and "negative" groups, however there is no differential treatment available for those two groups of patient. 
 PROGgene http://genomics.jefferson.edu/proggene/; cancer prognostic database
 
-#***publication # Excluding the HNSCC cancer driver genes list??? ##
+#*publication # Excluding the HNSCC cancer driver genes ##
+***Michael: less than 30 published articles in pubmed
+{checking: article number for each genes{\todo}
+list of Cancer Gene Census (575 genes)
+list of HNSCC genes from Embase
+}
 [GDC data portal]
 ***(OK)GDC data portal: d/l Cancer Gene Census (575 genes)
 We used R packages "rentrez" and "pubmed.mineR" to process the abstracts from PubMed: pubtator_function
@@ -439,13 +398,14 @@ There is n= 785 HNSCC related genes (list in supplementary)
 # 6388 -> n=6313 genes for following venn.
 
 
-
 #BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
 ***and TMU biobank TMU-biobank@tmu.edu.tw(Oral cavity= 39:25) T/N specific gene signature (交集 with my gene cluster)
 
-Immunotherapy: tumor-homing stem cells (EGF, VEGF cytokines)
+
+#Immunotherapy: tumor-homing stem cells (EGF, VEGF cytokines)
 tumor-specific antigen (CD4 CD8)
-=Dato 評估一下
+
+=Dato 評估一下 lncRNA{\todo}
 Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.(The role of long non-coding RNA (lncRNA) expression in human head and neck squamous cell carcinoma (HNSCC) is still poorly understood. In this study, UCSD researchers aimed at establishing the onco-lncRNAome profiling of HNSCC and to identify lncRNAs correlating with prognosis and patient survival.)
 eukaryotic long non-coding RNAs (lncRNAs)
 https://github.com/Jialab-UCR/GDCRNATools
@@ -462,31 +422,72 @@ lncRNA-miRNA-mRNA competing triplets in cancer.
 Researchers at the Shanghai Jiao Tong University School of Medicine analysed RNA-seq data derived from the TANRIC database to identify a lncRNA prognostic signature model using the orthogonal partial least squares discrimination analysis (OPLS-DA) and 1.5-fold expression change criterion methods. The prognosis prediction model based on the lncRNA signatures and clinical parameters were evaluated using the 5-fold cross validation method.
 A total of 84 out of 3199 lncRNAs were significantly associated with the survival of patients with HNSCC. Using the OPLS-DA and 1.5-fold change selection criterion, 5 lncRNAs (KTN1-AS1, LINC00460, GUSBP11, LINC00923 and RP5-894A10.6) were further selected. The prediction power of each combination of the 5 lncRNAs was evaluated through the receiver operating characteristic (ROC) curve and a three-lncRNA panel (KTN1-AS1, LINC00460 and RP5-894A10.6) achieved the highest prognostic prediction power in the cohort. The patients were categorized into high- and low-risk groups based on their three-lncRNA profiles. Patients with high-risk scores had worse overall survival than those with low risk scores in the cohort. Multivariable Cox regression analyses showed that the lncRNA signature and tumour grade were independent prognostic factors for patients with HNSCC.
 
-你的方法跟..之間有和差異嗎? prognoscan, 1.cutoff finder (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
+#*** [重要討論]
+0)
+Dato 你的方法跟..之間有和差異嗎? {\todo}
+a.prognoscan, 
+b.cutoff finder (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
 http://molpath.charite.de/cutoff/index.jsp
 utility by
 https://www.nature.com/articles/s41598-017-09333-8, DAVID
-2.Findcut\cite{Chang2017a}
-
-Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atlas 有 TCGA最適跟中切
+c.Findcut\cite{Chang2017a}
+d.Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atlas 有 TCGA最適跟中切
 跟FireBrowse: http://firebrowse.org/# => TCGA 有預後跟臨床關係的相關性 其中有顯著意義的probe
-你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA
+你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA{\todo}
 
+***Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
+1) Implementation under Rstudio server! run .R code
+github as a version control
+https://icgc.org/icgc/cgp/63/509/70269: TCGA, GDC...
+workflow: data access GDC portal, data cleaning, clinicopathologic features determination, extraction RNAseq for each gene, run100 for Cutoff Determination with P-value plot, ranking by fold change and significant P-value. wenn diagram => yield a table of candidate genes.
+
+2) manuscript in kniR.rmd r markdown or sweav to generate reproducible research article{\todo}
+line 2832: reproducible research
+e.x. cox proportional hazard ratio in AACSL 
+{
+??
+}
+3) ***surgical margin issue in survival analysis (even it is not a biological feature, which somehow is an artificial result, there is the most important effect on patient's prognosis){\todo}
 =professor 陳志榮
 biological meanings (surgical margin is an artificial factor)
 => margin (-) vs margin (+) 比較才公平? (run it since [2019/06/28]) # i4-marginPlus
 
+4) Peter (a list with ranking) of mRNA (RNAseq) or LncRNA
+cTNM alone (in KM analysis);
+(OK) instead of pTNM, clinical features 不必多 (Joy's manuscript: smoking (±), betel nut)
+(ok) n=500 case number 要多一些
+The criteria of candidate genes: more 2500 genes (top 100)
+gene of non-coding RNA lncRNA in HNSCC?
+
+
+5)
 =Michael2
 Dato 共同第一作者: 成大 n=44 microarray
 Scientific Report; template from 把joy的paper拿來學
 Rationale of PMM1: metabolic genes (yes, this is publishable) => PMM1 in HNSCC 
 re-run  cutoff finder(done)
 Broader gene candidate (first 100)
-gene signature from betel nut
+gene signature from betel nut{\todo}
 GO, demographic
 Tracy (Glioma genes)
 IHC lung test slide
-TFs 1,500 to 3,000 Non-coding 10,000
+TFs 1,500 to 3,000 Non-coding lncRNA 10,000
+
+{\todo}IHC to convince and validate those genes
+less than 30 published articles in pubmed
+not related with known HNSCC genes
+# [IHC] Immunohistochemical staining {#sec:?}
+
+Three representative 1-mm-diameter cores from each tumor, taken from formalin-fixed paraffin-embedded tissues, were selected for morphology typical of the diagnosis. Assessable cores were obtained in 90 cases. The histopathological diagnoses of all samples were reviewed and confirmed by a pathologist, Michael Hsiao. IHC staining was performed on serial 5-μm-thick tissue sections cut from the tissue microarray (TMA) using an automated immunostainer (Ventana, Tucson, AZ, USA). Briefly, the sections were first dewaxed in a 60 °C oven, deparaffinized in xylene, and rehydrated in graded alcohol. Antigens were retrieved by heat-induced antigen retrieval for 30 min in Tris-EDTA buffer. The slides were stained with a polyclonal rabbit anti-human GLUT4 antibody (1:750, Epitomics, Cambridge, MA, USA). The sections were subsequently counterstained with hematoxylin, dehydrated, and mounted. The IHC staining intensity was scored by two pathologists as follows: no cytoplasmic staining or cytoplasmic staining in <10% of tumor cells was defined as score 0; faint/barely perceptible partial cytoplasmic staining in >10% of tumor cells was defined as score 1+; moderate cytoplasmic staining in >10% of tumor cells was defined as score 2+; and strong cytoplasmic staining in >10% of tumor cells was defined as score 3+. Scores of 0 and 1+ were defined as low GLUT4 expression, while scores of 2+ and 3+ were defined as high GLUT4 expression.
+
+[Case selection]
+Case selection from TCGA and TMU cohort
+
+In total, 90 patients diagnosed with head and neck squamous cell carcinoma at the Taipei Medical University Hospital in Taiwan from 1991 to 2010 were included in this study. Patients who received preoperative chemotherapy or radiation therapy were excluded. Clinical information and pathology data were collected via a retrospective review of patient medical records. All cases were staged according to the 7th edition of the Cancer Staging Manual of the American Joint Committee on Cancer (AJCC), and the histological cancer type was classified according to the World Health Organization (WHO) 2004 classification guidelines. Follow-up data were available in all cases, and the longest clinical follow-up time was 190 months. Overall survival and disease-free survival were defined as the intervals from surgery to death caused by head and neck squamous cell carcinoma and recurrence or distant metastasis, respectively. The study was performed with the approval of the Institutional Review Board and with permission from the ethics committee of the institution involved (TMU-IRB 99049).
+
+***[Statistical analysis] for IHC
+
+The nonparametric Mann–Whitney U test was used to analyze the statistical significance of results from three independent experiments. Statistical analyses were performed using SPSS (Statistical Package for the Social Sciences) 17.0 software (SPSS, Chicago, IL, USA). A paired t test was performed to compare the GLUT4 IHC expression levels in cancer tissues and in the corresponding normal adjacent tissues. The association between clinicopathological categorical variables and the GLUT4 IHC expression levels were analyzed by Pearson’s chi-square test. Estimates of the survival rates were calculated using the Kaplan–Meier method and compared using the log-rank test. The follow-up time was censored if the patient was lost during follow-up. Univariate and multivariate analyses were performed using Cox proportional hazards regression analysis with and without an adjustment for GLUT4 IHC expression level, tumor stage, lymph node stage, and recurrence status. For all analyses, a P value of <0.05 was considered significant.
 
 #### Paragraph headings 
 
@@ -501,4 +502,6 @@ The results shown here are in whole or part based upon data generated by the TCG
 The authors gratefully acknowledge contributions from the TCGA Research Network and its TCGA Pan-Cancer Analysis Working Group.
 https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga/using-tcga/citing-tcga
 
-# References
+# References{\todo}
+bibliography: bibliography.bib
+output: rticles::springer_article
