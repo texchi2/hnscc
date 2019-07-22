@@ -53,7 +53,7 @@ abstract: {#abstract}
 ---
 *** https://journalfinder.elsevier.com
 #target journal:
-BMC Cancer
+BMC Cancer, BMC Medical Genomics
 https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
 BBRC: Biochemical and Biophysical Research Communications 
 impact factor 2.559
@@ -91,6 +91,9 @@ https://github.com/texchi2/docker4seq
 
 # Material and method
 <!-- # since the date [2019/05/13] after -->
+*** template 範例 Deep Learning–Based Multi-Omics Integration Robustly Predicts Survival in Liver Cancer\cite{Chaudhary2018}
+http://clincancerres.aacrjournals.org/content/24/6/1248
+
 #set up a data science environment on Google Cloud Platform (GCP) {#sec:1}
 it is also fine:
 # Data Processing (cleaning) Work flow
@@ -190,6 +193,12 @@ monotonic, no constant rate
 
 
 #Statistical analysis method
+Cross validation, training set on n=150
+rms, validate()
+https://bmcmedgenomics.biomedcentral.com/articles/10.1186/1755-8794-4-31
+Method:
+Computations were carried out in C++ using a Borland 5 compiler and Optivec 5.0 vector and matrix libraries, and R version 2.6.1 (including R "stats" package for smooth.spline and isoreg functions). Gene expression data were obtained from the BRB ArrayTools Data Archive for Human Cancer Gene expression (url: http://linus.nci.nih.gov/BRB-ArrayTools.html), except for [20] data which was retrieved from the Broad Institute website (url: http://www.broad.mit.edu/cgi-bin/cancer/datasets.cgi). Data were normalized using MAS 5.0 and median centering each array using either R or BRB ArrayTools (developed by Dr. Richard Simon).
+
 All statistical analysis were performed with R (https://www.r-project.org/, v3.0.1) and R packages. Normalization of Affymetrix microarray data were implemented with R package “limma”26. The survival analysis, cox univariate regression, cox multivariate regression and cox probability hazard model were carried out on R package “survival”30. Random forest variable hunting was performed with package “randomForestSRC”. The ROC curve was plotted with R package “pROC”31, and the nomogram were plotted with R package “rms”32.
 
 A 1-year, 3-year, 5-year, and 10-year time-dependent receiver operating characteristic (ROC) curve analysis were performed using "survival-ROC" package in R software to assess the predictive value of the risk score for time-dependent outcomes [13, 14]. The ROC curve was used to evaluate the sensitivity and specificity of HNSCC-specific signatures for predicting overall survival of HNSCC patients.
@@ -199,6 +208,17 @@ All statistical analyses were performed using SPSS v21.0 (Beijing Stats Data CO.
 Student’s t-test and the χ2 test were used for the comparison to baseline clinical characteristics and dietary information between the derivation data and validation data. In this study, noninvasive risk factors were defined as factors that could be measured without taking a blood sample. The variables included in the model were divided into classic risk factors and dietary predictors. Classic risk factors included age, gender, BMI, waist circumference, regular exercise, labor intensity, alcohol consumption, cigarette smoking, education, hypertension and a family history of diabetes. Dietary predictors included the 14 food groups in the FFQ and total calorie intake. Their adjusted odds ratio (OR) and 95% confidence intervals (95% CI) were estimated using a multivariate backward logistic regression analysis. The diabetes risk score was developed for the two multivariate logistic regression models: a classic noninvasive risk score and a diet-containing risk score, and points were assigned to each variable based on the magnitude of its regression coefficient [22]. In the diabetes risk score system, we transformed the unit of diet consumption from gram per day to liang per day, to facilitate its use in China. The dietary predictors except diary in the risk model were continuous in order to use the full information for dietary predictors. The risk score allows decimal value if the weight is not in round number. For the dairy products, because 24.4% and 29.4% of the total subjects in the derivation data and validation data were never consume milk and its products, we transformed the dairy and its products variable into binary variable in the risk model. A total diabetes risk score for each individual was calculated as the sum of the points for each variable.
 
 The classic noninvasive risk model and the diet-containing risk model were compared with Akaike’s information criterion (AIC), area under curve (AUC), IDI, NRI and the Hosmer-Lemeshow goodness-of-fit test (HL test) for model performance, discrimination and predictive ability, and general calibration in derivation data and validation data separately. An AIC difference between two models of 10 or greater was considered to be significant with a lower AIC value indicating a better model performance [23]. AUC, IDI and NRI were calculated to evaluate the model discrimination and predictive ability [24]. To apply NRI in the logistic regression model, we adopted the approach proposed by Pencina et al [25]. The Hosmer-Lemeshow goodness-of-fit test (HL test) was used to examine how well the predicted prevalence matched the observed prevalence of type 2 diabetes, and P-values of 0.01 or greater from the test were considered to indicate a good calibration.
+
+#ROC and crossvalidation
+ROC for survival analysis
+https://uwspace.uwaterloo.ca/bitstream/handle/10012/3974/thesis.pdf;jsessionid=8D60B97D732BB68D7C5DAC65A5DD90D8?sequence=1
+
+***ROC and cross validation on KM survival and Cox propotional hazards model:
+Gene Expression-Based Survival Prediction in Lung Adenocarcinoma: A Multi-Site, Blinded Validation Study
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2667337/
+https://stats.stackexchange.com/questions/374835/what-is-the-equivalent-of-cross-validation-for-a-fitted-cox-proportional-hazards
+ROC for survival analysis (thesis)
+https://uwspace.uwaterloo.ca/bitstream/handle/10012/3974/thesis.pdf;jsessionid=8D60B97D732BB68D7C5DAC65A5DD90D8?sequence=1
 
 https://stats.idre.ucla.edu/r/dae/logit-regression/ Logit Regression
 The best cutoff was derived using Cutoff Finder software [15] based on an R routine which optimized the significance of the split between Kaplan-Meier survival curves measured by the log-rank test. Statistical analyses were performed with Rstudio server on GCE.
@@ -293,8 +313,12 @@ Table 1: candidate genes by KM adjusted P-value and Z-score summary with its sca
 Table 2A and 2B and 2C: bad guy candidate genes => KM P-value, Cox P-value and HR (>=1.8) and its venn diagram
 Table 3A and 3B and 3C: good guy candidate genes => KM P-value, Cox P-value and HR (<0.5) and its venn diagram
 }
-***how to z-score{\todo}
-{
+***how to z-score/Feature Scaling{\todo}
+{ => ***  z-score => "Feature Scaling" 須要 正名之
+Z-score standardization
+Feature Scaling - normalization by (here: scaling to [0, 1] range); Rescaling data to have values between 0 and 1. This is usually called feature scaling. (min-max scaling)
+As a rule of thumb I’d say: When in doubt, just standardize the data, it shouldn’t hurt.
+https://sebastianraschka.com/Articles/2014_about_feature_scaling.html#about-standardization
 convert the "number" frequency to z-scores ("Z" because the standard normal distribution is also known as the "Z distribution").
 The Standard Normal Distribution is a specific instance of the Normal Distribution that has a mean of ‘0’ and a standard deviation of ‘1’.
 the Z-distribution is a way of naming the Standard Normal distribution.
@@ -308,13 +332,13 @@ Z-score:a normalized number (frequency) of OS P-values
 (x)z-score calculation = [(value gene X in tumor Y)-(mean gene X in normal)]/(standard deviation X in normal)
 A z-score for a sample indicates the number of standard deviations away from the mean of expression in the reference.  The formula is : 
 (x)z = (expression in tumor sample - mean expression in reference sample) / standard deviation of expression in reference sample
+Assumption for z-score test:
+-Has a sample size above 30,
+-Has an known population standard deviation.
+(if not, t-score should be used instead)
 
 
-
-
-# => a kind of local minimal or global minimal of curve fitting 
-
-x(Levenberg-Marquardt Optimization)? to be classified by neural networks. Learning or training stage is done by applied The Levenberg-Marquardt back propagation algorithm „trainlm‟ is a network learning function that updates weight and bias values according to Levenberg-Marquardt optimization.
+# => a kind of local minimal or global minimal of curve fitting x(Levenberg-Marquardt Optimization)? to be classified by neural networks. Learning or training stage is done by applied The Levenberg-Marquardt back propagation algorithm „trainlm‟ is a network learning function that updates weight and bias values according to Levenberg-Marquardt optimization.
 }
 
 ***how about false discovery rate (FDR)? (not for RNAseq)
@@ -359,6 +383,8 @@ venn diagram for intersection: [Rplot09_venn_HR0.5.tiff]
 #Export r2excel and .Rda
 The z-score summary plot(yes)
 The Venn diagram (bad guy) and the candidate genes on HNSCC_OS_marginS_candidates_Venn.xlsx , which was exported successfully.
+on table 2B, 2C and 3B, 3C: ex. "NEK6" has bad impact on clinical T when expression is high
+
 
 
 ## [Results of _marginFree_] {#sec:6}
@@ -370,7 +396,8 @@ since [2019/06/26]
 [as required. Don't forget to give each section
 and subsection a unique label (see Sect. \ref{sec:1}).]
 
-
+Pathway analysis:
+DAVID we conducted KEGG pathway analysis to pinpoint the pathways enriched in the two subtypes. As we have used EASE score in DAVID as the enrichment method, these results should be interpretive only
 
 # Discussion
 ROC curve: install.packages("pROC"){\todo}
@@ -407,7 +434,7 @@ We used R packages "rentrez" and "pubmed.mineR" to process the abstracts from Pu
 => expanded as
 ('cancer of unknown primary site'/dm OR 'esophageal adenocarcinoma'/dm OR 'esophageal squamous cell carcinoma'/dm OR 'esophagus cancer'/dm OR 'esophagus carcinoma'/dm OR 'head and neck cancer'/dm OR 'head and neck carcinoma'/dm OR 'head and neck squamous cell carcinoma'/dm OR 'head and neck tumor'/dm OR 'head cancer'/dm OR 'hypopharynx cancer'/dm OR 'hypopharynx carcinoma'/dm OR 'hypopharynx squamous cell carcinoma'/dm OR 'larynx cancer'/dm OR 'larynx carcinoma'/dm OR 'larynx squamous cell carcinoma'/dm OR 'mouth cancer'/dm OR 'mouth carcinoma'/dm OR 'mouth squamous cell carcinoma'/dm OR 'nasopharynx cancer'/dm OR 'nasopharynx carcinoma'/dm OR 'neck cancer'/dm OR 'oropharynx cancer'/dm OR 'oropharynx carcinoma'/dm OR 'oropharynx squamous cell carcinoma'/dm OR 'oropharynx tumor'/dm OR 'pharynx cancer'/dm OR 'salivary gland cancer'/dm OR 'thyroid cancer'/dm OR 'tongue cancer'/dm OR 'tonsil cancer'/dm) AND (prognostic:ti OR 'tumor marker' OR 'biological marker' OR prognosis)
 AND 'mRNA expression level'
-There is n= 785 HNSCC related genes (list in supplementary)
+There is n= 785 HNSCC related genes (list in supplementary) pubmed_hnscc_genes.Rda
 # 6388 -> n=6313 genes for following venn.
 
 
@@ -435,6 +462,9 @@ lncRNA-miRNA-mRNA competing triplets in cancer.
 Researchers at the Shanghai Jiao Tong University School of Medicine analysed RNA-seq data derived from the TANRIC database to identify a lncRNA prognostic signature model using the orthogonal partial least squares discrimination analysis (OPLS-DA) and 1.5-fold expression change criterion methods. The prognosis prediction model based on the lncRNA signatures and clinical parameters were evaluated using the 5-fold cross validation method.
 A total of 84 out of 3199 lncRNAs were significantly associated with the survival of patients with HNSCC. Using the OPLS-DA and 1.5-fold change selection criterion, 5 lncRNAs (KTN1-AS1, LINC00460, GUSBP11, LINC00923 and RP5-894A10.6) were further selected. The prediction power of each combination of the 5 lncRNAs was evaluated through the receiver operating characteristic (ROC) curve and a three-lncRNA panel (KTN1-AS1, LINC00460 and RP5-894A10.6) achieved the highest prognostic prediction power in the cohort. The patients were categorized into high- and low-risk groups based on their three-lncRNA profiles. Patients with high-risk scores had worse overall survival than those with low risk scores in the cohort. Multivariable Cox regression analyses showed that the lncRNA signature and tumour grade were independent prognostic factors for patients with HNSCC.
 
+加分 3D data visiualiztion
+https://datascienceplus.com/tag/data-visualisation/
+
 #*** [重要討論]
 0)
 Dato 你的方法跟..之間有和差異嗎? {\todo}
@@ -453,9 +483,13 @@ d.Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atla
 github as a version control
 https://icgc.org/icgc/cgp/63/509/70269: TCGA, GDC...
 workflow: data access GDC portal, data cleaning, clinicopathologic features determination, extraction RNAseq for each gene, run100 for Cutoff Determination with P-value plot, ranking by fold change and significant P-value. wenn diagram => yield a table of candidate genes.
+***Vtreat package for data preparation
+https://github.com/WinVector/vtreat
 
 2) manuscript in kniR.rmd r markdown or sweav to generate reproducible research article{\todo}
-line 2832: reproducible research
+##*** RR>reproducible research resume: ####
+#load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
+## <<<
 e.x. cox proportional hazard ratio in AACSL 
 {
 ??
