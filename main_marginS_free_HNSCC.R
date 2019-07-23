@@ -42,7 +42,7 @@
 ## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
 
 TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
-path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
+path_cohort <- "/home/tex/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
 setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GCP
 load(file="whole_genome.Rda") # the name list of protein coding genome
 LUAD_n <- length(whole_genome) # n=20499 -> now is 20500, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....

@@ -1292,10 +1292,36 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 #}
 
 
+# human curation ####
+# retrieve .xlsx of each candidate
+# copy HNSCC_survivalAnalysis_marginPlus_*.xlsx of candidate list
+# e.x. HNSCC_survivalAnalysis_marginS_ZZZ3.xlsx
+#install.packages("SparkR") # for write.text
+geneNameX <- candidate_bad_unimulti_HR2p5[, c(1)]
+# 1 EIF2AK1
+# 2	SMPX
+# 3	TMBIM6
+# 4	TMLHE
+# 5	PCTP
+# 6	SPOCK1 ...
+#xlsx_list <- as.data.frame(paste(TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep=""))
+xlsx_list <- paste("./", gsub("_", "", marginTag), "/", TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep="")
+#colnames(xlsx_list) <- "value" # rename V1 to value; for SparkR
+#tmp <- tempfile() # name as "/tmp/RtmpRXBLFL/file5fb02526933a"
+#writeLines(xlsx_list, con = tmp)
+write.table(xlsx_list, file="xlsx_list.txt", sep = "",
+          row.names = F, col.names = F, quote = FALSE)
+#write.text(xlsx_list, file.path(path_cohort))
+system(paste("tar -czvf ", sub("_", "", marginTag), "candidate_xlsx.tar.gz -T xlsx_list.txt", sep=""))
+# "tar -czvf _marginS_candidate_xlsx.tar.gz -T xlsx_list.txt"
+
+
 # > Z-score > 0.8 or 1.0 should be applied at the end ####
 # ranking by Z-score
 zcut <- zcut
-# DAVID, TFs pickup
+
+# DAVID, TFs pickup 與 IHC cross validation 
+
 
 
 # >Analysis finish; tar until here (refinement ok) ####
@@ -1313,7 +1339,8 @@ zcut <- zcut
 # generated genes list .xlsx and ZSWIM2_free_archive.Rda; 
 # analysis -> .tiff, HNSCC_OS_marginS_candidates_Venn.xlsx, HNSCC_OS_marginS_THREE_pvalue005_noCancerGene.Rda)
 # $ ls HNSCC_survivalAnalysis_marginS_*.* > marginS_list.txt
-# $ tar -czvf ~/R/marginPlus_xlsx.tar.gz -T marginPlus_list.txt   # or  list as many directories
+# $ tar -czvf /home/tex/R/marginPlus_xlsx.tar.gz -T marginPlus_list.txt   # or  list as many directories
+# error of tar: suggestion that Removing leading `/' from member names (files list)
 # $ info tar # tar -t --list  —remove-file...
 # 
 # $ scp  tex@35.201.169.0:~/margin*_xlsx.tar.gz ./
