@@ -19,7 +19,7 @@ authors:
 - name: Li-Hsing Chi 1
   address: Department of YYY, University of XXX
   email: texchi2@gmail.com
-  
+  affilication: The Ph.D. Program for Translational Medicine, College of Medical Science and Technology, Taipei Medical University and Academia Sinica
 - name: Âuthóř 2
   address: Department of ZZZ, University of WWW
   email: djf@wef
@@ -43,6 +43,7 @@ MSC:
 
 abstract: {#abstract}
   A gene expression–based prognostic markers for HNSCC, 442 samples were collected from 6 institutions and processed at 1 of 4 laboratories using a single, reproducible protocol, and data were organized by TCGA and were analyzed using a validation step by Tex.
+  protein-coding DNA genes (20500, 2%) of Human genomes.
   Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment.
 	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. 
 	This protocol describes using R Markdown and RStudio, user-friendly tools for statistical analysis and reproducible research in bioinformatics, to analyze and document analysis of an RNA-Seq data set of TCGA cohort, which were suffered from HNSCC\cite{Loraine2015}, as well as ICGC cohort (https://dcc.icgc.org).
@@ -61,6 +62,7 @@ https://www.journals.elsevier.com/biochemical-and-biophysical-research-communica
 https://bmcbioinformatics.biomedcentral.com 
 BMC Bioinformatics, impact factor 2
 https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript
+Bioinformatics (Oxford Academic) => https://academic.oup.com/bioinformatics/pages/General_Instructions
 (https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
 https://www.biomedcentral.com/journals#Life-Sciences
 (TCGA publication guideline: https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)
@@ -396,10 +398,19 @@ since [2019/06/26]
 [as required. Don't forget to give each section
 and subsection a unique label (see Sect. \ref{sec:1}).]
 
-Pathway analysis:
-DAVID we conducted KEGG pathway analysis to pinpoint the pathways enriched in the two subtypes. As we have used EASE score in DAVID as the enrichment method, these results should be interpretive only
+Pathway analysis by DAVID
+*** 8 candidate genes has Previous HGNC Symbol -> Current Gene Symbol -> convert all 47 genes to ENTREZID
+=> submit DAVID
+we conducted KEGG pathway analysis to pinpoint the pathways enriched in the two subtypes. As we have used EASE score in DAVID as the enrichment method, these results should be interpretive only.
+Gene functional classification
+The tool classified the example gene list (∼400 genes) into ten functional groups in an easily readable tabular format. An example output is illustrated in Figure 2 as well as in slide 5 of Supplementary Data 5. Gene groups (with significant enrichment scores ≥1), such as cytokines/chemokines (group 1: 3.39), kinases (group 2: 2.21), clathrin membrane fusion genes (group 3: 1.86), transcription factors (group 6: 1.39) and so on, can easily be identified. All of these gene groups are highly relevant to an HIV study and are therefore expected biological results16. Organizing the large gene list into gene groups allows investigators to quickly focus on the overall major common biology associated with a gene group rather than one gene at a time, thereby avoiding dilution of focus during the analysis due to too many single genes. Furthermore, the '2D View' function associated with each group is able to display all related terms and genes in detail in one picture, to examine their interrelationships. For example, for the kinase group (group 2), a user who is not familiar with kinases may explore the terms of kinase activity, transferase activity, ATP-binding, nucleotide binding, protein metabolism, tyrosine specificity, serine/threonine specificity, regulation of G protein signaling, signal transduction and so on in one view at the same time (slide 6 of Supplementary Data 5). Therefore, we can quickly learn the biology for the kinase group, with the above-mentioned related terms in a single view and also identify the fine differences among them. For example, there are two G-protein-coupled receptor kinases, three protein tyrosine kinases and six kinases involved in cell surface receptor-linked signal transduction among the 23 kinases within the group. The fine details may be very important for pinpointing the key biology associated with a study.\cite{HuangNP2009} Nature Protocols: https://www.nature.com/articles/nprot.2008.211
+use the total genes in the genome as a global reference background. They tend to give more significant P-values, as compared to the tools (e.g. Onto-Express) using a narrowed-down set of genes (e.g. genes only existing on a microarray) as a gene reference background. In addition, DAVID (61) tends to be more conservative by using genes existing on the array and found to be associated with terms in the corresponding annotation categories, as the gene reference background. Many tools further allow users to upload a customized gene list as a gene reference background (Supplementary Data 1).\cist{HuangNuc2009}
 
 # Discussion
+ranking tables by Z-score
+zcut <- zcut # 0.8; Z distribution: mean=0, Max.: 2.3034
+Z-score > 0.8 should be applied; since top 1 bad and good guy gene has Z-score 2.3, which implies Z-score might serve as a surrgated entity for the most prognostic impact (such as significnat KM P-value as well as extreme Cox hazard ratios) 
+
 ROC curve: install.packages("pROC"){\todo}
 The optimal cutoff is defined as the point with the most
 significant (log-rank test) split. Hazard ratios (HRs) including
@@ -434,7 +445,9 @@ We used R packages "rentrez" and "pubmed.mineR" to process the abstracts from Pu
 => expanded as
 ('cancer of unknown primary site'/dm OR 'esophageal adenocarcinoma'/dm OR 'esophageal squamous cell carcinoma'/dm OR 'esophagus cancer'/dm OR 'esophagus carcinoma'/dm OR 'head and neck cancer'/dm OR 'head and neck carcinoma'/dm OR 'head and neck squamous cell carcinoma'/dm OR 'head and neck tumor'/dm OR 'head cancer'/dm OR 'hypopharynx cancer'/dm OR 'hypopharynx carcinoma'/dm OR 'hypopharynx squamous cell carcinoma'/dm OR 'larynx cancer'/dm OR 'larynx carcinoma'/dm OR 'larynx squamous cell carcinoma'/dm OR 'mouth cancer'/dm OR 'mouth carcinoma'/dm OR 'mouth squamous cell carcinoma'/dm OR 'nasopharynx cancer'/dm OR 'nasopharynx carcinoma'/dm OR 'neck cancer'/dm OR 'oropharynx cancer'/dm OR 'oropharynx carcinoma'/dm OR 'oropharynx squamous cell carcinoma'/dm OR 'oropharynx tumor'/dm OR 'pharynx cancer'/dm OR 'salivary gland cancer'/dm OR 'thyroid cancer'/dm OR 'tongue cancer'/dm OR 'tonsil cancer'/dm) AND (prognostic:ti OR 'tumor marker' OR 'biological marker' OR prognosis)
 AND 'mRNA expression level'
-There is n= 785 HNSCC related genes (list in supplementary) pubmed_hnscc_genes.Rda
+There is n= 785 HNSCC related genes (list in supplementary) pubmed_hnscc_genes.Rda and pubmed_hnscc_genes.csv
+
+
 # 6388 -> n=6313 genes for following venn.
 
 

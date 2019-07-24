@@ -298,15 +298,18 @@ HNSCC_OS_marginS_pvalue005_sorted$z_score <- scale(number, center=T, scale = T)
 # "number" frequency is standardized as z-score (-1.04 to +2.30)
 # ("Z" because the normal distribution is also known as the "Z distribution").
 # => scale(): scale=TRUE, center=TRUE then scaling is done by dividing the (centered) columns of x by their standard deviations
+
+# cut Z-score at
+zcut <- 0.8 # n=1475
 boxplot(HNSCC_OS_marginS_pvalue005_sorted$z_score)
+abline(h=zcut, lty=2, col="blue") # mean=0, Max.: 2.3034
 #DO NOT use Feature Scaling - normalization by (here: scaling to [0, 1] range); Rescaling data to have values between 0 and 1. This is usually called feature scaling. (min-max scaling)
 # it will "condensate" the spreading of "number".
 #x HNSCC_OS_marginS_pvalue005_sorted$number_01 <- scales:::rescale(z_score, to = c(0, 1))
 #x rescaled to range minnew to maxnew (aka. 0 to 1 for binomial glm)
 #x number_01 (0~1) is not Z-score, it is Feature Scaling 須要 正名之
 
-# cut Z-score at
-zcut <- 0.8 # n=1475
+
 #tiff("Rplot10_Zscore_Pvalue.tiff", units="cm", width=5, height=5, res=300)
 plot(p_value, z_score, type="p", ylab="Z-score", xlab="P-value plot of KM survival analysis", log="x") # log scale x or y
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
@@ -653,6 +656,8 @@ pubmed_hnscc_genes <- pubmed_hnscc_genes[complete.cases(pubmed_hnscc_genes$GeneS
 save(pubmed_hnscc_genes, file=file.path(path_cohort, "pubmed_hnscc_genes.Rda"))
 # load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) 
 # pubmed_hnscc_genes
+write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
+
 em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes$GeneSymbol)
 # R4> em_Index # n=75
 # [1]   26   67  206  284  427  484  530  609  809  971 1020 1067 1137 1178 1193
@@ -1282,7 +1287,8 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 
 ##..[2019/07/22] _marginS_ done
-# Finalize the workbook to an Excel file and write the file to disk.####
+# Finalize the workbook to an Excel file and write the file to disk.
+# Write wb to disk ####
 #setwd(path_ZSWIM2) # at /marginS/
 xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 #setwd(path_cohort)
@@ -1293,17 +1299,21 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 
 
 # human curation ####
+save(candidate_bad_unimulti_HR2p5, file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_bad_unimulti_HR2p5", ".Rda", sep="")))
+save(candidate_good_unimulti_HR0p5, file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_good_unimulti_HR0p5", ".Rda", sep="")))
 # retrieve .xlsx of each candidate
-# copy HNSCC_survivalAnalysis_marginPlus_*.xlsx of candidate list
+# tar of all HNSCC_survivalAnalysis_marginPlus_*.xlsx of candidate list
 # e.x. HNSCC_survivalAnalysis_marginS_ZZZ3.xlsx
-#install.packages("SparkR") # for write.text
-geneNameX <- candidate_bad_unimulti_HR2p5[, c(1)]
+# => marginS_candidate_xlsx.tar.gz
+geneNameX <- c(as.vector(candidate_bad_unimulti_HR2p5[, c(1)]), as.vector(candidate_good_unimulti_HR0p5[, c(1)]))
 # 1 EIF2AK1
 # 2	SMPX
 # 3	TMBIM6
 # 4	TMLHE
 # 5	PCTP
-# 6	SPOCK1 ...
+# 6	SPOCK1 ...bad + good guys
+
+# >tar
 #xlsx_list <- as.data.frame(paste(TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep=""))
 xlsx_list <- paste("./", gsub("_", "", marginTag), "/", TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep="")
 #colnames(xlsx_list) <- "value" # rename V1 to value; for SparkR
@@ -1313,14 +1323,181 @@ write.table(xlsx_list, file="xlsx_list.txt", sep = "",
           row.names = F, col.names = F, quote = FALSE)
 #write.text(xlsx_list, file.path(path_cohort))
 system(paste("tar -czvf ", sub("_", "", marginTag), "candidate_xlsx.tar.gz -T xlsx_list.txt", sep=""))
-# "tar -czvf _marginS_candidate_xlsx.tar.gz -T xlsx_list.txt"
+# "tar -czvf marginS_candidate_xlsx.tar.gz -T xlsx_list.txt"
 
 
-# > Z-score > 0.8 or 1.0 should be applied at the end ####
-# ranking by Z-score
-zcut <- zcut
 
-# DAVID, TFs pickup 與 IHC cross validation 
+
+# human reviewing.... good and bad guys: its KM plot and Cox HR[2019/07/23]
+# > Z-score > 0.8 should be applied at the end ####
+# ranking tables by Z-score
+zcut <- zcut # 0.8
+# mean=0, Max.: 2.3034
+load(file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_bad_unimulti_HR2p5", ".Rda", sep="")))
+load(file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_good_unimulti_HR0p5", ".Rda", sep="")))
+# bad guy
+View(candidate_bad_unimulti_HR2p5)
+# top 1 => Z-score 2.3
+candidate_bad_unimulti_HR2p5[candidate_bad_unimulti_HR2p5$gene_id=="PCTP", ]
+#       gene_id  p_value z_score uni_HR uni_P_value multi_HR  multi_P_value
+# 13084    PCTP 7.66e-05    2.30  4.286       0.041    4.915  0.027
+
+# good guy
+View(candidate_good_unimulti_HR0p5)
+# top 1 => Z-score 2.3
+candidate_good_unimulti_HR0p5[candidate_good_unimulti_HR0p5$gene_id=="MASP1", ]
+#       gene_id  p_value z_score uni_HR uni_P_value multi_HR multi_P_value
+# 10618   MASP1 2.24e-06    2.30   0.42       0.001    0.448    0
+# => Mannan Binding Lectin Serine Peptidase 1
+# HGNC: 6901 Entrez Gene: 5648 Ensembl: ENSG00000127241 OMIM: 600521 UniProtKB: P48740
+
+
+
+# DAVID, TFs pickup 與 IHC cross validation #### 
+# the database for annotation, visualization and integrated discovery (DAVID), a web-based online bioinformatics resource (http://david.abcc.ncifcrf.gov)
+# Gene Functional Classification
+#Provide a rapid means to reduce large lists of genes into functionally related groups of genes to help unravel the biological content captured by high throughput technologies.
+# RDAVIDWebService: 
+# https://gist.github.com/svigneau/9699239; RDavidQuery.R
+# how to query David from R, using the RDAVIDWebService package
+library("RDAVIDWebService")
+# To register, go to: http://david.abcc.ncifcrf.gov/content.jsp?file=WS.html
+# https://david.ncifcrf.gov/webservice/services/DAVIDWebService/authenticate?args0=d622101005@tmu.edu.tw
+# => return: true
+# 2015 updated: https://support.bioconductor.org/p/70091/
+david <- DAVIDWebService$new("d622101005@tmu.edu.tw", url="https://david.ncifcrf.gov/webservice/services/DAVIDWebService.DAVIDWebServiceHttpSoap12Endpoint/")
+david$is.connected()
+getIdTypes(david) # "ENTREZ_GENE_ID"
+# This implementation carries all the limitations of DWS as stated at DAVID’s Web site (http://david.abcc.ncifcrf.gov/content.jsp?file=WS.html): 
+# (i) gene or term cluster report will handle up to 3000 genes, 
+# (ii) a user or computer can compute up to 200 jobs in a day and 
+# (iii) DAVID Team reserves the right to suspend any improper uses of DWS without notice.
+# Define foreground and background gene lists.
+# foreground genes = a gene list (i.e., genes to be analyzed) 
+# background genes (i.e., global gene background, the total genes in the genome, n=20500).
+# The foreground list should be contained within the background list.
+
+# >Gene ID Conversion Tool: AnnotationDbi
+# convert HGNC gene symbol to Entrez gene ID; https://www.genenames.org/about/guidelines/#!/#tocAnchor-1-7
+source("https://bioconductor.org/biocLite.R") # Annotation Database Interface, biomaRt
+biocLite("AnnotationDbi") 
+# https://www.gungorbudak.com/blog/2018/08/07/convert-gene-symbols-to-entrez-ids-in-r/
+biocLite('org.Hs.eg.db')
+# ls("package:AnnotationDbi")
+
+library(org.Hs.eg.db)
+columns(org.Hs.eg.db) # "SYMBOL" -> "ENTREZID"
+# Human genomes include both protein-coding DNA genes (20500, 2%) and noncoding DNA (ncDNA, 1025000? 98%)
+e2s_hs_genome_symbol <- toTable(org.Hs.egSYMBOL) # n=60118 whole(?) genome in gene symbol
+
+## *** https://bioconductor.org/packages/release/bioc/vignettes/AnnotationDbi/inst/doc/IntroToAnnotationPackages.pdf
+biocLite("hgu95av2.db")
+suppressPackageStartupMessages({library(hgu95av2.db)})
+# AnnotationDbi::select() # returned 1:1 mapping between keys and columns
+columns(hgu95av2.db) # "SYMBOL" -> "ENTREZID"
+e2s_hs_genome_symbol <- keys(hgu95av2.db, keytype="SYMBOL") # n=60048
+
+# ** converting and mapIds() # one column; select() # more columns
+e2s_hs_genome_entrezIDs <- select(hgu95av2.db, keys=e2s_hs_genome_symbol, 
+                                  columns=c('ENTREZID'), keytype="SYMBOL") # n=60048
+TCGA_whole_genome_entrezIDs <- select(hgu95av2.db, keys=whole_genome, 
+                              columns=c('ENTREZID'), keytype="SYMBOL") # n=20500 -> 20504, with NaNs
+# table(is.na.data.frame(TCGA_whole_genome_entrezIDs$ENTREZID))
+# FALSE  TRUE 
+# 17800  2704
+# TCGA_whole_genome_entrezIDs has 17800 genes as myBackgroundGenes
+geneNameX_entrezIDs <- select(hgu95av2.db, keys=geneNameX, 
+                              columns=c('ENTREZID'), keytype="SYMBOL") # n=90
+#= convert2EntrezID(IDs=ensemblIDs, orgAnn="org.Hs.eg.db",
+#                             ID_type="entrez_gene_id")
+# mapping the missing gene symbol: https://www.genecards.org/
+# Previous HGNC Symbol -> Current Gene Symbol -> ENTREZID
+updated_geneNameX <- c(
+	"ATHL1",	"PGGHG", 80162,
+	"CCDC64",	"BICDL1", 92558,
+	"CNIH",	"CNIH1", 10175,
+	"DPH3B",	"DPH3P1", 100132911,
+	"FAM10A4",	"ST13P4", 145165,
+	"FAM55C",	"NXPE3", 91775,
+	"KAZ",	"KAZN", 23254,
+	"NDNL2",	"NSMCE3", 56160
+)
+# CNIH has CNIH1 CNIH2 CNIH3 CNIH4 family
+updated_geneNameX <- data.frame(matrix(data=updated_geneNameX, byrow=T, ncol=3))
+colnames(updated_geneNameX) <- c("old_SYMBOL", "SYMBOL", "ENTREZID")
+
+geneNameX_entrezIDs_QC <- geneNameX_entrezIDs
+u_index <- which(geneNameX_entrezIDs_QC$SYMBOL %in% updated_geneNameX$old_SYMBOL)
+#geneNameX_entrezIDs_QC[u_index, 2] <- 
+#  updated_geneNameX[which(geneNameX_entrezIDs_QC$SYMBOL[u_index]==as.character(updated_geneNameX$old_SYMBOL)), 3]
+for (u_i in 1:length(u_index)) {
+  geneNameX_entrezIDs_QC[which(geneNameX_entrezIDs_QC$SYMBOL==updated_geneNameX[u_i, 1]), 2] <- 
+    as.numeric(as.character(updated_geneNameX[u_i, 3]))
+}
+# which(is.na(geneNameX_entrezIDs_QC$ENTREZID))
+
+# >submit to DAVID ####
+# myForegroundGenes, n=90
+myForegroundGenes <- geneNameX_entrezIDs_QC$ENTREZID
+FG <- addList(david, myForegroundGenes, idType="ENTREZ_GENE_ID", listName="hazards", listType="Gene") #
+#, species="Homo sapiens")
+# myBackgroundGenes <- whole_genome; 
+# TCGA_whole_genome_entrezIDs has n=17800 genes as myBackgroundGenes
+myBackgroundGenes <- TCGA_whole_genome_entrezIDs[complete.cases(TCGA_whole_genome_entrezIDs$ENTREZID), 2]
+BG <- addList(david, myBackgroundGenes, idType="ENTREZ_GENE_ID", listName="all", listType="Background")
+#, species="Homo sapiens")
+# Error: !listName %in% switch(listType[1], Gene = getGeneListNames(),  .... is not TRUE
+# 
+david
+# DAVIDWebService object to access DAVID's website. 
+# User email:  d622101005@tmu.edu.tw 
+# Available Gene List/s:  
+#      Name Using
+# 1 hazards     *
+# Available Specie/s:  
+#               Name Using
+# 1 Homo sapiens(90)     *
+# Available Background List/s:  
+#           Name Using
+# 1 Homo sapiens      
+# 2          all     *
+# 
+
+# *** Gene functional classification (with cluster identification)
+# to provide an initial glance of major biological functions associated with gene list
+{
+  
+  Click on the gene name that leads to individual gene reports for in-depth information about the gene.
+  
+  Click on the red 'T' (term reports) to list associated biology of the gene group.
+  
+  Click on 'RG' (related genes) to list all genes functionally related to the particular gene group.
+  
+  Click on the 'green icon' to invoke 2D (gene-to-term) view.
+  
+  Create a new subgene list for further analysis on a subset of the genes.
+  
+}
+# 
+# Specifiy annotation categories.
+setAnnotationCategories(david, c("GOTERM_BP_ALL", "GOTERM_MF_ALL", "GOTERM_CC_ALL"))
+
+# ***Get functional annotation chart as R object.
+FuncAnnotChart <- getFunctionalAnnotationChart(david)
+
+# Print functional annotation chart to file.
+getFunctionalAnnotationChartFile(david, "hnscc_DAVID_FuncAnnotChart.tsv")
+
+# ***Get functional annotation clustering (limited to 3000 genes).
+FuncAnnotClust <- getClusterReport(david)
+
+# Print functional annotation clustering to file (limited to 3000 genes).
+getClusterReportFile(david, "hnscc_DAVID_FuncAnnotClust.tsv")
+#  The BACA package
+
+# Visualize genes on BioCarta and KEGG pathway maps
+
+
 
 
 
