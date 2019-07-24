@@ -1,0 +1,25 @@
+1	Apoptosis signaling pathway (P00006)	1	0.9%	3.1%
+2	p38 MAPK pathway (P05918)	1	0.9%	3.1%
+3	Alzheimer disease-presenilin pathway (P00004)	1	0.9%	3.1%
+4	Interferon-gamma signaling pathway (P00035)	1	0.9%	3.1%
+5	Alzheimer disease-amyloid secretase pathway (P00003)	1	0.9%	3.1%
+6	Inflammation mediated by chemokine and cytokine signaling pathway (P00031)	1	0.9%	3.1%
+7	p53 pathway feedback loops 2 (P04398)	2	1.7%	6.3%
+8	EGF receptor signaling pathway (P00018)	3	2.6%	9.4%
+9	Parkinson disease (P00049)	1	0.9%	3.1%
+10	Gonadotropin-releasing hormone receptor pathway (P06664)	1	0.9%	3.1%
+11	Vitamin D metabolism and pathway (P04396)	1	0.9%	3.1%
+12	Cytoskeletal regulation by Rho GTPase (P00016)	1	0.9%	3.1%
+13	PDGF signaling pathway (P00047)	1	0.9%	3.1%
+14	Oxidative stress response (P00046)	2	1.7%	6.3%
+15	Ras Pathway (P04393)	1	0.9%	3.1%
+16	Nicotinic acetylcholine receptor signaling pathway (P00044)	1	0.9%	3.1%
+17	Blood coagulation (P00011)	1	0.9%	3.1%
+18	B cell activation (P00010)	1	0.9%	3.1%
+19	Huntington disease (P00029)	1	0.9%	3.1%
+20	p53 pathway (P00059)	1	0.9%	3.1%
+21	Wnt signaling pathway (P00057)	2	1.7%	6.3%
+22	Synaptic vesicle trafficking (P05734)	1	0.9%	3.1%
+23	TGF-beta signaling pathway (P00052)	2	1.7%	6.3%
+24	FGF signaling pathway (P00021)	2	1.7%	6.3%
+25	Plasminogen activating cascade (P00050)	1	0.9%	3.1%
