@@ -1,6 +1,6 @@
 ---
 # Preparing your manuscript
-# of BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript (BioMedCentral_article temple of Tex)
+#of BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript (BioMedCentral_article temple of Tex)
 # TypesetIO: https://www.typeset.io/edit/51a7cf1a-1a39-4a40-94c1-6f47608286ff BMC Cancer
 #*** sharlatex and overleaf, sync with Github (vim): https://www.overleaf.com/project/5d1f4419460443357489e46f
 #
@@ -54,7 +54,7 @@ abstract: {#abstract}
 ---
 *** https://journalfinder.elsevier.com
 #target journal:
-BMC Cancer, BMC Medical Genomics
+BMC Cancer, BMC Medical Genomics, Nucleic Acids Res. 
 https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
 BBRC: Biochemical and Biophysical Research Communications 
 impact factor 2.559
@@ -62,7 +62,12 @@ https://www.journals.elsevier.com/biochemical-and-biophysical-research-communica
 https://bmcbioinformatics.biomedcentral.com 
 BMC Bioinformatics, impact factor 2
 https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript
-Bioinformatics (Oxford Academic) => https://academic.oup.com/bioinformatics/pages/General_Instructions
+***Bioinformatics (Oxford Academic) => Oxford University Press (OUP) https://academic.oup.com/journals/pages/announcements_from_oup/oup_announces_impact_factor_results
+User Name: texchi2@gmail.com and pw=jacklee523
+Impact Factor4.531
+https://academic.oup.com/bioinformatics/pages/General_Instructions
+https://mc.manuscriptcentral.com/bioinformatics/
+The name of the software should be included in the title of the paper wherever possible.
 (https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
 https://www.biomedcentral.com/journals#Life-Sciences
 (TCGA publication guideline: https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)
@@ -137,7 +142,7 @@ https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 #go to FireBrowse ( http://gdac.broadinstitute.org/ ):
 # install.packages("devtools")
 # library("devtools")
-# devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
+# devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "tobacco_exposure"
 Data analysis
 
 https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3372940/#!po=2.54237 (FDR)?
@@ -400,7 +405,48 @@ and subsection a unique label (see Sect. \ref{sec:1}).]
 
 Pathway analysis by DAVID
 *** 8 candidate genes has Previous HGNC Symbol -> Current Gene Symbol -> convert all 47 genes to ENTREZID
+# Previous HGNC Symbol -> Current Gene Symbol -> ENTREZID
+updated_geneNameX <- c(
+	"ATHL1",	"PGGHG", 80162,
+	"CCDC64",	"BICDL1", 92558,
+	"CNIH",	"CNIH1", 10175,
+	"DPH3B",	"DPH3P1", 100132911,
+	"FAM10A4",	"ST13P4", 145165,
+	"FAM55C",	"NXPE3", 91775,
+	"KAZ",	"KAZN", 23254,
+	"NDNL2",	"NSMCE3", 56160
+) => TCGA needs to be updated
+# CNIH has CNIH1 CNIH2 CNIH3 CNIH4 family
+#The Kappa Statistic is a chance corrected measure of agreement between two sets of categorized data. Kappa result ranges from 0 to 1. The higher the value of Kappa, the stronger the agreement. If Kappa = 1, then there is perfect agreement. If Kappa = 0, then there is no agreement.
+#> PANTHER.db ####
+# *** http://pantherdb.org
+there is PANTHER PIE CHARTs
+# => MYO10 in nicotine Nicotinic acetylcholine receptor signaling pathway => Myosin
+# http://pantherdb.org/genes/gene.do?acc=HUMAN%7CHGNC%3D7593%7CUniProtKB%3DQ9HD67
+# ***TFs pickup from panther (see .txt and figure)
+***Nicotinic Acetylcholine Receptors are found on striated muscle at the neuromuscular junction and in the brain. They are one of the best understood receptors, often used as the model ion channel/receptor. The understanding of these receptors' actions by Fatt and Katz (1952; J Physiol 117:109-128) led to a basic understanding of neuronal transmission of information. When activated by acetylcholine released from nerves, these receptors depolarize the muscle cell and trigger muscle contraction. The best known agonist for these receptors is nicotine, but nicotinic acetylcholine receptors in the brain (those effected by smoking cigarettes) are still relatively poorly understood compared to nicotinic acetylcholine receptors at the neuromuscular junction.
+=> *** nicotine
+tobacco_exposure feature was created
+# 60.65% is in high risk smoking group (HNSCC cohort n=521)
+# 'Lifelong Non-Smoker', 1
+# 'Current Smoker', 2
+# 'Current Reformed Smoker for > 15 yrs', 3
+# 'Current Refomed Smoker for < or = 15 yrs', 4
+# 'Current Reformed Smoker Duration Not Specified', 5
+# ==> [tobacco_exposure] a new binomial variable (categorizing) as risk of [high/low]:
+#       level low by c(1, 3, 5)
+#       level high by c(2, 4)
+# in hnscc_nicotine, n=521
+# [11] "tobacco_exposure"             
+1   2   3   4   5 
+117 177  73 139   2 
+
+
 => submit DAVID
+1)Transcription regulation, or TFs
+Protein involved in the regulation of the transcription process.
+2)Pathway: Proteoglycans in cancer => KEGG: https://david.ncifcrf.gov/kegg.jsp?path=hsa05205$Proteoglycans%20in%20cancer&termId=550028858&source=kegg
+
 we conducted KEGG pathway analysis to pinpoint the pathways enriched in the two subtypes. As we have used EASE score in DAVID as the enrichment method, these results should be interpretive only.
 Gene functional classification
 The tool classified the example gene list (∼400 genes) into ten functional groups in an easily readable tabular format. An example output is illustrated in Figure 2 as well as in slide 5 of Supplementary Data 5. Gene groups (with significant enrichment scores ≥1), such as cytokines/chemokines (group 1: 3.39), kinases (group 2: 2.21), clathrin membrane fusion genes (group 3: 1.86), transcription factors (group 6: 1.39) and so on, can easily be identified. All of these gene groups are highly relevant to an HIV study and are therefore expected biological results16. Organizing the large gene list into gene groups allows investigators to quickly focus on the overall major common biology associated with a gene group rather than one gene at a time, thereby avoiding dilution of focus during the analysis due to too many single genes. Furthermore, the '2D View' function associated with each group is able to display all related terms and genes in detail in one picture, to examine their interrelationships. For example, for the kinase group (group 2), a user who is not familiar with kinases may explore the terms of kinase activity, transferase activity, ATP-binding, nucleotide binding, protein metabolism, tyrosine specificity, serine/threonine specificity, regulation of G protein signaling, signal transduction and so on in one view at the same time (slide 6 of Supplementary Data 5). Therefore, we can quickly learn the biology for the kinase group, with the above-mentioned related terms in a single view and also identify the fine differences among them. For example, there are two G-protein-coupled receptor kinases, three protein tyrosine kinases and six kinases involved in cell surface receptor-linked signal transduction among the 23 kinases within the group. The fine details may be very important for pinpointing the key biology associated with a study.\cite{HuangNP2009} Nature Protocols: https://www.nature.com/articles/nprot.2008.211
@@ -514,13 +560,16 @@ biological meanings (surgical margin is an artificial factor)
 
 4) Peter (a list with ranking) of mRNA (RNAseq) or LncRNA
 cTNM alone (in KM analysis);
-(OK) instead of pTNM, clinical features 不必多 (Joy's manuscript: smoking (±), betel nut)
-(ok) n=500 case number 要多一些
+(OK) instead of pTNM, clinical features 不必多 (Joy's manuscript: smoking risk (high/low), betel nut)
+(ok) n=512 case number 要多一些
 The criteria of candidate genes: more 2500 genes (top 100)
 gene of non-coding RNA lncRNA in HNSCC?
 
+5) ***[hypothesis] to prove by bioinformatic way: Nicotinic acetylcholine receptor signaling pathway. 
+# nicotine consumption has oral cancer prognostic impact as well as tumor initiation
+# ***article review...Embase or PubMed
 
-5)
+6)
 =Michael2
 Dato 共同第一作者: 成大 n=44 microarray
 Scientific Report; template from 把joy的paper拿來學

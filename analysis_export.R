@@ -1353,9 +1353,9 @@ candidate_good_unimulti_HR0p5[candidate_good_unimulti_HR0p5$gene_id=="MASP1", ]
 
 
 
-# DAVID, TFs pickup 與 IHC cross validation #### 
+# [DAVID] :-) convert to EntrezID ####
 # the database for annotation, visualization and integrated discovery (DAVID), a web-based online bioinformatics resource (http://david.abcc.ncifcrf.gov)
-# Gene Functional Classification
+# Gene Functional Classification (DAVID, ***PANTHER.db)
 #Provide a rapid means to reduce large lists of genes into functionally related groups of genes to help unravel the biological content captured by high throughput technologies.
 # RDAVIDWebService: 
 # https://gist.github.com/svigneau/9699239; RDavidQuery.R
@@ -1436,71 +1436,269 @@ for (u_i in 1:length(u_index)) {
 }
 # which(is.na(geneNameX_entrezIDs_QC$ENTREZID))
 
-# >submit to DAVID ####
-# myForegroundGenes, n=90
+
+
+# submit to DAVID (prepare gene myForegroundGenes) ####
+# myForegroundGenes, n=90, HNSCC risky gene list
 myForegroundGenes <- geneNameX_entrezIDs_QC$ENTREZID
 FG <- addList(david, myForegroundGenes, idType="ENTREZ_GENE_ID", listName="hazards", listType="Gene") #
 #, species="Homo sapiens")
+write.table(myForegroundGenes, file="DAVID_hnsccForegroundGenes.txt", sep = "",
+            row.names = F, col.names = F, quote = FALSE)
 # myBackgroundGenes <- whole_genome; 
 # TCGA_whole_genome_entrezIDs has n=17800 genes as myBackgroundGenes
 myBackgroundGenes <- TCGA_whole_genome_entrezIDs[complete.cases(TCGA_whole_genome_entrezIDs$ENTREZID), 2]
 BG <- addList(david, myBackgroundGenes, idType="ENTREZ_GENE_ID", listName="all", listType="Background")
 #, species="Homo sapiens")
-# Error: !listName %in% switch(listType[1], Gene = getGeneListNames(),  .... is not TRUE
-# 
-david
-# DAVIDWebService object to access DAVID's website. 
-# User email:  d622101005@tmu.edu.tw 
-# Available Gene List/s:  
-#      Name Using
-# 1 hazards     *
-# Available Specie/s:  
-#               Name Using
-# 1 Homo sapiens(90)     *
-# Available Background List/s:  
-#           Name Using
-# 1 Homo sapiens      
-# 2          all     *
+write.table(myBackgroundGenes, file="DAVID_hnsccBackgroundGenes.txt", sep = "",
+            row.names = F, col.names = F, quote = FALSE)
+# error: java.net.SocketTimeoutException: Read timed out
+# or Error: !listName %in% switch(listType[1], Gene = getGeneListNames(),  .... is not TRUE
+# you cannot submit jobs with more than 3000 genes.
+# read the R script: https://rdrr.io/bioc/RDAVIDWebService/src/R/DAVIDWebService-class.R
 # 
 
 # *** Gene functional classification (with cluster identification)
 # to provide an initial glance of major biological functions associated with gene list
-{
-  
-  Click on the gene name that leads to individual gene reports for in-depth information about the gene.
-  
-  Click on the red 'T' (term reports) to list associated biology of the gene group.
-  
-  Click on 'RG' (related genes) to list all genes functionally related to the particular gene group.
-  
-  Click on the 'green icon' to invoke 2D (gene-to-term) view.
-  
-  Create a new subgene list for further analysis on a subset of the genes.
-  
-}
-# 
+# {\cite{HuangNP2009} Nature Protocols: https://www.nature.com/articles/nprot.2008.211
+# DAVID website,  
+#   Click on the gene name that leads to individual gene reports for in-depth information about the gene.
+#   Click on the red 'T' (functional related term reports) to list associated biology of the gene group.
+#   Click on 'RG' (related genes) to list all genes functionally related to the particular gene group.
+#   Click on the 'green icon' to invoke 2D (gene-to-term) view.
+#   Create a new subgene list for further analysis on a subset of the genes.
+# }
+#***hand upload https://david.ncifcrf.gov/gene2gene.jsp
+#Gene List Report, the related genes list (RG)
+#The Kappa Statistic is a chance corrected measure of agreement between two sets of categorized data. Kappa result ranges from 0 to 1. The higher the value of Kappa, the stronger the agreement. If Kappa = 1, then there is perfect agreement. If Kappa = 0, then there is no agreement.
+
+# https://david.ncifcrf.gov/content.jsp?file=FAQs.html#25 explanation in detail
 # Specifiy annotation categories.
 setAnnotationCategories(david, c("GOTERM_BP_ALL", "GOTERM_MF_ALL", "GOTERM_CC_ALL"))
 
 # ***Get functional annotation chart as R object.
+# https://david.ncifcrf.gov/summary.jsp
+# ***Pathway: Proteoglycans in cancer => KEGG: https://david.ncifcrf.gov/kegg.jsp?path=hsa05205$Proteoglycans%20in%20cancer&termId=550028858&source=kegg
+# ***kidney disease
 FuncAnnotChart <- getFunctionalAnnotationChart(david)
-
 # Print functional annotation chart to file.
 getFunctionalAnnotationChartFile(david, "hnscc_DAVID_FuncAnnotChart.tsv")
 
 # ***Get functional annotation clustering (limited to 3000 genes).
 FuncAnnotClust <- getClusterReport(david)
-
 # Print functional annotation clustering to file (limited to 3000 genes).
 getClusterReportFile(david, "hnscc_DAVID_FuncAnnotClust.tsv")
-#  The BACA package
-
-# Visualize genes on BioCarta and KEGG pathway maps
 
 
+# x The BACA package
+
+#> PANTHER.db ####
+# *** http://pantherdb.org saved workspace, *** hand analysis with .tiff and pathway pie chart
+#https://bioconductor.org/packages/release/data/annotation/vignettes/PANTHER.db/inst/doc/PANTHER.db.pdf
+# nature protocol: https://www.nature.com/articles/s41596-019-0128-8
+library(PANTHER.db)
+browseVignettes("PANTHER.db")
+pthOrganisms(PANTHER.db) # HUMAN
+keytypes(PANTHER.db) 
+# [1] "CLASS_ID"     "COMPONENT_ID" "ENTREZ"       "FAMILY_ID"   
+#[5] "GOSLIM_ID"    "PATHWAY_ID"   "SPECIES"      "UNIPROT" 
+## use select to extract some data
+#keys_panther <- c("E1C9F4","O14618")
+# View(keys(PANTHER.db)) # n=90742
+keys_panther <- keys(myForegroundGenes, keytype = "ENTREZ")
+cols_panther <- c("ENTREZ", "FAMILY_ID","GOSLIM_ID","FAMILY_TERM", "PATHWAY_ID", "CONFIDENCE_CODE")
+ktype_panther <- "PATHWAY_ID"
+select(PANTHER.db, keys_panther, cols_panther, ktype_panther)
 
 
 
+# **** there is PANTHER PIE CHARTs [2019/07/25]
+# *** new project: Smoking nicotine pathway in hnscc ####
+# clinical feature: tobacco_exposure [high/low]
+# => MYO10 in (nicotine) Nicotinic acetylcholine receptor signaling pathway => Myosin
+# http://pantherdb.org/genes/gene.do?acc=HUMAN%7CHGNC%3D7593%7CUniProtKB%3DQ9HD67
+# http://identifiers.org/panther.pathway/P00044 # from paxtoolsr
+# https://apps.pathwaycommons.org/pathways?uri=http%3A%2F%2Fidentifiers.org%2Fpanther.pathway%2FP00044
+# ***TFs pickup from panther as well
+
+# https://www.pathwaycommons.org/pcviz/#pathsbetween/27102,23676,7009,55217,58488,6695,10857,81533,94081,3198,153768,219995,4723,23204,647033,56160,8815,23193,100132911,1717,55299,26509,51751,57222,145165,22800,7511,1852,10783,9922,83752,4494,9167,10175,60625,8841,55839,79366,909,55298,91775,55142,83540,25914,347902,3916,2074,5648,400935,728743,2145,728294,163050,353497,83416,65095,117581,23254,53358,116535,1101,92558,25897,84824,10497,643641,327657,7593,5600,30832,1240,116984,58491,7768,51043,5799,80317,339761,5329,79786,80162,962,924,29964,286133,7280,6909,90007,64976,345275
+# CDEs dictionary of GDC: https://docs.gdc.cancer.gov/Data_Dictionary/gdcmvs/
+#1) ***checking TCGA cohort: smoker, ex-smoker(quit for 15 years +/-) 重要, never-smoker; 
+#   and smoking_history: exposure_intensity, exposure_duration, quit_for_year
+#   CDE (Collection)=>
+#   2955385 (caDSR): number_pack_years_smoked
+#   2181650 (caDSR): 'Lifelong Non-Smoker', 'Current Smoker', 'Current Reformed Smoker for > 15 yrs', 
+#     'Current Refomed Smoker for < or = 15 yrs', 'Current Reformed Smoker Duration Not Specified'
+#   and smokeless_history: exposure_intensity, exposure_duration, quit_for_year, exposure_regularly
+load(file=file.path("~/R", "HNSCC.clinical.Fire.Rda"))
+colnames(HNSCC.clinical.Fire) # smoking features
+#{# # alcohol c(5, 6, 39) 
+  # [1] "alcohol_history_documented"           
+  # [2] "amount_of_alcohol_consumption_per_day"
+  # [3] "frequency_of_alcohol_consumption
+  # => # tobacco/{smoking/smokless} c(66, 83:88, 95, 103)
+  # [1] "number_pack_years_smoked"   # lifetime tobacco exposure defined as number of cigarettes smoked per day x number of years smoked divided by 20.
+  # [2] "smokeless_tobacco_use_age_at_quit" 
+  # [3] "smokeless_tobacco_use_age_at_start"
+  # [4] "smokeless_tobacco_use_at_diag"     
+  # [5] "smokeless_tobacco_use_per_day"     
+  # [6] "smokeless_tobacco_use_regularly"   
+  # [7] "stopped_smoking_year"              
+  # [8] "tobacco_smoking_history"           #  1   2   3   4   5 
+  # which:                                   122 178  73 140   2
+  # 'Lifelong Non-Smoker', 1
+  # 'Current Smoker', 2
+  # 'Current Reformed Smoker for > 15 yrs', 3
+  # 'Current Refomed Smoker for < or = 15 yrs', 4
+  # 'Current Reformed Smoker Duration Not Specified', 5
+  # ==> [tobacco_exposure] a new binomial variable (categorizing) as risk of [high/low]:
+  #       level high by c(2, 4)
+  #       level low by c(1, 3, 5)
+  # 
+  # [9] "year_of_tobacco_smoking_onset"
+  # # HPV c(43:47); IHC or HPV
+  # [1] "hpv_call_1"                "hpv_call_2"               
+  # [3] "hpv_status"                "hpv_status_by_ish_testing"
+  # [5] "hpv_status_by_p16_testing"
+#}
+
+
+# 2) nicotine gene list from panther (n=62)
+# http://amp.pharm.mssm.edu/Harmonizome/gene_set/Nicotinic+acetylcholine+receptor+signaling+pathway/PANTHER+Pathways
+# http://www.pantherdb.org/pathway/pathDetail.do?clsAccession=P00044
+# 62 proteins participating in the Nicotinic acetylcholine receptor signaling pathway pathway from the PANTHER Pathways dataset.
+# brought you by Harmonizome(\cite{})
+nicotine_gene62 <- read.csv(stdin(), header=T, sep="\t")
+View(nicotine_gene62)
+
+# venn, geneNameX_entrezIDs_QC vs nicotine_gene62
+# *** there is no intersection
+venn_nicotine <- list(geneNameX_entrezIDs_QC$SYMBOL, nicotine_gene62$Symbol) # Gene Symbol
+names_nicotine <- c(paste("the candidate of", TCGA_cohort, "biomarker ( n =", nrow(geneNameX_entrezIDs_QC), ")"), 
+                    paste("the nicotine pathway ( n =", nrow(nicotine_gene62), ")"))
+library(gplots)
+tmp_ni <- venn(venn_nicotine, names=names_nicotine, show.plot=F) #library(gplots); the group count matrix alone
+isect_nicotine <- attr(tmp_ni, "intersections")
+detach(package:gplots)
+library(venn)
+tiff("Rplot11_venn_hnscc_nicotine.tiff", units="cm", width=5, height=5, res=300) 
+venn(venn_nicotine, snames=names_nicotine,
+     ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, deeppink", opacity = 0.6, size = 15, cexil = 0.7, cexsn = 0.3, borders = TRUE)
+# meta-language 1 0 or -
+#title <- c(paste(TCGA_cohort, "survival analysis"), paste("(KM P-Value <=", signif(alpha_HNSCC, 3), ")")) #, collapse = "\n")
+title <- paste(TCGA_cohort, "biomarker is not overlaped with the Nicotinic acetylcholine receptor signaling pathway")
+text(500,900, labels = title[1], cex = 0.60) # (0,0) on bottom_left corner
+text(500,855, labels = title[2], cex = 0.40) 
+# n=0
+dev.off()
+
+
+# Pathway Components "Category ID": n=13, pathway ontology term, P as pathway:
+nicotine_Components <- data.frame(matrix(c("P01098",
+"P01097",
+"P01096",
+"P01095",
+"P01094",
+"P01093",
+"P01092",
+"P01091",
+"P01090",
+"P01089",
+"P01088",
+"P01087",
+"P01086"), byrow = F, ncol=1)) # source: panther.db, Component Accession
+#nicotine_gene_json <- fromJSON(file.path(path_cohort, "Nicotinic_acetylchol.json"), simplifyDataFrame=TRUE)
+#View(nicotine_gene_json[[1]][nicotine_gene13_json[[1]][,2]=="bp:ProteinReference",1:6])
+#
+
+
+# 3) => categorizing the tobacco_exposure feature: smoking ratio (high/low) in cohort
+# stored at hnscc_nicotine$tobacco_exposure
+load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, as clean6_oscc
+#hnscc_n521 <- clean6_oscc
+# included $$.clinico_mRNA.Fire for survival analysis
+# 
+hnscc_nicotine <- clean6_oscc[ , c(1:9,11)]
+# # inner join by merge
+hnscc_nicotine <- merge(hnscc_nicotine, 
+                        subset(HNSCC.clinical.Fire, select=c("tcga_participant_barcode", "tobacco_smoking_history")))
+# in HNSCC.clinical.Fire: n=528
+# [1] "tcga_participant_barcode" 
+# [103] "tobacco_smoking_history"         #  1   2   3   4   5 
+# which:                                   122 178  73 140   2
+# 'Lifelong Non-Smoker', 1
+# 'Current Smoker', 2
+# 'Current Reformed Smoker for > 15 yrs', 3
+# 'Current Refomed Smoker for < or = 15 yrs', 4
+# 'Current Reformed Smoker Duration Not Specified', 5
+# ==> [tobacco_exposure] a new binomial variable (categorizing) as risk of [high/low]:
+#       level low by c(1, 3, 5)
+#       level high by c(2, 4)
+#
+# in hnscc_nicotine, n=521
+# [11] "tobacco_exposure"             1   2   3   4   5 
+#   (as "tobacco_smoking_history)   117 177  73 139   2 
+# categorizing
+colnames(hnscc_nicotine)[11] <- "tobacco_exposure"
+hnscc_nicotine$tobacco_exposure[hnscc_nicotine$tobacco_exposure %in% c(1, 3, 5)] <- 1 
+# low as 1, recoding => n=192
+hnscc_nicotine$tobacco_exposure[hnscc_nicotine$tobacco_exposure %in% c(2, 4)] <- 2 
+# high as 2 => n=316
+#smoking % (high/low) in cohort
+hnscc_smoking_rate <- table(hnscc_nicotine$tobacco_exposure)[2]/nrow(hnscc_nicotine)
+# 60.65% is in high risk smoking group (HNSCC cohort n=521)
+
+# 4) => by its significant cutoff (high/low)
+# kappa statistics? or Chi-square test
+
+
+ 
+# 5) [hypothesis] to prove by bioinformatic way: 
+# "Nicotinic acetylcholine receptor signaling pathway"
+# nicotine consumption has oral cancer prognostic impact as well as tumor initiation
+# ***article review...Embase or PubMed 
+
+# 
+# Visualize genes on *** MSKCC: Pathway Commons databases, BioCarta and KEGG pathway maps ####
+# http://www.pathwaycommons.org PaxtoolsR: Access Pathways from Multiple Databases through BioPAX and Pathway Commons
+# the querying Pathway Commons (PC) molecular interaction database that are hosted by the Computational Biology Center at
+# Memorial Sloan-Kettering Cancer Center (MSKCC).
+# MSKCC: Pathway Commons databases
+# include: BIND, BioGRID, CORUM, CTD, DIP, DrugBank, HPRD, HumanCyc, IntAct, KEGG, MirTarBase, Panther, PhosphoSitePlus, Reactome, RECON, TRANSFAC.
+# receipe *** http://bioconductor.org/packages/release/bioc/vignettes/paxtoolsr/inst/doc/using_paxtoolsr.html
+# "Using PaxtoolsR: A BioPAX and Pathway Commons Tutorial in R"
+# 2 May 2019
+# The Biological Pathway Exchange (BioPAX) format is a community-driven standard language to represent biological pathways
+biocLite("paxtoolsr")
+library(paxtoolsr)
+help.search("paxtoolsr")
+help(graphPc)
+# the OWL (Web Ontology Language) file format; XML object.
+searchResults <- searchPc(q = "nicotine", type = "pathway", verbose = TRUE)
+# => http://www.pathwaycommons.org/pc2/search.xml?q=nicotine&page=0&type=pathway 
+library(plyr)
+searchResultsDf <- ldply(xmlToList(searchResults), data.frame)
+simplifiedSearchResultsDf <- searchResultsDf[, c("name", "uri", "biopaxClass")]
+(simplifiedSearchResultsDf$name[1:6])
+# [1] Nicotine_degradation                              
+# [2] Nicotine Metabolism                               
+# [3] Nicotine Activity on Chromaffin Cells             
+# [4] Nicotine pharmacodynamics pathway                 
+# [5] Nicotine Activity on Dopaminergic Neurons         
+# [6] Nicotinic acetylcholine receptor signaling pathway # http://identifiers.org/panther.pathway/P00044
+
+# *** chapter 7: Common Data Visualization Pathways and Network Analysis
+#7.1 Visualizing SIF Interactions from Pathway Commons using R Graph Libraries
+library(igraph)
+#7.2 Pathway Commons Graph Query
+#7.3 Overlaying Experimental Data on Pathway Commons Networks
+#7.4 Network Statistics => SIF Network Statistics
+
+
+
+
+# IHC cross validation
+# 
 # >Analysis finish; tar until here (refinement ok) ####
 # R4> options(prompt="R4_plus>")
 # tar
