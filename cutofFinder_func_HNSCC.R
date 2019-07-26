@@ -12,7 +12,9 @@ cutofFinder_func <- function(geneName, marginTag) {
 # to assembly osccCleanNA data.frame
 #load(file="TMU_TA51BCDE_T70_clinical_fullFeatures13_dichotomized.Rda") # as oscc (without margin feature)
 # or ***
-load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, as clean6_oscc
+load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, x as clean6_oscc
+# updated [2019/07/27] # as clean6_oscc_tobacco
+
 #load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda") # as oscc with "margin" features
 #, negative n=348 while positive n=18 and 156:NaN)
 oscc <- clean6_oscc

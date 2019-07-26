@@ -1658,21 +1658,37 @@ hnscc_smoking_rate <- table(hnscc_nicotine$tobacco_exposure)[2]/nrow(hnscc_nicot
 # nicotine consumption has oral cancer prognostic impact as well as tumor initiation
 # ***article review...Embase or PubMed 
 #{
-#Epithelial cell nicotinic acetylcholine receptor expression in head and neck squamous cell carcinoma pathogenesis
+#(no citation) Epithelial cell nicotinic acetylcholine receptor expression in head and neck squamous cell carcinoma pathogenesis
 # Carracedo et al., Anticancer Research 2007
 #classical nicotine- and alcohol-associated carcinoma.
 res_df <- read.csv(file=file.choose(), header=T) # with abstract, PUI as embase
 res_df <- rbind(res_df, read.csv(file=file.choose(), header=T)) # 35 articles
-
+# get its PMID for PubCurator
+# 
 #}
 
-# run n=521 cohort, survival analysis without RNAseq, and cutoff at smoking_feature high/low.
-#  (update local Rstudio (for macOS) and R 3.6 for test analysis)
+# [R_mbp>] run n=521 cohort, survival analysis without RNAseq, and cutoff at smoking_feature high/low.
+#  (update local Rstudio (for macOS) and R 3.6.1 for test analysis)
 # $ curl -# --url  "https://download1.rstudio.org/desktop/macos/RStudio-1.2.1335.dmg" -o /Users/apple/RStudio-1.2.1335.dmg
 # or for 2009 Macbook Pro: $ curl -# --url  "http://download1.rstudio.org/RStudio-1.1.463.dmg" -o /Users/apple/RStudio-1.1.463.dmg
-# $ brew upgrade r --with-java
-# GCE re-run 6 days for cutoff finder with new tobacco_feature
+# x $ brew upgrade r --with-java
 
+
+# [R4>] Instance-4 at GCE re-run 6 days for cutoff finder with new tobacco_feature [nicotine pathway in hnscc]
+# [tobacco_feature] since [2019/07/27] ####
+# save(clean6_oscc, file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, 85Mb [2019/06/06]
+load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # as clean6_oscc
+# tobacco_feature should be place after margin
+clean6_oscc_tobacco <- clean6_oscc[ , 1:8]
+# inner join by merge
+clean6_oscc_tobacco <- merge(clean6_oscc_tobacco, subset(hnscc_nicotine, select=c("tcga_participant_barcode", "tobacco_exposure")))
+# , subset(HNSCC.clinical.Fire, select=c("tcga_participant_barcode", "tobacco_smoking_history"))
+clean6_oscc_tobacco <- merge(clean6_oscc_tobacco, clean6_oscc[ , c(1, 9:ncol(clean6_oscc))])
+# tobacco_exposure at column 9; then updated HNSCC.clinical.RNAseq.Fire.Rda
+save(clean6_oscc_tobacco, file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # as clean6_oscc_tobacco
+# $ scp  tex@35.201.169.0:~/R/HNSCC.clinical.RNAseq.Fire.Rda ~/hnscc_github
+# HNSCC.clinical.RNAseq.Fire.Rda => download to MBP
+# done: -rw-r--r-- 1 tex tex  85031069 Jul 26 16:19 HNSCC.clinical.RNAseq.Fire.Rda
 
 
 # 

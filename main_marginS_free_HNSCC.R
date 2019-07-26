@@ -1607,7 +1607,7 @@ whole_genome <- whole_genome2 # updated as 20500 genes
 save(whole_genome, file="whole_genome.Rda") # updated since [2019/06/05]
 ## Preparation finished (for HNSCC cancer type or cohort) ###
 
-# archiving 20500 RNAseq files: 	
+# ***archiving 20500 RNAseq files: 	
 #$ find HNSCC.mRNA.Exp.*.Fire.Rda -print > mRNA_files
 #$ tar -c -v -z --remove-files -T mRNA_files -f HNSCC.mRNA.Exp.20499.Fire.Rda.tgz
 # n= 20238, size 215Mb
@@ -1758,6 +1758,9 @@ package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "comp
 right <- anti_join(package_must, package_list, by="Package")
 # [2019/05/13] skip new git2r and debugr so far
 # }
+
+
+
 
 
 ## START:  ####
@@ -2261,11 +2264,7 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
 
 #
 #
-#
-#
-#
-# [run] mainA marginS then mainB marginFree ####
-# after functions defined
+
 
 
 
