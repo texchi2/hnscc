@@ -1657,6 +1657,23 @@ hnscc_smoking_rate <- table(hnscc_nicotine$tobacco_exposure)[2]/nrow(hnscc_nicot
 # "Nicotinic acetylcholine receptor signaling pathway"
 # nicotine consumption has oral cancer prognostic impact as well as tumor initiation
 # ***article review...Embase or PubMed 
+#{
+#Epithelial cell nicotinic acetylcholine receptor expression in head and neck squamous cell carcinoma pathogenesis
+# Carracedo et al., Anticancer Research 2007
+#classical nicotine- and alcohol-associated carcinoma.
+res_df <- read.csv(file=file.choose(), header=T) # with abstract, PUI as embase
+res_df <- rbind(res_df, read.csv(file=file.choose(), header=T)) # 35 articles
+
+#}
+
+# run n=521 cohort, survival analysis without RNAseq, and cutoff at smoking_feature high/low.
+#  (update local Rstudio (for macOS) and R 3.6 for test analysis)
+# $ curl -# --url  "https://download1.rstudio.org/desktop/macos/RStudio-1.2.1335.dmg" -o /Users/apple/RStudio-1.2.1335.dmg
+# or for 2009 Macbook Pro: $ curl -# --url  "http://download1.rstudio.org/RStudio-1.1.463.dmg" -o /Users/apple/RStudio-1.1.463.dmg
+# $ brew upgrade r --with-java
+# GCE re-run 6 days for cutoff finder with new tobacco_feature
+
+
 
 # 
 # Visualize genes on *** MSKCC: Pathway Commons databases, BioCarta and KEGG pathway maps ####
