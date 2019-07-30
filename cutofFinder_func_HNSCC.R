@@ -12,12 +12,21 @@ cutofFinder_func <- function(geneName, marginTag) {
 # to assembly osccCleanNA data.frame
 #load(file="TMU_TA51BCDE_T70_clinical_fullFeatures13_dichotomized.Rda") # as oscc (without margin feature)
 # or ***
-load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") # n=521, x as clean6_oscc
-# updated [2019/07/27] # as clean6_oscc_tobacco
-
-#load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda") # as oscc with "margin" features
+load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") 
+  # n=521, x as clean6_oscc -> clean6_oscc_tobacco
+# updated [2019/07/27] # as clean6_oscc_tobacco (with tobacco_exposure feature created)
+  # [1] "tcga_participant_barcode" "gender"                  
+  # [3] "ageDx"                    "clinical_T"              
+  # [5] "clinical_N"               "clinical_M"              
+  # [7] "stage"                    "margin"                  
+  # [9] "tobacco_exposure"         "OS_IND"                  
+  # [11] "days_to_death"            "OS_months"               
+  # [13] "OS_live_months"           "RFS_IND"                 
+  # [15] "RFS_months"               "z.score_A1BG"   ...... 
+  
+#load(file="LUAD_T522_clinical_fullFeatures11_dichotomized.Rda") # as oscc with "margin" feature
 #, negative n=348 while positive n=18 and 156:NaN)
-oscc <- clean6_oscc
+oscc <- clean6_oscc_tobacco
 # included $$.clinico_mRNA.Fire for survival analysis
 # #
 # *** (We don't need to load mRNA by each geneName)
@@ -37,43 +46,55 @@ oscc <- clean6_oscc
 # if (is.na(tryCatch(LUAD.clinico_mRNA.Fire <- merge(oscc, LUAD_T_mRNA.Fire, by="tcga_participant_barcode") , error = function(e) return(NA)))) {return(5)} # merge error
 # #n=515 with sample_type "TP", excluding "NT normal tissue" or "TR"
 
+
+
+
+
 # >generate HNSCC.clinico_mRNA.Fire ####
+# for each run of cutoff finding
 colnumberRNA <- which(colnames(oscc)==paste("z.score_", geneName, sep=""))
 if (identical(colnumberRNA, integer(0))) {return(3)} # there is no 19867 "ZFP91.CNTF" RNAseq data, skip to next gene
 
-HNSCC.clinico_mRNA.Fire <- oscc[, c(1:8, 9, 11, 13, 14, colnumberRNA)] # append RNAseq data column
+# *** adjust column number (13 -> 14), names, then export tables(.xlsx)
+HNSCC.clinico_mRNA.Fire <- oscc[, c(1:9, 10, 12, 14, 15, colnumberRNA)] # append RNAseq data column
 # rename all of colnames as HNSCC's osccT
 # Error in names(x) <- value : 
 colnames(HNSCC.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
                                       "T","N",
-                                      "M","stage_2","margin",
+                                      "M","stage_2","margin", "tobacco", 
                                       "OS_IND", "OS..months._from.biopsy",
                                       "RFS_IND", "RFS..months._from.op", "H.score_T")
 # n=521 in HNSCC
 oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
 # oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
+
+
 # *** check % RNAseq of a cohort is available in particular gene; e.x. XKRY, 100% is NaN
+# availability > 70% will be passed for further analyses.
 # Pipes %>%: df %>% map_dbl(mean)
-# library(AMR) # for freq()
+library(AMR) # for freq()
 freq_oscc <- oscc %>% freq("H.score_T", header=F) # https://www.dummies.com/programming/r/how-to-read-the-output-of-str-for-lists-in-r/
 #if (is.na(freq_oscc)) {return(5)}
 n_freq_oscc <- as.numeric(strsplit(capture.output(str(freq_oscc))[11], " int ")[[1]][2]) # no of NaN
 if (n_freq_oscc/nrow(oscc) >= 0.3) {return(5)} # if NaN% > 30%
 #table(is.na(oscc$H.score_T))[2] >= nrow(oscc) * 0.7
 
+
+# RNAseq QC passed
 ## a dummy universal variable for binomial (high/low) oscc$geneName_median, all are zero
 oscc$PMM1_median <-(oscc$H.score_T >= median(oscc$H.score_T, na.rm=T)) +0 # higher 1 or lower 0
-osccM_pos <- which(colnames(oscc) == "PMM1_median") # at column 14
+osccM_pos <- which(colnames(oscc) == "PMM1_median") # at column 14 -> 15
 #
-# [2019/06/11]
+# [2019/06/11][2019/07/30] with tobacco
 # > check complete.cases, data cleaning ####
 osccClean <- oscc
 # commonFeatures <- c(2:6, 8) # common features: gender, age, margin and TNM :-)
-commonFeatures <- which(colnames(oscc) %in% c("Gender", "age.at.diagnosis", "T", "N", "M", "margin")) #  6 essential features
-osccCleanNA <- osccClean[complete.cases(osccClean[, commonFeatures]), ] # copy all features but remove NaN entities in 6 essential features for their "completeness"
-# n=427
+commonFeatures <- which(colnames(oscc) %in% c("Gender", "age.at.diagnosis", "T", "N", "M", "margin", "tobacco")) 
+#  7 essential features is located at 2 3 4 5 6 8 9;
+osccCleanNA <- osccClean[complete.cases(osccClean[, commonFeatures]), ] # copy all features but remove NaN entities in 7 essential features for their "completeness"
+# n=415 cases with feature of tobacco_exposure
 
-# *** addNA for counting all NA (e.g. there is 0, no 1, in margin-free cohort) in "M" "stage_2" or "margin", as a level of factor
+# *** addNA for counting all NA (e.g. there is 0, no 1, in margin-free cohort) in "M" "stage_2" "margin" or "tobacco, as a level of factor
 # the “pathological” case of two different kinds of NAs which are treated differently: exclude = if (useNA == "no") c(NA, NaN)
 # "unusual NA comes from addNA() as factor
 # table(osccCleanNA$margin)
@@ -83,12 +104,16 @@ osccCleanNA$margin <- addNA(osccCleanNA$margin, ifany=F) # ifany=="always" add N
 #   0    1 <NA> => 3 levels of factor in "margin"
 # str(osccCleanNA$margin)
 # Factor w/ 3 levels "0","1",NA: 1 2 2 1 1 2 1 2 1 1 ...
+osccCleanNA$tobacco <- addNA(osccCleanNA$tobacco, ifany=F) # ifany=="always" add NA as a factor
+# str(osccCleanNA$tobacco)
+#
+
+oscc_n415 <- osccCleanNA # n=415 * 15; removal of NA cases; spare data
 
 
-oscc_n427 <- osccCleanNA # n=427; removal of NA cases; spare data
-# ***_marginS_: margin positive and negative cohort (n=427) ####
 
-osccCleanNA <- oscc_n427
+# ***_marginS_: margin positive and negative cohort (n=415) ####
+osccCleanNA <- oscc_n415
 
 # by marginTag:   # surgical margin status
 if (marginTag == "_marginS_") {
@@ -115,8 +140,8 @@ which(complete.cases(oscc$H.score_T)==F) # if no NaN -> 0
 # 24: there is one NaN on H.score_T (at TCGA-BA-A6DF)
 which(complete.cases(oscc$OS_IND)==F) # if no NaN -> 0
 
-# *** column 9 should be OS_IND
-which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
+# *** checking column 10 is OS_IND
+which(complete.cases(oscc[oscc$OS_IND==1, 10])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
 
 
 
@@ -134,9 +159,9 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # oscc <- cbind(oscc0, osccCleanNA$H.score_T) # expression(IHC score) of PMM1
     # {debug
     # find_repeat <- 100 # searching 100 slices in the interval
-    cohort_n <- nrow(oscc) # n=328 or 427
+    cohort_n <- nrow(oscc) # n=328 or 427 -> 415
     # }debug
-    oscc0_pos <- which(colnames(oscc0) == "H.score_T") # oscc0$H.score_T as colunm 13
+    oscc0_pos <- which(colnames(oscc0) == "H.score_T") # oscc0$H.score_T as colunm 14
     
     exp_geneName <- t(oscc0[, oscc0_pos]) # horizontal vector of RNAseq, why t?
     #exp_geneName <- oscc0[, oscc0_pos] # vertical vector
@@ -166,7 +191,7 @@ which(complete.cases(oscc[oscc$OS_IND==1, 9])==F) #OS_IND ==1, death event (dead
     # (OK)Error during wrapup: names() applied to a non-vector
     #debug
     
-    
+    library(survival)
     # (for run100) P-value according to KM survival analysis (alone) ####
     for (run100 in seq(cutoff_n[1], cutoff_n[2])){ 
       #browser()

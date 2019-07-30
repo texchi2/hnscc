@@ -426,7 +426,7 @@ there is PANTHER PIE CHARTs
 # ***TFs pickup from panther (see .txt and figure)
 ***Nicotinic Acetylcholine Receptors are found on striated muscle at the neuromuscular junction and in the brain. They are one of the best understood receptors, often used as the model ion channel/receptor. The understanding of these receptors' actions by Fatt and Katz (1952; J Physiol 117:109-128) led to a basic understanding of neuronal transmission of information. When activated by acetylcholine released from nerves, these receptors depolarize the muscle cell and trigger muscle contraction. The best known agonist for these receptors is nicotine, but nicotinic acetylcholine receptors in the brain (those effected by smoking cigarettes) are still relatively poorly understood compared to nicotinic acetylcholine receptors at the neuromuscular junction.
 => *** nicotine
-tobacco_exposure feature was created
+tobacco_exposure feature was created on [2019/07/27]
 # 60.65% is in high risk smoking group (HNSCC cohort n=521)
 # 'Lifelong Non-Smoker', 1
 # 'Current Smoker', 2
