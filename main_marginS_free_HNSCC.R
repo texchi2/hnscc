@@ -1756,7 +1756,7 @@ package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "comp
 # Filtering joins: #drops all observations in df1(L) that match in df2(R)
 # *** "right": which failed to be installed => we need to install them manually
 right <- anti_join(package_must, package_list, by="Package")
-# [2019/05/13] skip new git2r and debugr so far
+# [2019/05/13] skip new git2r and debugr and graphics so far
 # }
 
 
@@ -1835,14 +1835,21 @@ library(survival)
 # Recurrence no yes
 # }
 # colnames(oscc)[1:15]
-#[1] "tcga_participant_barcode" "gender"                  
-#[3] "ageDx"                    "clinical_T"            
-#[5] "clinical_N"             "clinical_M"            
-#[7] "stage"                    "margin"                  
-#[9] "OS_IND"                   "days_to_death"           
-#[11] "OS_months"                "OS_live_months"          
-#[13] "RFS_IND"                  "RFS_months"              
-#[15] "z.score_A1BG"    ......        
+# [1] "Unique.ID"              
+# [2] "Gender"                 
+# [3] "age.at.diagnosis"       
+# [4] "T"                      
+# [5] "N"                      
+# [6] "M"                      
+# [7] "stage_2"                
+# [8] "margin"                 
+# [9] "tobacco"                
+# [10] "OS_IND"                 
+# [11] "OS..months._from.biopsy"
+# [12] "RFS_IND"                
+# [13] "RFS..months._from.op"   
+# [14] "H.score_T"              
+# [15] "PMM1_median"   ......        
 # 
 # The criteria of candidate genes:
 # {
@@ -1857,7 +1864,7 @@ library(survival)
 # # pathologic_T => clinical_T and so on...
 coln_osccT <- c("Unique.ID","Gender","ageDx",
                 "clinical_T","clinical_N",
-                "clinical_M","stage", "margin",
+                "clinical_M","stage", "margin", "tobacco",
                 "OS_IND","OS..months._from.biopsy",
                 "RFS_IND", "RFS..months._from.op", "H.score_T", paste("PMM1", "_median", sep=""))
 
@@ -1869,7 +1876,7 @@ contLowHighN <- c("Features",	"Low", "(%)",	"High",	"(%)", "Case no",	"P-value",
 # Table 3. Univariate/Multivariate Cox proportional hazards regression analyses on OS time
 ciUniMti <- c("Features",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value")
 
-# with 8 features: in table 3 and table 4
+# with 9 features: in table 3 and table 4
 featuresUni <- c("Gender",
                  "Age at diagnosis",
                  #                 "Primary site",
@@ -1882,6 +1889,7 @@ featuresUni <- c("Gender",
                  #"Pathologic M status",
                  #"Pathologic Stage",
                  "Surgical Margin status",
+                 "Tobacco Exposure", 
                  #                 "Lymphovascular Invasion",
                  #                 "Perineural Invasion",
                  #                 "Extranodal spreading of neck LN",
@@ -1907,6 +1915,7 @@ colUni_1 <- c("Male",
               #              "Yes",# RT
               #              "Yes",# CT
               #              "G3+G4",
+              "High", # risk of tobacco exposure
               "High") # PMM1 or RNAseq
 # upper rowname of table 3 and table 4
 colUni_0 <- c("Female",
@@ -1923,6 +1932,7 @@ colUni_0 <- c("Female",
               #              "no", # RT
               #              "no", # CT
               #              "G1+G2",
+              "Low", # risk of tobacco exposure
               "Low") # PMM1 or RNAseq
 
 ####
@@ -1965,10 +1975,10 @@ library(data.table)
 # library(ca) # for Simple correspondence analysis
 contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100"; do not need cutoff1 here
   
-  #!!!!!# L <- 2 ("Gender"); R <- 8 ("margin") # in HNSCC
+  #!!!!!# L <- 2 ("Gender"); R <- 9 ("tobacco) ; x 8 ("margin") # in HNSCC
   ## boundary of features column from first to last # 
-  L <- which(colnames(osccCleanNA_conTCGA) == "Gender")
-  R <- which(colnames(osccCleanNA_conTCGA) == "margin")
+  L <- which(colnames(osccCleanNA_conTCGA) == "Gender") # "left" feature
+  R <- which(colnames(osccCleanNA_conTCGA) == "tobacco") # new "right" feature
   chiT <- data.frame(matrix(data = NA, nrow = R, ncol = 2)) # create a empty data.frame, 2D matrix as R*2
   #rown = 8
   freq <- data.frame(matrix(data = NA, nrow = 1, ncol = 4)) #, dimnames = list(c(1:rown+1), c("Var2", "L", "H"))))
@@ -2000,7 +2010,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     
     # build a contingency table https://www.rdocumentation.org/packages/base/versions/3.4.3/topics/table
     # Powered by DataCamp, it might be running online
-    # t, table from col of PMM1_median vs col ii (L "Gender" to R "margin"); deparse the argument (colnames) by deparse.level 2
+    # t, table from col of PMM1_median vs col ii (L "Gender" to R "tobacco"); deparse the argument (colnames) by deparse.level 2
     # # {DEBUG 
     # ii<-L-1
     #     ii<-ii+1
@@ -2111,7 +2121,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
   freq <- freq[-1,] #removal of 1st row: NA
   name_freq <- colnames(osccCleanNA_conTCGA[L:R])
   # debug
-  name_freq <- t(name_freq) # "Gender" "age.at.diagnosis" "T"  "N"  "M"  "stage_2" and "margin"
+  name_freq <- t(name_freq) # "Gender" "age.at.diagnosis" "T"  "N"  "M"  "stage_2" and "margin" "tobacco"
   
   # array indexing https://cran.r-project.org/doc/manuals/r-release/R-intro.html#Array-indexing
   results <- list (TRUE, chiT, freq) # it x should to be returned/updated the osccCleanNA_conTCGA
@@ -2148,15 +2158,16 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   # library(compositions) # unbinary()
   # sigContig <- c(NA, "*") # remarkable when (p<0.05 || scoreContig == c(5,10))
   # 
-  freq_features <- as.character(freq$Features[seq(1, nrow(freq), 3)]) # every 3 rows, pick one
-  #c("Gender","age.at.diagnosis", "T", "N", "M", "stage_2","margin")
+  freq_features <- as.character(freq$Features[seq(1, nrow(freq), 3)]) # pick one per 3 rows
+  #c("Gender","age.at.diagnosis", "T", "N", "M", "stage_2","margin", "tobacco"); nrow(freq)==8*3
   # rows need to be selected and reordered
   # ***match freq and osccCleanNA_conBin of colnames
-  colnames(osccCleanNA_conBin)[2:8] <- freq_features
-  # ***a feature-name mapping (indTbChi) of " freq$Features  <- osccCleanNA" ; it needs to be updated.
+  colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)] <- freq_features # [2:9]
+  # ***a feature-name mapping (indTbChi) of " freq$Features  <- osccCleanNA" ; 
+  # ***it needs to be updated.
   indTbChi <- data.frame(cbind(featuresUni[-length(featuresUni)],
                                freq_features,
-                               colnames(osccCleanNA_conBin)[2:8])) # from Gender to margin
+                               colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)])) # from Gender to tobacco
   colnames(indTbChi) <- c("featuresUni", "freq$Features", "osccCleanNA_conBin")
   # > indTbChi as a data.frame (mapping table)
   # #               featuresUni-1   freq$Features    osccCleanNA_conBin(osccCleanNA)
@@ -2167,16 +2178,17 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   # 5    Clinical M status                M         M
   # 6       Clinical Stage          stage_2        stage_2
   # 7 Surgical Margin status           margin       margin
-  # #
+  # 8 Tobacco Exposure       tobacco_exposure tobacco_exposure
+  
   # rownames(tableChi1) <- featuresUni
   
   
   # reset tableChi1
   tableChi1 <- as.data.frame(setNames(replicate(length(contLowHighN), numeric(0), simplify = F), contLowHighN)) # declare a xlsx output data.frame (dynamic table)
   # colnames(tableChi1) <- contLowHighN
-  for (i in 1:(length(featuresUni)-1)) { # without PMM1 on the last row (i in 1:7)
+  for (i in 1:(length(featuresUni)-1)) { # without PMM1 on the last row (i in 1:8)
     # generate table 2/tableChi1 by every two rows
-    mapi <- as.character(freq$Features) == as.character(indTbChi$osccCleanNA_conBin[i]) # "Gender"... in [47:49] of freq
+    mapi <- as.character(freq$Features) == as.character(indTbChi$osccCleanNA_conBin[i]) # "Gender"...to "Tobacco" in [47:49] of freq
     mapi_pos <- which(mapi == T) #[47:49], every 3
     var2U <- as.data.frame(freq[mapi_pos[1], ])
     var2L <- as.data.frame(freq[mapi_pos[2], ])
@@ -2352,10 +2364,11 @@ aa <- LUAD_n; bb<- 1
 library(AMR) # for freq()
 if (exists("cases_OS")) {rm(cases_OS)}
 if (exists("p_OS")) {rm(p_OS)}
-aa <- 13422
+#aa <- 13422
 for (main_i in aa:bb) {
   #browser()
-  ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) # codes at source("TCGA_HNSCC_marginS.R")
+  ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) 
+  # codes at source("TCGA_HNSCC_marginS.R")
   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
   save(ZSWIM2, file=desti_ZSWIM2)
   # ***ZSWIM2 should be saved by appending.

@@ -171,7 +171,7 @@ library(r2excel) # (package ‘r2excel’ is available for R version 3.4.1 below
 colnames(osccCleanNA) <- coln_osccT # colnames (features) of osccT
 
 osHRmulti <- 0
-# 8 + OS/RFS features in HNSCC
+# 9 + OS/RFS features in HNSCC
 # #warning() X matrix deemed to be singular (margin) in coxph
 # https://stackoverflow.com/questions/20977401/coxph-x-matrix-deemed-to-be-singular
 oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) ~ +
@@ -186,6 +186,7 @@ oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) 
 #  pathologic_M +
   stage +
   margin +
+  tobacco +
 #  R.T +
 #  C.T +
 #                 presence_of_pathological_nodal_extracapsular_spread +
@@ -197,8 +198,10 @@ oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) 
 
 osHRmulti <- cbind(data.frame(summary(oscox)$conf.int)[-2], data.frame(summary(oscox)$coefficients)[5])
 
-skipNA <- rownames(osHRmulti) %in% c(1, "marginNA")
+# *** removal the "noise" for each new feature specified
+skipNA <- rownames(osHRmulti) %in% c(1, "marginNA", "tobaccoNA")
 osHRmulti <- osHRmulti[which(!skipNA), ]
+
 
 # correction of rownames
 rownames(osHRmulti) <- featuresUni
@@ -210,10 +213,15 @@ osHRmulti <- round(osHRmulti, 3) # rounding them by 3 decimal
 
 
 #*** [Univariate for OS]  table 3 left panel
-# # 8 features in LUAD, put in coxph one by one
-# number of features 13 -> 14 (add a feature: margin status)
+# # 9 features in HNSCC, put in coxph one by one
+# number of features 13 -> 14 -> 15 (add a feature: margin status, tobacco exposure)
 oscox <- 0
-features_os <- colnames(osccCleanNA)[c(2:8,14)] # features selection ["Gender" to "margin", "PMM1"] 8 out of 14
+## boundary of features column from first to last # 
+LL <- which(colnames(osccCleanNA) == "Gender") # "left" feature
+RR <- which(colnames(osccCleanNA) == "tobacco") # new "right" feature
+pmm1_pos <- which(colnames(osccCleanNA) == paste("PMM1", "_median", sep=""))
+
+features_os <- colnames(osccCleanNA)[c(LL:RR, pmm1_pos)] # features selection ["Gender" to "tobacco", "PMM1"] 9 out of 15
 osHR <- data.frame(matrix(0, nrow=length(features_os), ncol=4))
 ## *** looping the cox regression model over several features
 ## https://stackoverflow.com/questions/13092923/looping-cox-regression-model-over-several-predictor-variables
@@ -283,6 +291,7 @@ rfscox <- coxph(Surv(osccCleanNA$RFS..months._from.op, osccCleanNA$RFS_IND==1) ~
                   #pathologic_M +
                   stage +
                   margin +
+                  tobacco +
                   # R.T +
                   # C.T +
                   #                 presence_of_pathological_nodal_extracapsular_spread +
@@ -293,7 +302,7 @@ rfscox <- coxph(Surv(osccCleanNA$RFS..months._from.op, osccCleanNA$RFS_IND==1) ~
 
 rfsHRmulti <- cbind(data.frame(summary(rfscox)$conf.int)[-2], data.frame(summary(rfscox)$coefficients)[5])
 #rownames(rfsHRmulti)[nrow(rfsHRmulti)] <- paste("PMM1", "_median", sep="")
-skipNA <- rownames(rfsHRmulti) %in% c("marginNA")
+skipNA <- rownames(rfsHRmulti) %in% c("marginNA", "tobaccoNA")
 rfsHRmulti <- rfsHRmulti[which(!skipNA), ]
 # correction of rownames
 rownames(rfsHRmulti) <- featuresUni
@@ -312,7 +321,8 @@ rfsHRmulti <- round(rfsHRmulti, 3)
 # # 8 features in HNSCC, put in coxph one by one
 # number of features 13 -> 14 (add a feature: margin status)
 rfscox <- 0
-features_os <- colnames(osccCleanNA)[c(2:8,14)] # features selection ["Gender" to "margin", "PMM1"] clincical TNM, 8 out of 14
+features_os <- colnames(osccCleanNA)[c(LL:RR, pmm1_pos)] # features selection ["Gender" to "tobacco", "PMM1"] 9 out of 15
+#features_os <- colnames(osccCleanNA)[c(2:8,14)] # features selection ["Gender" to "margin", "PMM1"] clincical TNM, 8 out of 14
 rfsHR <- data.frame(matrix(0, nrow=length(features_os), ncol=4))
 ## *** looping the cox regression model over several features
 ## as.formula: text to code (class: forumla list)
@@ -360,6 +370,7 @@ rfsHR$X4[rfsHR$X4<0.001] <- "***"
 
 
 ##8) R2Excel export ####
+## and save at "xlsx/"
 ## # http://www.sthda.com/english/wiki/r2excel-read-write-and-format-easily-excel-files-using-r-software
 library("xlsx")
 library("r2excel")
@@ -389,29 +400,36 @@ xlsx.addLineBreak(sheet, 3)
 
 
 # under optimized cutoff1
-# Part I: # Table 2 construction by Calling contingencyTCGA and contignecyBin ####
+# Part I:Table 2. The clinicopathological features
+#  (tableChi1) from Calling contingencyTCGA and contignecyBin ####
 # x using tableChi2 by contigencyBin2 with c("Gender","ageDx", "pathologic_T", "pathologic_N", "pathologic_M", "stage","margin" )
 # under best cutoff value (auto choosen which has the smallest P-value)
-# Table 2: clinical correlation tables (tableChi1)
+
 contiT <- contingencyTCGA(osccCleanNA, geneName) # calling this function (OSCC cohort, PMM1) 2 parameters, no more cutoff1; 
 # "margin" at column 8 of oscc
+# "tobacco" at column 9 of oscc
 #  oscc <- contiT[[1]] # updating PMM1_median
 chiT <- contiT[[2]] # extrac it from list by using [[]]; chiT$X2 is the P-value
 freq <- contiT[[3]] # well DONE
+
 tableChi1 <- contingencyBin (osccCleanNA, chiT, freq) # calculating the P-value
-# ***add rownames
-nrow_featuresUni <- length(featuresUni) # aka. 8
-nrow_tableChi1 <- as.character(seq(1, 2*(nrow_featuresUni-1))) # aka. 7 x2 NA (a vector)
-nrow_tableChi1[c(T,F)] <- featuresUni[-nrow_featuresUni] # skip last one row (z-score)
+# ***add rownames for tableChi1
+nrow_featuresUni <- length(featuresUni) # aka. 9
+nrow_tableChi1 <- as.character(seq(1, 2*(nrow_featuresUni-1))) # aka. 2 *8 個NA (a vector)
+nrow_tableChi1[c(T,F)] <- featuresUni[-nrow_featuresUni] # skip last one row RNAseq(z-score)
 # > nrow_tableChi1
-# [1] "Gender"                 NA                      
-# [3] "Age at diagnosis"       NA                      
-# [5] "clinical T status"    NA                      
-# [7] "clinical N status"    NA                      
-# [9] "clinical M status"    NA                      
-# [11] "clinical Stage"       NA                      
-# [13] "Surgical Margin status" NA     
+# [1] "Gender"                 "2"                     
+# [3] "Age at diagnosis"       "4"                     
+# [5] "Clinical T Status"      "6"                     
+# [7] "Clinical N Status"      "8"                     
+# [9] "Clinical M Status"      "10"                    
+# [11] "Clinical Stage"         "12"                    
+# [13] "Surgical Margin status" "14"                    
+# [15] "Tobacco Exposure"       "16"   
+
+    
 rownames(tableChi1) <- nrow_tableChi1 # duplicate 'row.names' are not allowed
+# 16 rows
 # "margin" at column 8 of osccCleanNA
 
 # to save "*" of column "remark" in 300 tableChi1 ###
@@ -457,12 +475,12 @@ tableOS <- cbind(as.data.frame(colUni_1), osHR, osHRmulti) # colUni_1: values of
 rownames(tableOS) <- featuresUni # 8 features of rownames [gender, age....]
 colnames(tableOS) <- ciUniMti # colnames
 
-# for xlsx output (dynamic tableOS)
+# for xlsx output (*** dynamic tableOS) following new feature
 # setNames, This is a convenience function that sets the names on an object and returns the object.
 # a.k.a. create a empty data.frame: tableOS1; however, "()" will be assigned as "."
 tableOS1 <- as.data.frame(setNames(replicate(length(ciUniMti), numeric(0), simplify = F), ciUniMti)) 
 colnames(tableOS1) <- ciUniMti
-for (i in 1:nrow(tableOS)) { # eg. 1~8
+for (i in 1:nrow(tableOS)) { # eg. 1~9
   # row0
   row0 <- data.frame(t(c(colUni_0[i], as.numeric(c(1, NA, NA, NA, 1, NA, NA, NA)))))
   colnames(row0) <- ciUniMti
@@ -523,7 +541,7 @@ xlsx.addTable(wb, sheet, data= tableRFS1, startCol=2,
               fontColor="darkblue", fontSize=12,
               rowFill=c("white", "lightblue"), row.names = TRUE
 )
-xlsx.addLineBreak(sheet, 5)
+xlsx.addLineBreak(sheet, 25) # more space
 
 
 
