@@ -65,7 +65,8 @@ colnames(HNSCC.clinico_mRNA.Fire) <- c("Unique.ID","Gender","age.at.diagnosis",
                                       "OS_IND", "OS..months._from.biopsy",
                                       "RFS_IND", "RFS..months._from.op", "H.score_T")
 # n=521 in HNSCC
-oscc <- HNSCC.clinico_mRNA.Fire # starting analysis with "oscc"
+oscc <- HNSCC.clinico_mRNA.Fire 
+# starting analysis with "oscc"
 # oscc$H.score_T as LUAD.mRNA.Exp.Fire$z.score; expression level: H.score_T as RNAseq z.score
 
 
@@ -141,7 +142,8 @@ which(complete.cases(oscc$H.score_T)==F) # if no NaN -> 0
 which(complete.cases(oscc$OS_IND)==F) # if no NaN -> 0
 
 # *** checking column 10 is OS_IND
-which(complete.cases(oscc[oscc$OS_IND==1, 10])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
+OS_IND_pos <- which(colnames(oscc) == "OS_IND")
+which(complete.cases(oscc[oscc$OS_IND==1, OS_IND_pos])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
 
 
 

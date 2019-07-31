@@ -910,7 +910,7 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 
 
 # https://docs.oracle.com/javase/7/docs/webnotes/install/mac/mac-jdk.html
-# http://www.oracle.com/technetwork/java/javase/downloads/index.html # JDK 7 8 9
+# http://www.oracle.com/technetwork/java/javase/downloads/index.html # JDK 7 8 9 ...12
 # https://github.com/MTFA/CohortEx/wiki/Run-rJava-with-RStudio-under-OSX-10.10,-10.11-(El-Capitan)-or-10.12-(Sierra)
 # https://stackoverflow.com/questions/26755013/install-xlsx-and-rjava-on-macos-mavericks-10-9-5/28886808#28886808
 # error in MBP (Apple LLVM)

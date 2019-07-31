@@ -330,70 +330,120 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   return(tableChi1)
 } # end of contingencyBin define ++++++
 
+
+
+
+
 ## [mainA process #part A] { ####
 # genome-wide scan for margin 0 or 1 cohort ##
 # TCGA_HNSCC_marginS.R
-# added tryCatch for Survdiff.fit error
 
-# start_time <- Sys.time() # counted in minutes
-# # file.exists or list.files()
-# desti_ZSWIM2 <- "ZSWIM2_archive.Rda" # appending summary data of error codes or P-value
-# if (file.exists(desti_ZSWIM2)) {load(file=desti_ZSWIM2)} else
-# {ZSWIM2 <- data.frame(matrix(data = NA, nrow = LUAD_n, ncol = 2))}
-# aa <- LUAD_n; bb<- 1
-# 
-# library(AMR) # for freq()
-# if (exists("cases_OS")) {rm(cases_OS)}
-# if (exists("p_OS")) {rm(p_OS)}
-# #aa <- 13422
-# for (main_i in aa:bb) {
-#   #browser()
-#   ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) 
-#   # codes at source("TCGA_HNSCC_marginS.R")
-#   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
-#   save(ZSWIM2, file=desti_ZSWIM2)
-#   # ***ZSWIM2 should be saved by appending.
-# } # code on $x2 from 1:5
-# ##}
-# 
 # # we might compare the difference of P-value between chisq.test and fisher.test
 # # ../xlsx and ../xlsx_chisq
-# 
-# ## ## email for P-value analysisi of "ZSWIM2_archive.Rda (main_i)"##
-# end_time <- Sys.time()
-# body_text <- data.frame(matrix(data = NA, nrow = LUAD_n, ncol = 2)) # aa>bb == True ; aa-bb+1
-# colnames(body_text) <- c("P-value") #, "body_text")
 # # run01 done on [2019/06/26]
 
 
-# KM plot ####
-# 即可：run n=521 cohort, survival analysis without RNAseq, and categorized by tobacco_exposure high/low.
+# run KM plot # 即可：run n=521 cohort, survival analysis without RNAseq, and categorized by tobacco_exposure high/low.
 marginTag <- "_marginS_" # with margin 0 or 1
-#browser()
-cutoffReturn <- cutofFinder_func(geneName, marginTag) # with return cutoff1 at # of patient
-if (length(cutoffReturn) == 8) {
-  
-  osccCleanNA <- cutoffReturn[[1]] # taken for freq, chiT as well as tableChi1
-  case50_n <- cutoffReturn[[2]] # of patients to cut
-  cutoff1 <- cutoffReturn[[3]] # cutoff1 at RNAseq level
-  surv_OS1 <- cutoffReturn[[4]]
-  p_OS0 <- p_OS1 <- as.numeric(cutoffReturn[[5]]) # optimized P-Value
-  OS <- cutoffReturn[[6]] # cases_OS and p_OS
-  RFS <- cutoffReturn[[7]] # cases_RFS and p_RFS
-  OS_pvalue <- cutoffReturn[[8]]
-  osccCleanNAM_pos <- which(colnames(osccCleanNA) == paste("PMM1", "_median",        sep=""))
-  } else if (length(cutoffReturn) == 1) {
-  return(cutoffReturn) # return with error code
-  }
 
-# run survival analysis: OS
+# cutoffReturn <- cutofFinder_func(geneName, marginTag) # with return cutoff1 at # of patient
+# if (length(cutoffReturn) == 8) {
+#   
+#   osccCleanNA <- cutoffReturn[[1]] # taken for freq, chiT as well as tableChi1
+#   case50_n <- cutoffReturn[[2]] # of patients to cut
+#   cutoff1 <- cutoffReturn[[3]] # cutoff1 at RNAseq level
+#   surv_OS1 <- cutoffReturn[[4]]
+#   p_OS0 <- p_OS1 <- as.numeric(cutoffReturn[[5]]) # optimized P-Value
+#   OS <- cutoffReturn[[6]] # cases_OS and p_OS
+#   RFS <- cutoffReturn[[7]] # cases_RFS and p_RFS
+#   OS_pvalue <- cutoffReturn[[8]]
+#   osccCleanNAM_pos <- which(colnames(osccCleanNA) == paste("PMM1", "_median",        sep=""))
+#   } else if (length(cutoffReturn) == 1) {
+#   return(cutoffReturn) # return with error code
+#   }
+
+# to assembly osccCleanNA data.frame
+# $ scp tex@35.201.169.0:~/R/HNSCC.clinical.RNAseq.Fire.Rda ./
+load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") 
+# n=521 [2019/07/27] # as clean6_oscc_tobacco (with tobacco_exposure feature created)
+oscc <- clean6_oscc_tobacco[, c(1:10, 12, 14:15)]
+colnames(oscc) <- c("Unique.ID","Gender","age.at.diagnosis",
+                                       "T","N",
+                                       "M","stage_2","margin", "tobacco", 
+                                       "OS_IND", "OS..months._from.biopsy",
+                                       "RFS_IND", "RFS..months._from.op")
+#, "H.score_T")
+# starting analysis with "oscc" (without RNAseq)
+# 
+# [2019/06/11][2019/07/30] with tobacco
+# > check complete.cases, data cleaning ####
+osccClean <- oscc
+# commonFeatures <- c(2:6, 8) # common features: gender, age, margin and TNM :-)
+commonFeatures <- which(colnames(oscc) %in% c("Gender", "age.at.diagnosis", "T", "N", "M", "margin", "tobacco")) 
+#  7 essential features is located at 2 3 4 5 6 8 9;
+osccCleanNA <- osccClean[complete.cases(osccClean[, commonFeatures]), ] # copy all features but remove NaN entities in 7 essential features for their "completeness"
+# n=415 cases with feature of tobacco_exposure
+
+# *** addNA for counting all NA (e.g. there is 0, no 1, in margin-free cohort) in "M" "stage_2" "margin" or "tobacco, as a level of factor
+# the “pathological” case of two different kinds of NAs which are treated differently: exclude = if (useNA == "no") c(NA, NaN)
+# "unusual NA comes from addNA() as factor
+# table(osccCleanNA$margin)
+#   0   1 (NaN) two level factor 
+#328  99   (0)
+osccCleanNA$margin <- addNA(osccCleanNA$margin, ifany=F) # ifany=="always" add NA as a factor
+#   0    1 <NA> => 3 levels of factor in "margin"
+# str(osccCleanNA$margin)
+# Factor w/ 3 levels "0","1",NA: 1 2 2 1 1 2 1 2 1 1 ...
+osccCleanNA$tobacco <- addNA(osccCleanNA$tobacco, ifany=F) # ifany=="always" add NA as a factor
+# str(osccCleanNA$tobacco)
+
+# by marginTag:   # surgical margin status
+if (marginTag == "_marginS_") {
+  
+} else if (marginTag == "_marginFree_") {
+  osccCleanNA_freeMargin <- osccCleanNA[osccCleanNA$margin == 0, ] # margin==0
+  # margin free cohort (n=351): keeping 0(-) and excluding 1(or +) margin ### 
+  osccCleanNA <- osccCleanNA_freeMargin
+} else if (marginTag == "_marginPlus_") {
+  osccCleanNA_PlusMargin <- osccCleanNA[osccCleanNA$margin == 1, ] # margin==1 (close, indeterminate, or positive margins)
+  # margin positive cohort (n=109): keeping  1(or +) margin ### 
+  osccCleanNA <- osccCleanNA_PlusMargin
+}
+#
+oscc <- oscc0 <- osccCleanNA # syncrhonize them
+
+# checking the completeness of each row: (i.e. rows without NaN)
+which(complete.cases(oscc$OS_IND)==F) # if no NaN -> 0
+
+# *** checking column 10 is OS_IND
+OS_IND_pos <- which(colnames(oscc) == "OS_IND")
+which(complete.cases(oscc[oscc$OS_IND==1, OS_IND_pos])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
+
+cohort_n <- nrow(oscc) # n=328 or 427 -> 415
+
+p_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
+cases_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
+p_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
+cases_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
+
+
+
+
+# oscc, n=415
+# run survival analysis: OS (modified from cutoff finder, run100) ####
+library(survival)
 mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1) #1==death event
+
+# grouping by PMM1_median -> tobacco_exposure
 # Test for difference (log-rank test) with P-value
-if (is.na(tryCatch(surv_OS <- survdiff(mysurv ~ as.vector(unlist(oscc[osccM_pos]), mode="numeric"), data=oscc), error = function(e) return(NA)))) {return(2)} # grouping by PMM1_median
+osccTobacco_pos <- 
+if (is.na(tryCatch(surv_OS <- survdiff(mysurv ~ as.vector(unlist(oscc[osccTobacco_pos]), mode="numeric"), data=oscc), error = function(e) return(NA)))) {return(2)}
+
 # OS, error 2 due to ZSWIM2? (one group only) ###
 # extract P-value from surv_OS, put in "original" position (unsorted)
 # #*** shift here [run100+1]
-p_OS[exp_geneName_sorted$ix[run100+1], 1] <- p_OS0 <- format(pchisq(surv_OS$chisq, length(surv_OS$n)-1, lower.tail = FALSE), digits=3)
+#x p_OS[exp_geneName_sorted$ix[run100+1], 1] <- 
+  p_OS0 <- format(pchisq(surv_OS$chisq, length(surv_OS$n)-1, lower.tail = FALSE), digits=3)
 #  *** cases_OS[j] <- surv_OS$n[1] #cutoffs by cases, remaping sorted ###
 #[coxph] - fits a Cox proportional hazards regression model
 
