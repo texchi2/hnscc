@@ -434,28 +434,29 @@ cases_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
 library(survival)
 mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1) #1==death event
 
-# grouping by PMM1_median -> tobacco_exposure
+# grouping by PMM1_median -> tobacco_exposure "tobacco"
 # Test for difference (log-rank test) with P-value
-osccTobacco_pos <- 
-if (is.na(tryCatch(surv_OS <- survdiff(mysurv ~ as.vector(unlist(oscc[osccTobacco_pos]), mode="numeric"), data=oscc), error = function(e) return(NA)))) {return(2)}
-
+oscc_Tobacco_pos <- which(colnames(oscc) == "tobacco")
+if (is.na(tryCatch(surv_OS <- survdiff(mysurv ~ as.vector(unlist(oscc[oscc_Tobacco_pos]), mode="numeric"), data=oscc), error = function(e) return(NA)))) {cat("one group only")}
 # OS, error 2 due to ZSWIM2? (one group only) ###
 # extract P-value from surv_OS, put in "original" position (unsorted)
-# #*** shift here [run100+1]
+
+#x *** shift here [run100+1]
 #x p_OS[exp_geneName_sorted$ix[run100+1], 1] <- 
   p_OS0 <- format(pchisq(surv_OS$chisq, length(surv_OS$n)-1, lower.tail = FALSE), digits=3)
-#  *** cases_OS[j] <- surv_OS$n[1] #cutoffs by cases, remaping sorted ###
+# P-value = "0.0431"
+print(paste("KM P-value", p_OS0, "(<=0.05), which is", (p_OS0<=0.05)))
 #[coxph] - fits a Cox proportional hazards regression model
 
 
 
-#print(paste("run=", run100, "; KM P-value", p_OS0, "(<=0.05), which is", (p_OS0<=0.05))) 
-# [survfit] - Kaplan-Meier curve, or KM plot of OS
-OS.km <- survfit(mysurv ~ as.vector(unlist(oscc[osccM_pos]), mode="numeric"), data=oscc, type= "kaplan-meier", conf.type = "log-log")
-#   jpeg(file=paste("KMplot_OS_", geneName, i, ".jpg", sep = ""))
-plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-Value =", p_OS0), main=paste("searching OS in TCGA", TCGA_cohort, "(n=", surv_OS$n[1]+surv_OS$n[2],")/", geneName, "cutoff=", cutoff100), ylab="Percent Survival", xlab="Years")
-legend("topright", legend=c(paste("low(",surv_OS$n[1], ")"), paste("high(",surv_OS$n[2], ")")), lty=1:1, col=c("blue","red"))
-# dev.off()
+ 
+# [survfit] - Kaplan-Meier curve, or KM plot of OS ####
+OS.km <- survfit(mysurv ~ as.vector(unlist(oscc[oscc_Tobacco_pos]), mode="numeric"), data=oscc, type= "kaplan-meier", conf.type = "log-log")
+tiff(file=paste("KMplot_OS_tobacco_exposure.tiff", sep = ""))
+plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-Value =", p_OS0), main=paste("OS in TCGA", TCGA_cohort, "(tobacco exposure, n=", surv_OS$n[1]+surv_OS$n[2],")"), ylab="Percent Survival", xlab="Years")
+legend("topright", legend=c(paste("low risk (",surv_OS$n[1], ")"), paste("high risk (",surv_OS$n[2], ")")), lty=1:1, col=c("blue","red"))
+dev.off()
 #  
 # [survfit] - Kaplan-Meier curve, or KM plot of OS
 # confidence intervals as log hazard or log(-log(survival))
