@@ -1322,6 +1322,7 @@ xlsx_list <- paste("./", gsub("_", "", marginTag), "/", TCGA_cohort, "_survivalA
 write.table(xlsx_list, file="xlsx_list.txt", sep = "",
           row.names = F, col.names = F, quote = FALSE)
 #write.text(xlsx_list, file.path(path_cohort))
+# or system(paste("ls", xlsx_list, "> xlsx_list.txt"))
 system(paste("tar -czvf ", sub("_", "", marginTag), "candidate_xlsx.tar.gz -T xlsx_list.txt", sep=""))
 # "tar -czvf marginS_candidate_xlsx.tar.gz -T xlsx_list.txt"
 
