@@ -1741,7 +1741,7 @@ install.packages("binaryLogic") # as.binary
 # for sweave and knitr
 install.packages("knitr")
 
-# check installed package
+# check installed package ####
 # {
 package_list0 <- installed.packages()
 package_list <- as.data.frame(package_list0[,c(1,3:4)]) # col4 is Priority
@@ -1755,6 +1755,7 @@ package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "comp
 #right <- select(right, Package)
 # Filtering joins: #drops all observations in df1(L) that match in df2(R)
 # *** "right": which failed to be installed => we need to install them manually
+
 right <- anti_join(package_must, package_list, by="Package")
 # [2019/05/13] skip new git2r and debugr and graphics so far
 # }
