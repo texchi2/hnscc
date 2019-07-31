@@ -567,6 +567,7 @@ gene of non-coding RNA lncRNA in HNSCC?
 
 5) ***[hypothesis] to prove by bioinformatic way: Nicotinic acetylcholine receptor signaling pathway. 
 # nicotine consumption has oral cancer prognostic impact as well as tumor initiation
+KM plot: P-value = 0.0431
 # ***article review...Embase or PubMed
 
 6)
