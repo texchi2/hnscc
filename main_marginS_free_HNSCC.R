@@ -1718,9 +1718,14 @@ remotes::install_github("ismayc/thesisdown", force=T) # R Markdown "Reed Senior 
 install.packages(c("gmailr", "ggplot2", "rms", "xlsx", "r2excel", "tis"))
 # base: graphics, 
 # ok in previous version of rms, r2excel
-#{
+#{ https://www.rforge.net/rJava/
+# JDK https://www.oracle.com/technetwork/java/javase/downloads/index.html
+# $ R CMD javareconf
+# Re-started R base
+# install.packages("rJava",,"http://rforge.net")
 # $ wget https://www.rforge.net/rJava/snapshot/rJava_0.9-10.tar.gz
-# install.packages("rJava", repos="~/R/rJava_0.9-10.tar.gz") # it is tuft to install
+# https://cran.r-project.org/bin/macosx/el-capitan/contrib/3.6/rJava_0.9-12.tgz
+# install.packages("rJava", repos="~/rJava_0.9-12.tgz") # it is tuft to install
 
 install.packages(c("xlsx")) # after rJava OK...
 # installing curl directly then r2excel
@@ -1746,17 +1751,20 @@ install.packages("knitr")
 package_list0 <- installed.packages()
 package_list <- as.data.frame(package_list0[,c(1,3:4)]) # col4 is Priority
 rownames(package_list) <- NULL
-package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE] # removal BASE and recommended packages
+package_list <- package_list[is.na(package_list$Priority),1:2,drop=FALSE] 
+# removal BASE and recommended packages
+package_list <- droplevels(package_list)
 # print(package_list, row.names=FALSE)
 # "survival" is the base package
 library(dplyr); library(AMR); library(purrr); library(stringr); library(scales); library(magrittr)
-package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "compositions", "openssl","psych", "reshape", "data.table","scales", "dplyr", "magrittr","plyr","ca","devtools","debugr","pforeach","ggrough","gdtools","svglite","xml2","rticles","gmailr", "graphics", "ggplot2", "rms", "xlsx", "r2excel", "tis","xlsx","r2excel","githubinstall","minpack.lm","gplots","VennDiagram","venn","binaryLogic","knitr"))
+package_must <- data.frame("Package"= c("git2r", "curl", "httr","R.utils", "compositions", "openssl","psych", "reshape", "data.table","scales", "dplyr", "magrittr","plyr","ca","devtools","debugr","pforeach","ggrough","gdtools","svglite","xml2","rticles","gmailr", "ggplot2", "rms", "xlsx", "r2excel", "tis","xlsx","r2excel","githubinstall","minpack.lm","gplots","VennDiagram","venn","binaryLogic","knitr")) # "graphics" on the R base
+package_must <- droplevels.data.frame(package_must)
 #right <- right_join(package_list, package_must)
 #right <- select(right, Package)
 # Filtering joins: #drops all observations in df1(L) that match in df2(R)
 # *** "right": which failed to be installed => we need to install them manually
 
-right <- anti_join(package_must, package_list, by="Package")
+right <- anti_join(package_must, package_list, by="Package") # warnings() => never mind
 # [2019/05/13] skip new git2r and debugr and graphics so far
 # }
 
