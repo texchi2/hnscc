@@ -450,7 +450,8 @@ print(paste("KM P-value", p_OS0, "(<=0.05), which is", (p_OS0<=0.05)))
 
 
 
-# [2019/08/01] 
+
+
 # [survfit] - Kaplan-Meier curve, or KM plot of OS ####
 OS.km <- survfit(mysurv ~ as.vector(unlist(oscc[oscc_Tobacco_pos]), mode="numeric"), data=oscc, type= "kaplan-meier", conf.type = "log-log")
 tiff(file=paste("KMplot_OS_tobacco_exposure.tiff", sep = ""))
