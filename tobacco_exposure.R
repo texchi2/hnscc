@@ -102,21 +102,22 @@ library(reshape)
 library(data.table)
 
 
-contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100"; do not need cutoff1 here
+contingencyTCGA_tobacco <- function(osccCleanNA_conTCGA) { 
+  # modified for tobacco
   
   #!!!!!# L <- 2 ("Gender"); R <- 9 ("tobacco) ; x 8 ("margin") # in HNSCC
   ## boundary of features column from first to last # 
-  L <- which(colnames(osccCleanNA_conTCGA) == "Gender") # "left" feature
-  R <- which(colnames(osccCleanNA_conTCGA) == "tobacco") # new "right" feature
+  L <- which(colnames(osccCleanNA_conTCGA) == "Gender") # "left" feature at col2
+  R <- which(colnames(osccCleanNA_conTCGA) == "tobacco")-1 # new "right-1" feature at col8
+# tobacco at col9 is geneName for 4x2 comparion
   chiT <- data.frame(matrix(data = NA, nrow = R, ncol = 2)) # create a empty data.frame, 2D matrix as R*2
   #rown = 8
   freq <- data.frame(matrix(data = NA, nrow = 1, ncol = 4)) #, dimnames = list(c(1:rown+1), c("Var2", "L", "H"))))
   colnames(freq) <- c("Var2", 0, 1, "Features") # column 4 is for mapi
   #x freq <- array(NA, dim = c(5, 3, R)) # row, col, and R as 3D array
-  
-  #!!! PMM1 score## at col 13, 14
-  #osccCleanNA_conTCGA_pos <- which(colnames(osccCleanNA_conTCGA) == "H.score_T") # position of PMM1 IHC score
-  osccCleanNA_conTCGAM_pos <- which(colnames(osccCleanNA_conTCGA) == paste("PMM1", "_median", sep=""))
+# tobacco at col9 is geneName for 4x2 comparion
+  osccCleanNA_conTCGAM_pos <- which(colnames(osccCleanNA_conTCGA) == "tobacco") # at col9
+    #which(colnames(osccCleanNA_conTCGA) == paste("PMM1", "_median", sep=""))
   #  exp_geneName <- t(osccCleanNA[, osccCleanNA_pos ])
   
   # # it should be done at marginS.R
@@ -134,6 +135,7 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
   # 
   
   # chisq.test(matrix(c(22, 5, 38, 21), ncol = 2), correct=F)$p.value # a example
+library(reshape); library(data.table)
   for (ii in L:R){ # generate freq table
     # Chi-square, Contingent table correlation, binary variables
     
@@ -177,8 +179,13 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     
     # debug
     obs <- as.data.frame(chisq.test(t)$observed) # we need this observed table, even using fisher.test    
-    # # error when there is only one group
-    if (is.na(tryCatch(mdata <- melt(obs, id.vars=c("Var2", "Var1")), error = function(e) return(NA)))) {print(paste("skip at ii= ", ii, sep=""));return(list("skip", chiT, freq))} # back to marginS.R
+    # # # error when there is only one group
+    # if (is.na(tryCatch(mdata <- melt(obs, id.vars=c("Var2", "Var1")), error = function(e) return(NA)))) {
+    #   print(paste("there is only one group at feature ", ii, sep=""))
+    #   return(list("skip", chiT, freq))
+    #   } 
+    # # back to tobacco_exposure.R main routine
+    mdata <- melt(obs, id.vars=c("Var2", "Var1"))
     # debug for "ZSWIM2"(20482)
     
     # chisq is sum( (o-e)^2/e ); the Na should be removed, You have zero frequencies in 2 counts.
@@ -243,24 +250,28 @@ contingencyTCGA <- function(osccCleanNA_conTCGA, geneName) { # no more "run100";
     #    2    2 33  81      Gender
     #    3 <NA>  0   0      Gender
     colnames(cdata)[4] <- "Features"
-    freq <- rbindlist(list(freq, cdata))
+freq0 <- freq
+    freq <- rbindlist(list(freq, cdata), use.names=FALSE)
+    # Var2  1   2   Features at cdata (why?)
     #plot(ca(as.integer(cdata[-3,])))
     # DEBUG
-  }
+  } # end of for loop (ii)
+
+  
   freq <- freq[-1,] #removal of 1st row: NA
   name_freq <- colnames(osccCleanNA_conTCGA[L:R])
   # debug
-  name_freq <- t(name_freq) # "Gender" "age.at.diagnosis" "T"  "N"  "M"  "stage_2" and "margin" "tobacco"
+  name_freq <- t(name_freq) # "Gender" "age.at.diagnosis" "T"  "N"  "M"  "stage_2" and "margin" x"tobacco"
   
   # array indexing https://cran.r-project.org/doc/manuals/r-release/R-intro.html#Array-indexing
   results <- list (TRUE, chiT, freq) # it x should to be returned/updated the osccCleanNA_conTCGA
   return(results)
-} # end of contingencyTCGA function
+} # end of contingencyTCGA_tobacco function
 
 ##
 library(R.utils) # intToBin()
 library(compositions) # unbinary()
-contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
+contingencyBin_tobacco <- function (osccCleanNA_conBin, chiT, freq) {
   # to generate tableChi1 (table 2)
   # enough, geneName is not necessary a parameter (osccCleanNA_conBin <- osccCleanNA)
   # processing chiT and processing freq; place a "remark" and Matthews
@@ -270,15 +281,16 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   # sigContig <- c(NA, "*") # remarkable when (p<0.05 || scoreContig == c(5,10))
   # 
   freq_features <- as.character(freq$Features[seq(1, nrow(freq), 3)]) # pick one per 3 rows
-  #c("Gender","age.at.diagnosis", "T", "N", "M", "stage_2","margin", "tobacco"); nrow(freq)==8*3
+  #c("Gender","age.at.diagnosis", "T", "N", "M", "stage_2","margin", x"tobacco"); 
+  # nrow(freq)==(8-1)*3
   # rows need to be selected and reordered
   # ***match freq and osccCleanNA_conBin of colnames
-  colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)] <- freq_features # [2:9]
-  # ***a feature-name mapping (indTbChi) of " freq$Features  <- osccCleanNA" ; 
+  colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)] <- freq_features # [2:8]
+  # ***a feature-name mapping (indTbChi) of " freq$Features  <- osccCleanNA" 
   # ***it needs to be updated.
-  indTbChi <- data.frame(cbind(featuresUni[-length(featuresUni)],
+  indTbChi <- data.frame(cbind(featuresUni[1:(length(featuresUni)-2)],
                                freq_features,
-                               colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)])) # from Gender to tobacco
+                               colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)])) # from Gender to tobacco-1
   colnames(indTbChi) <- c("featuresUni", "freq$Features", "osccCleanNA_conBin")
   # > indTbChi as a data.frame (mapping table)
   # #               featuresUni-1   freq$Features    osccCleanNA_conBin(osccCleanNA)
@@ -289,7 +301,7 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   # 5    Clinical M status                M         M
   # 6       Clinical Stage          stage_2        stage_2
   # 7 Surgical Margin status           margin       margin
-  # 8 Tobacco Exposure       tobacco_exposure tobacco_exposure
+  # (x)8 Tobacco Exposure       (x)tobacco_exposure (x)tobacco_exposure
   
   # rownames(tableChi1) <- featuresUni
   
@@ -297,7 +309,7 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   # reset tableChi1
   tableChi1 <- as.data.frame(setNames(replicate(length(contLowHighN), numeric(0), simplify = F), contLowHighN)) # declare a xlsx output data.frame (dynamic table)
   # colnames(tableChi1) <- contLowHighN
-  for (i in 1:(length(featuresUni)-1)) { # without PMM1 on the last row (i in 1:8)
+  for (i in 1:(length(featuresUni)-2)) { # without PMM1 on the last row (i in 1:8)
     # generate table 2/tableChi1 by every two rows
     mapi <- as.character(freq$Features) == as.character(indTbChi$osccCleanNA_conBin[i]) # "Gender"...to "Tobacco" in [47:49] of freq
     mapi_pos <- which(mapi == T) #[47:49], every 3
@@ -328,7 +340,7 @@ contingencyBin <- function (osccCleanNA_conBin, chiT, freq) {
   colnames(tableChi1) <- contLowHighN
   
   return(tableChi1)
-} # end of contingencyBin define ++++++
+} # end of contingencyBin_tobacco define ++++++
 
 
 
@@ -466,6 +478,19 @@ dev.off()
 # 12 months per year for 5 years => 60 months
 
 
+# RNA-seq analysis in R ####
+# https://f1000research.com/articles/4-1070/v2
+# https://bioinformatics-core-shared-training.github.io/RNAseq-R/
+# Differential expression with edgeR
+# citation("edgeR")
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+library(BiocManager)
+BiocManager::install("edgeR")
+BiocManager::install("nlme")
+browseVignettes("edgeR")
+# volcano plot
 
 # 
 # table 3, table 4 ####
@@ -474,7 +499,9 @@ dev.off()
 library(rJava) # PASSED
 library("xlsx")
 library("openssl")
-library(r2excel) 
+library(r2excel)
+library(survival)
+# oscc <- oscc0 <- osccCleanNA # syncrhonized
 #*** [Multivariate for OS] Table 3 right panle
 
 # selectedFeatures <- colnames(osccCleanNA[commonFeatures])
@@ -483,14 +510,15 @@ library(r2excel)
 # "M","stage_2","OS..months._from.biopsy",
 # "OS_IND","RFS..months._from.op","RFS_IND","H.score_T")
 
-# ***rename all of colnames (features) as osccT [old coding]
-colnames(osccCleanNA) <- coln_osccT # colnames (features) of osccT
+# ***rename part of colnames (13 features) as osccT [old coding]
+colnames(osccCleanNA) <- coln_osccT[1:13] # colnames (features) of osccT
 
 osHRmulti <- 0
-# 9 + OS/RFS features in HNSCC
+# 8 + OS/RFS features in HNSCC (excluding RNAseq)
 # #warning() X matrix deemed to be singular (margin) in coxph
 # https://stackoverflow.com/questions/20977401/coxph-x-matrix-deemed-to-be-singular
-oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) ~ +
+oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, 
+                    osccCleanNA$OS_IN==1) ~ +
                  Gender +
                  ageDx +
                  #                 primary_site +
@@ -502,13 +530,15 @@ oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) 
                  #  pathologic_M +
                  stage +
                  margin +
-                 tobacco +
+                 tobacco, 
+#+
                  #  R.T +
                  #  C.T +
                  #                 presence_of_pathological_nodal_extracapsular_spread +
                  #                 neoplasm_histologic_grade +
-                 as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric"), 
-               data=osccCleanNA) # PMM1_median == IHC score == (H.score_T) in [low, high]
+               #   as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric), 
+data=osccCleanNA)
+#x PMM1_median == IHC score == (H.score_T) in [low, high]
 # warning() X matrix deemed to be singular; variable 8:margin
 # summary(oscox)
 
@@ -519,8 +549,8 @@ skipNA <- rownames(osHRmulti) %in% c(1, "marginNA", "tobaccoNA")
 osHRmulti <- osHRmulti[which(!skipNA), ]
 
 
-# correction of rownames
-rownames(osHRmulti) <- featuresUni
+# correction of rownames (without RNAseq)
+rownames(osHRmulti) <- featuresUni[1:8]
 #rownames(osHRmulti)[nrow(osHRmulti)] <- paste("PMM1", "_median", sep="")
 osHRmulti <- round(osHRmulti, 3) # rounding them by 3 decimal
 
@@ -529,19 +559,22 @@ osHRmulti <- round(osHRmulti, 3) # rounding them by 3 decimal
 
 
 #*** [Univariate for OS]  table 3 left panel
-# # 9 features in HNSCC, put in coxph one by one
+# # 8 features in HNSCC, put in coxph one by one
 # number of features 13 -> 14 -> 15 (add a feature: margin status, tobacco exposure)
 oscox <- 0
 ## boundary of features column from first to last # 
 LL <- which(colnames(osccCleanNA) == "Gender") # "left" feature
 RR <- which(colnames(osccCleanNA) == "tobacco") # new "right" feature
-pmm1_pos <- which(colnames(osccCleanNA) == paste("PMM1", "_median", sep=""))
+#x pmm1_pos <- which(colnames(osccCleanNA) == paste("PMM1", "_median", sep=""))
 
-features_os <- colnames(osccCleanNA)[c(LL:RR, pmm1_pos)] # features selection ["Gender" to "tobacco", "PMM1"] 9 out of 15
+features_os <- colnames(osccCleanNA)[c(LL:RR)] #, pmm1_pos)] # features selection ["Gender" to "tobacco", "PMM1"] 9 out of 15
 osHR <- data.frame(matrix(0, nrow=length(features_os), ncol=4))
 ## *** looping the cox regression model over several features
 ## https://stackoverflow.com/questions/13092923/looping-cox-regression-model-over-several-predictor-variables
+
+
 ## as.formula: text to code (class: forumla list)
+# ***lapply is an advanced coding style
 coxph_func <- function(x) as.formula(paste("Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)", x, sep="~"))
 formlist <- lapply(features_os, coxph_func)
 #coxph_func2 <- function(x) as.formula(paste(x, ',', "data=osccCleanNA", sep=""))
@@ -595,10 +628,10 @@ library("r2excel")
 setwd(path_cohort) # change working directory to the HNSCC, GCP
 
 # filename for all margins cases, defined as HNSCC
-filenamex <- paste("xlsx/", TCGA_cohort, "_survivalAnalysis_marginS_", geneName, ".xlsx", sep = "")
+filenamex <- paste(TCGA_cohort, "_survivalAnalysis_marginS_", "tobacco", ".xlsx", sep = "")
 wb <- createWorkbook(type="xlsx")
 # Create a sheet in that workbook
-sheet <- xlsx::createSheet(wb, sheetName = paste(geneName, "_multivariate"))
+sheet <- xlsx::createSheet(wb, sheetName = paste("tobacco", "_multivariate"))
 # [add data row by row, start from column 2]
 #+++++++++++++++++++++++++++++++
 ## Add paragraph : Author
@@ -614,18 +647,19 @@ xlsx.addLineBreak(sheet, 3)
 
 # under optimized cutoff1
 # Part I:Table 2. The clinicopathological features
-#  (tableChi1) from Calling contingencyTCGA and contignecyBin ####
+#  (tableChi1) from Calling contingencyTCGA_tobacco and contignecyBin ####
 # x using tableChi2 by contigencyBin2 with c("Gender","ageDx", "pathologic_T", "pathologic_N", "pathologic_M", "stage","margin" )
 # under best cutoff value (auto choosen which has the smallest P-value)
 
-contiT <- contingencyTCGA(osccCleanNA, geneName) # calling this function (OSCC cohort, PMM1) 2 parameters, no more cutoff1; 
+contiT <- contingencyTCGA_tobacco(osccCleanNA) 
+# "Fisher exact test +1"; 
 # "margin" at column 8 of oscc
 # "tobacco" at column 9 of oscc
-#  oscc <- contiT[[1]] # updating PMM1_median
+#  oscc <- contiT[[2]] # updating PMM1_median
 chiT <- contiT[[2]] # extrac it from list by using [[]]; chiT$X2 is the P-value
 freq <- contiT[[3]] # well DONE
 
-tableChi1 <- contingencyBin (osccCleanNA, chiT, freq) # calculating the P-value
+tableChi1 <- contingencyBin_tobacco (osccCleanNA, chiT, freq) # calculating the P-value
 # ***add rownames for tableChi1
 nrow_featuresUni <- length(featuresUni) # aka. 9
 nrow_tableChi1 <- as.character(seq(1, 2*(nrow_featuresUni-1))) # aka. 2 *8 個NA (a vector)
@@ -642,7 +676,7 @@ nrow_tableChi1[c(T,F)] <- featuresUni[-nrow_featuresUni] # skip last one row RNA
 
 
 rownames(tableChi1) <- nrow_tableChi1 # duplicate 'row.names' are not allowed
-# 16 rows
+# 16-2 rows
 # "margin" at column 8 of osccCleanNA
 
 # to save "*" of column "remark" in 300 tableChi1 ###
@@ -650,14 +684,14 @@ rownames(tableChi1) <- nrow_tableChi1 # duplicate 'row.names' are not allowed
 #
 
 # header
-xlsx.addHeader(wb, sheet, value=paste("Table 2. The clinicopathological features of ", TCGA_cohort, " cohort and ", geneName,  " expression. (Chi square test)", sep=""),
+xlsx.addHeader(wb, sheet, value=paste("Table 2. The clinicopathological features of ", TCGA_cohort, " cohort association with ", "tobacco exposure",  " (Chi square test)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
                level=5, color="red", underline=0) # total n is taken from surv_OS1$n
 
 #xlsx.addLineBreak(sheet, 1) # add one blank line
 
-xlsx.addTable(wb, sheet, data = t(data.frame(c(paste(geneName, "expression"), "", paste(geneName, "expression"), "", "(Optimised)"))), fontSize=12, startCol=4,
+xlsx.addTable(wb, sheet, data = t(data.frame(c(paste("tobacco", "exposure"), "", paste("tobacco", "expression"), "", "(Optimised)"))), fontSize=12, startCol=4,
               fontColor="darkblue", row.names = F, col.names = F) #, colSpan=1, rowSpan=1)
 # tableChi1
 xlsx.addTable(wb, sheet, data= tableChi1, startCol=2,
@@ -706,25 +740,25 @@ for (i in 1:nrow(tableOS)) { # eg. 1~9
 # }
 # 
 # 
-# # {processing Table 4 RFS: cbind(rfsHR, rfsHRmulti) => tableRFS1
-#
-#ciUniMti <- c("Features",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value")
-tableRFS <- cbind(as.data.frame(colUni_1), rfsHR, rfsHRmulti) # it can't be rouned here ??
-rownames(tableRFS) <- featuresUni
-colnames(tableRFS) <- ciUniMti
-tableRFS1 <- as.data.frame(setNames(replicate(length(ciUniMti), numeric(0), simplify = F), ciUniMti)) # for xlsx output (dynamic table)
-colnames(tableRFS1) <- ciUniMti
-for (i in 1:nrow(tableRFS)) {
-  # row0
-  row0 <- data.frame(t(c(colUni_0[i], as.numeric(c(1, NA, NA, NA, 1, NA, NA, NA)))))
-  colnames(row0) <- ciUniMti
-  row0[,2:ncol(tableRFS1)] <- as.numeric(as.character(row0[,2:ncol(tableRFS1)]))
-  # row1 == tableRFS
-  tableRFS1 <- rbind(tableRFS1, row0, tableRFS[i, ])
-  # (OK) warnings() In as.numeric(as.character(row0[, 2:ncol(tableOS1)])) :
-  # NAs introduced by coercion
-}
+# # # {processing Table 4 RFS: cbind(rfsHR, rfsHRmulti) => tableRFS1
+# #
+# #ciUniMti <- c("Features",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value")
+# tableRFS <- cbind(as.data.frame(colUni_1), rfsHR, rfsHRmulti) # it can't be rouned here ??
+# rownames(tableRFS) <- featuresUni
+# colnames(tableRFS) <- ciUniMti
+# tableRFS1 <- as.data.frame(setNames(replicate(length(ciUniMti), numeric(0), simplify = F), ciUniMti)) # for xlsx output (dynamic table)
+# colnames(tableRFS1) <- ciUniMti
+# for (i in 1:nrow(tableRFS)) {
+#   # row0
+#   row0 <- data.frame(t(c(colUni_0[i], as.numeric(c(1, NA, NA, NA, 1, NA, NA, NA)))))
+#   colnames(row0) <- ciUniMti
+#   row0[,2:ncol(tableRFS1)] <- as.numeric(as.character(row0[,2:ncol(tableRFS1)]))
+#   # row1 == tableRFS
+#   tableRFS1 <- rbind(tableRFS1, row0, tableRFS[i, ])
+#   # (OK) warnings() In as.numeric(as.character(row0[, 2:ncol(tableOS1)])) :
+#   # NAs introduced by coercion
 # }
+# # }
 
 
 
@@ -733,7 +767,7 @@ for (i in 1:nrow(tableRFS)) {
 # # fontColor="darkgray"
 
 xlsx.addLineBreak(sheet, 5)
-xlsx.addHeader(wb, sheet, value=paste("Table 3. Univariate/Multivariate Cox's proportional hazards regression analyses on OS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
+xlsx.addHeader(wb, sheet, value=paste("Table 3. Univariate/Multivariate Cox's proportional hazards regression analyses on OS time of", "tobacco exposure in ", TCGA_cohort), level=5)
 xlsx.addLineBreak(sheet, 1)
 # xlsx.addParagraph(wb, sheet, value = "Overall Survival", fontSize=12, isItalic=F, startCol=4,
 #                  colSpan=8, rowSpan=1)
@@ -745,15 +779,15 @@ xlsx.addTable(wb, sheet, data = tableOS1, startCol=2,
               rowFill=c("white", "lightblue"), row.names = TRUE
 )
 xlsx.addLineBreak(sheet, 5)
-xlsx.addHeader(wb, sheet, value=paste("Table 4. Univariate/Multivariate Cox's proportional hazards regression analyses on RFS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
-xlsx.addLineBreak(sheet, 1)
-xlsx.addTable(wb, sheet, data = t(data.frame(c("Univariate", "\t", "\t", "\t", "Multivariate"))), fontSize=12, startCol=4,
-              row.names = F, col.names = F)
-#
-xlsx.addTable(wb, sheet, data= tableRFS1, startCol=2,
-              fontColor="darkblue", fontSize=12,
-              rowFill=c("white", "lightblue"), row.names = TRUE
-)
+# xlsx.addHeader(wb, sheet, value=paste("Table 4. Univariate/Multivariate Cox's proportional hazards regression analyses on RFS time of", geneName, "gene expression in ", TCGA_cohort), level=5)
+# xlsx.addLineBreak(sheet, 1)
+# xlsx.addTable(wb, sheet, data = t(data.frame(c("Univariate", "\t", "\t", "\t", "Multivariate"))), fontSize=12, startCol=4,
+#               row.names = F, col.names = F)
+# #
+# xlsx.addTable(wb, sheet, data= tableRFS1, startCol=2,
+#               fontColor="darkblue", fontSize=12,
+#               rowFill=c("white", "lightblue"), row.names = TRUE
+# )
 xlsx.addLineBreak(sheet, 25) # more space
 
 
@@ -811,7 +845,7 @@ xlsx.addPlot.OS<-function(OS.km, surv_OS1, wb, sheet, startRow=NULL, startCol=2,
   #library("xlsx")
   
   png(filename = "plot.png", width = width, height = height,...)
-  plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+  plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", "tobacco"), ylab="Percent Survival", xlab="Years")
   legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:1, col=c("blue","red"))
   
   dev.off() 
@@ -834,14 +868,14 @@ xlsx.addPlot.OS(OS.km, surv_OS1, wb, sheet)
 
 xlsx.addPlot.RFS<-function(RFS.km, surv_RFS1, wb, sheet, startRow=NULL, startCol=2,
                            width=480, height=480,... )
-{  # RFS KM plot
-  #library("xlsx")
-  png(filename = "plot.png", width = width, height = height,...)
-  # plot fuction here
-  plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-  legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:1, col=c("blue","red"))
-  
-  dev.off() 
+# {  # RFS KM plot
+#   #library("xlsx")
+#   png(filename = "plot.png", width = width, height = height,...)
+#   # plot fuction here
+#   plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+#   legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:1, col=c("blue","red"))
+#   
+#   dev.off() 
   #Append plot to the sheet
   if(is.null(startRow)){
     rows<- getRows(sheet) #list of row object
@@ -877,8 +911,8 @@ xlsx.addPlot.OSpval<-function(OS, case50_n, p_OS0, wb, sheet, startRow=NULL,star
       scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
       #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
       #  coord_trans(y = "log10") +
-      ggtitle(paste("Cumulative P-Value plot for OS under", geneName, "expression")) +
-      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+      ggtitle(paste("Cumulative P-Value plot for OS under", "tobacco exposure")) +
+      xlab("# of patients in 'low risk' group") + ylab("P-Value(log10)") +
       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
       geom_point(data=g1, color="red") +  # this adds a red point
       geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
@@ -891,8 +925,8 @@ xlsx.addPlot.OSpval<-function(OS, case50_n, p_OS0, wb, sheet, startRow=NULL,star
       #scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
       #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
       #  coord_trans(y = "log10") +
-      ggtitle(paste("Cumulative P-value plot for OS under", geneName, "expression")) +
-      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+      ggtitle(paste("Cumulative P-value plot for OS under", "tobacco exposure")) +
+      xlab("# of patients in 'low risk' group") + ylab("P-Value(log10)") +
       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
       geom_point(data=g1, color="yellow") +  # this adds a red point
       geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
@@ -917,60 +951,60 @@ xlsx.addPlot.OSpval(OS, case50_n, p_OS0, wb, sheet)
 #
 #
 #
-#
-xlsx.addPlot.RFSpval<-function(RFS, case50_n, p_RFS0, wb, sheet, startRow=NULL,startCol=2,
-                               width=480, height=480,... )
-{   # RFS P-values dots plot
-  #library("xlsx")
-  png(filename = "plot.png", width = width, height = height,...)
-  # plot fuction here
-  g1<- subset(RFS, cases_RFS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_RFS0)
-  
-  if (g1$p_RFS<=0.05) {
-    pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
-      #  xlim(70, cutoff_n[2]) +
-      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
-      #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-      scale_y_log10(breaks=c(p_RFS0, 1e-05, 1e-03, 0.05), labels=c(p_RFS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
-      #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
-      #  coord_trans(y = "log10") +
-      ggtitle(paste("Cumulative P-Value plot for RFS under", geneName, "expression")) +
-      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
-      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
-      geom_point(data=g1, color="red") +  # this adds a red point
-      geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
-    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
-  } else { #(g1$p_OS > 0.05)
-    pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
-      #  xlim(70, cutoff_n[2]) +
-      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
-      
-      ggtitle(paste("Cumulative P-value plot for RFS under", geneName, "expression")) +
-      xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
-      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
-      geom_point(data=g1, color="yellow") +  # this adds a red point
-      geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
-    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
-    
-  }
-  
-  print(pRFS) # export to xlsx
-  #  ggsave("plot.png", width=4, height=4, dpi=100) # save as .png
-  #  dev.off() # "R, plot is done, please print it instead of on-screen device."
-  dev.off() 
-  #Append plot to the sheet
-  if(is.null(startRow)){
-    rows<- getRows(sheet) #list of row object
-    startRow=length(rows)+1
-  } 
-  # Add the file created previously
-  addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
-  xlsx.addLineBreak(sheet, round(width/20)+1)
-  res<-file.remove("plot.png")
-}
-# # NOT calling
-# xlsx.addPlot.RFSpval(RFS, case50_n, p_RFS0, wb, sheet)
 # #
+# xlsx.addPlot.RFSpval<-function(RFS, case50_n, p_RFS0, wb, sheet, startRow=NULL,startCol=2,
+#                                width=480, height=480,... )
+# {   # RFS P-values dots plot
+#   #library("xlsx")
+#   png(filename = "plot.png", width = width, height = height,...)
+#   # plot fuction here
+#   g1<- subset(RFS, cases_RFS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_RFS0)
+#   
+#   if (g1$p_RFS<=0.05) {
+#     pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
+#       #  xlim(70, cutoff_n[2]) +
+#       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+#       #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
+#       scale_y_log10(breaks=c(p_RFS0, 1e-05, 1e-03, 0.05), labels=c(p_RFS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
+#       #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
+#       #  coord_trans(y = "log10") +
+#       ggtitle(paste("Cumulative P-Value plot for RFS under", geneName, "expression")) +
+#       xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+#       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+#       geom_point(data=g1, color="red") +  # this adds a red point
+#       geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
+#     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+#   } else { #(g1$p_OS > 0.05)
+#     pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
+#       #  xlim(70, cutoff_n[2]) +
+#       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+#       
+#       ggtitle(paste("Cumulative P-value plot for RFS under", geneName, "expression")) +
+#       xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+#       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+#       geom_point(data=g1, color="yellow") +  # this adds a red point
+#       geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
+#     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+#     
+#   }
+#   
+#   print(pRFS) # export to xlsx
+#   #  ggsave("plot.png", width=4, height=4, dpi=100) # save as .png
+#   #  dev.off() # "R, plot is done, please print it instead of on-screen device."
+#   dev.off() 
+#   #Append plot to the sheet
+#   if(is.null(startRow)){
+#     rows<- getRows(sheet) #list of row object
+#     startRow=length(rows)+1
+#   } 
+#   # Add the file created previously
+#   addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
+#   xlsx.addLineBreak(sheet, round(width/20)+1)
+#   res<-file.remove("plot.png")
+# }
+# # # NOT calling
+# # xlsx.addPlot.RFSpval(RFS, case50_n, p_RFS0, wb, sheet)
+# # #
 
 
 ##
@@ -1010,7 +1044,7 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 
 #tryCatch(
 RFS_pvalue <- OS_pvalue #:-) for HNSCC only
-save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("xlsx/HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_tobacco_feature", ".Rda", sep=""))
 #, error = function(e) return(NA))
 #print(paste("Create", paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""), "successfully."))
 
