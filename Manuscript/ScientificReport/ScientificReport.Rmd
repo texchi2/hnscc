@@ -518,6 +518,9 @@ Long non-coding RNAs (lncRNAs) have important biological functions and can be us
 GDCRNAtools to conduct advanced
 analyses of RNA-seq and miRNA-seq data in GDC data portal for identification of
 lncRNA-miRNA-mRNA competing triplets in cancer.
+[LncRNAs as prognostic biomarkers in head and neck squamous cell carcinoma (HNSCC)]
+Chaudhary R., Wang X., Cao B., Gimbrone N.T., Slebos R.J.C., Chung C.H.
+Cancer Research 2019 79:13 Supplement 
 Researchers at the Shanghai Jiao Tong University School of Medicine analysed RNA-seq data derived from the TANRIC database to identify a lncRNA prognostic signature model using the orthogonal partial least squares discrimination analysis (OPLS-DA) and 1.5-fold expression change criterion methods. The prognosis prediction model based on the lncRNA signatures and clinical parameters were evaluated using the 5-fold cross validation method.
 A total of 84 out of 3199 lncRNAs were significantly associated with the survival of patients with HNSCC. Using the OPLS-DA and 1.5-fold change selection criterion, 5 lncRNAs (KTN1-AS1, LINC00460, GUSBP11, LINC00923 and RP5-894A10.6) were further selected. The prediction power of each combination of the 5 lncRNAs was evaluated through the receiver operating characteristic (ROC) curve and a three-lncRNA panel (KTN1-AS1, LINC00460 and RP5-894A10.6) achieved the highest prognostic prediction power in the cohort. The patients were categorized into high- and low-risk groups based on their three-lncRNA profiles. Patients with high-risk scores had worse overall survival than those with low risk scores in the cohort. Multivariable Cox regression analyses showed that the lncRNA signature and tumour grade were independent prognostic factors for patients with HNSCC.
 
