@@ -431,8 +431,11 @@ which(complete.cases(oscc$OS_IND)==F) # if no NaN -> 0
 OS_IND_pos <- which(colnames(oscc) == "OS_IND")
 which(complete.cases(oscc[oscc$OS_IND==1, OS_IND_pos])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
 
+# save this cohort (with tobacco_exposure feature)
+save(oscc, file="HNSCC.clinical.RNAseq_tobacco.Fire.Rda")
 cohort_n <- nrow(oscc) # n=328 or 427 -> 415
 
+# survival analysis...
 p_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
 cases_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
 p_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
