@@ -21,7 +21,7 @@ library(magrittr)
 recipient <- "texchi2@gmail.com"
 sender <- "texchi2@gmail.com"
 
-### $setup global variables...(including "margin") ####
+### $setup global variables...(including "margin" without PMM1/RNAseq) ####
 library(psych) # for describe()
 library(survival)
 # # pathologic_T => clinical_T and so on...
@@ -29,7 +29,7 @@ coln_osccT <- c("Unique.ID","Gender","ageDx",
                 "clinical_T","clinical_N",
                 "clinical_M","stage", "margin", "tobacco",
                 "OS_IND","OS..months._from.biopsy",
-                "RFS_IND", "RFS..months._from.op", "H.score_T", paste("PMM1", "_median", sep=""))
+                "RFS_IND", "RFS..months._from.op")#, "H.score_T", paste("PMM1", "_median", sep=""))
 
 
 # for tableChi1 (table 2)
@@ -39,7 +39,7 @@ contLowHighN <- c("Features",	"Low", "(%)",	"High",	"(%)", "Case no",	"P-value",
 # Table 3. Univariate/Multivariate Cox proportional hazards regression analyses on OS time
 ciUniMti <- c("Features",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value")
 
-# with 9 features: in table 3 and table 4
+# with 8 features: in table 3 and table 4
 featuresUni <- c("Gender",
                  "Age at diagnosis",
                  #                 "Primary site",
@@ -52,15 +52,15 @@ featuresUni <- c("Gender",
                  #"Pathologic M status",
                  #"Pathologic Stage",
                  "Surgical Margin status",
-                 "Tobacco Exposure", 
+                 "Tobacco Exposure")#, 
                  #                 "Lymphovascular Invasion",
                  #                 "Perineural Invasion",
                  #                 "Extranodal spreading of neck LN",
                  #                 "SCC Histologic Grade",
                  #                 "Radiotherapy",
                  #                 "Chemotherapy",
-                 paste("RNAseq(z-score)") # or "IHC score" == "z-score"
-)
+#                 paste("RNAseq(z-score)") # or "IHC score" == "z-score"
+#)
 # z-score calculation = [(value gene X in tumor Y)-(mean gene X in normal)]/(standard deviation X in normal)
 
 # lower rowname of table 3 and table 4
@@ -78,8 +78,8 @@ colUni_1 <- c("Male",
               #              "Yes",# RT
               #              "Yes",# CT
               #              "G3+G4",
-              "High", # risk of tobacco exposure
-              "High") # PMM1 or RNAseq
+              "High")#, # risk of tobacco exposure
+#              "High") # PMM1 or RNAseq
 # upper rowname of table 3 and table 4
 colUni_0 <- c("Female",
               "<=65y",
@@ -95,8 +95,8 @@ colUni_0 <- c("Female",
               #              "no", # RT
               #              "no", # CT
               #              "G1+G2",
-              "Low", # risk of tobacco exposure
-              "Low") # PMM1 or RNAseq
+              "Low")#, # risk of tobacco exposure
+#              "Low") # PMM1 or RNAseq
 # create correlation table 1 with P-value by chisq.test
 library(reshape)
 library(data.table)
@@ -109,7 +109,7 @@ contingencyTCGA_tobacco <- function(osccCleanNA_conTCGA) {
   ## boundary of features column from first to last # 
   L <- which(colnames(osccCleanNA_conTCGA) == "Gender") # "left" feature at col2
   R <- which(colnames(osccCleanNA_conTCGA) == "tobacco")-1 # new "right-1" feature at col8
-# tobacco at col9 is geneName for 4x2 comparion
+# tobacco at col9 tx as geneName for 4x2 comparion
   chiT <- data.frame(matrix(data = NA, nrow = R, ncol = 2)) # create a empty data.frame, 2D matrix as R*2
   #rown = 8
   freq <- data.frame(matrix(data = NA, nrow = 1, ncol = 4)) #, dimnames = list(c(1:rown+1), c("Var2", "L", "H"))))
@@ -273,7 +273,8 @@ library(R.utils) # intToBin()
 library(compositions) # unbinary()
 contingencyBin_tobacco <- function (osccCleanNA_conBin, chiT, freq) {
   # to generate tableChi1 (table 2)
-  # enough, geneName is not necessary a parameter (osccCleanNA_conBin <- osccCleanNA)
+  # enough, geneName is not necessary a parameter
+  # osccCleanNA_conBin <- osccCleanNA
   # processing chiT and processing freq; place a "remark" and Matthews
   # for binary and integer convertion
   # library(R.utils) # intToBin()
@@ -281,14 +282,15 @@ contingencyBin_tobacco <- function (osccCleanNA_conBin, chiT, freq) {
   # sigContig <- c(NA, "*") # remarkable when (p<0.05 || scoreContig == c(5,10))
   # 
   freq_features <- as.character(freq$Features[seq(1, nrow(freq), 3)]) # pick one per 3 rows
-  #c("Gender","age.at.diagnosis", "T", "N", "M", "stage_2","margin", x"tobacco"); 
+  # => c("Gender","age.at.diagnosis", "T", "N", "M", "stage_2","margin", x"tobacco"); 
   # nrow(freq)==(8-1)*3
   # rows need to be selected and reordered
   # ***match freq and osccCleanNA_conBin of colnames
   colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)] <- freq_features # [2:8]
   # ***a feature-name mapping (indTbChi) of " freq$Features  <- osccCleanNA" 
   # ***it needs to be updated.
-  indTbChi <- data.frame(cbind(featuresUni[1:(length(featuresUni)-2)],
+  # featuresUni as 1 Gender to 7 "Surgical Margin status" (no tobacco)
+  indTbChi <- data.frame(cbind(featuresUni[1:which(featuresUni=="Surgical Margin status")],
                                freq_features,
                                colnames(osccCleanNA_conBin)[2:(1+nrow(freq)/3)])) # from Gender to tobacco-1
   colnames(indTbChi) <- c("featuresUni", "freq$Features", "osccCleanNA_conBin")
@@ -309,7 +311,7 @@ contingencyBin_tobacco <- function (osccCleanNA_conBin, chiT, freq) {
   # reset tableChi1
   tableChi1 <- as.data.frame(setNames(replicate(length(contLowHighN), numeric(0), simplify = F), contLowHighN)) # declare a xlsx output data.frame (dynamic table)
   # colnames(tableChi1) <- contLowHighN
-  for (i in 1:(length(featuresUni)-2)) { # without PMM1 on the last row (i in 1:8)
+  for (i in 1:which(featuresUni=="Surgical Margin status")) { # without tobacco RNA-seq on the last row (i in 1:7)
     # generate table 2/tableChi1 by every two rows
     mapi <- as.character(freq$Features) == as.character(indTbChi$osccCleanNA_conBin[i]) # "Gender"...to "Tobacco" in [47:49] of freq
     mapi_pos <- which(mapi == T) #[47:49], every 3
@@ -431,21 +433,21 @@ which(complete.cases(oscc$OS_IND)==F) # if no NaN -> 0
 OS_IND_pos <- which(colnames(oscc) == "OS_IND")
 which(complete.cases(oscc[oscc$OS_IND==1, OS_IND_pos])==F) #OS_IND ==1, death event (dead) => result 0, if no NaN
 
-# save this cohort (with tobacco_exposure feature)
-save(oscc, file="HNSCC.clinical.RNAseq_tobacco.Fire.Rda")
+# save this cohort (with tobacco_exposure feature) ####
+save(oscc, file=paste(TCGA_cohort, ".clinical.RNAseq_tobacco.Fire.Rda", sep="")) # "HNSCC.clinical.RNAseq_tobacco.Fire.Rda"
 cohort_n <- nrow(oscc) # n=328 or 427 -> 415
 
-# survival analysis...
+
+
+
+
+# survival analysis: OS (modified from cutoff finder, run100) ####
 p_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
 cases_OS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
 p_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
 cases_RFS <-  data.frame(matrix(data = NA, nrow = cohort_n, ncol = 1))
 
-
-
-
 # oscc, n=415
-# run survival analysis: OS (modified from cutoff finder, run100) ####
 library(survival)
 mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1) #1==death event
 
@@ -453,12 +455,13 @@ mysurv <- Surv(oscc$OS..months._from.biopsy, oscc$OS_IND==1) #1==death event
 # Test for difference (log-rank test) with P-value
 oscc_Tobacco_pos <- which(colnames(oscc) == "tobacco")
 if (is.na(tryCatch(surv_OS <- survdiff(mysurv ~ as.vector(unlist(oscc[oscc_Tobacco_pos]), mode="numeric"), data=oscc), error = function(e) return(NA)))) {cat("one group only")}
+# n=415 -> 414, 1 observation deleted due to missingness
 # OS, error 2 due to ZSWIM2? (one group only) ###
 # extract P-value from surv_OS, put in "original" position (unsorted)
 
 #x *** shift here [run100+1]
 #x p_OS[exp_geneName_sorted$ix[run100+1], 1] <- 
-  p_OS0 <- format(pchisq(surv_OS$chisq, length(surv_OS$n)-1, lower.tail = FALSE), digits=3)
+  p_OS0 <- format(pchisq(surv_OS$chisq, length(surv_OS$n)-1, lower.tail = FALSE), digits=2)
 # P-value = "0.0431"
 print(paste("KM P-value", p_OS0, "(<=0.05), which is", (p_OS0<=0.05)))
 #[coxph] - fits a Cox proportional hazards regression model
@@ -470,18 +473,17 @@ print(paste("KM P-value", p_OS0, "(<=0.05), which is", (p_OS0<=0.05)))
 # [survfit] - Kaplan-Meier curve, or KM plot of OS ####
 OS.km <- survfit(mysurv ~ as.vector(unlist(oscc[oscc_Tobacco_pos]), mode="numeric"), data=oscc, type= "kaplan-meier", conf.type = "log-log")
 tiff(file=paste("KMplot_OS_tobacco_exposure.tiff", sep = ""))
-plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-Value =", p_OS0), main=paste("OS in TCGA", TCGA_cohort, "(tobacco exposure, n=", surv_OS$n[1]+surv_OS$n[2],")"), ylab="Percent Survival", xlab="Years")
+plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-Value =", p_OS0), main=paste("OS in TCGA", TCGA_cohort, ", n = ", surv_OS$n[1]+surv_OS$n[2], " (grouped by tobacco exposure)", sep=""), ylab="Percent Survival", xlab="Years")
 legend("topright", legend=c(paste("low risk (",surv_OS$n[1], ")"), paste("high risk (",surv_OS$n[2], ")")), lty=1:1, col=c("blue","red"))
 dev.off()
 #  
-# [survfit] - Kaplan-Meier curve, or KM plot of OS
 # confidence intervals as log hazard or log(-log(survival))
 #OS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
 # 365.25 days in a year for xscale => 3650 days for 10 years
 # 12 months per year for 5 years => 60 months
 
 
-# RNA-seq analysis in R ####
+# (hold) RNA-seq Differential expression analysis in R ####
 # https://f1000research.com/articles/4-1070/v2
 # https://bioinformatics-core-shared-training.github.io/RNAseq-R/
 # Differential expression with edgeR
@@ -495,6 +497,9 @@ BiocManager::install("nlme")
 browseVignettes("edgeR")
 # volcano plot
 
+
+
+
 # 
 # table 3, table 4 ####
 # hazard ratios of features (including tobacco_exposure, without RNAseq) (high/low)
@@ -504,14 +509,17 @@ library("xlsx")
 library("openssl")
 library(r2excel)
 library(survival)
-# oscc <- oscc0 <- osccCleanNA # syncrhonized
+load(file=paste(TCGA_cohort, ".clinical.RNAseq_tobacco.Fire.Rda", sep="")) 
+# "HNSCC.clinical.RNAseq_tobacco.Fire.Rda" as oscc
+osccCleanNA <- oscc # syncrhonized
 #*** [Multivariate for OS] Table 3 right panle
 
 # selectedFeatures <- colnames(osccCleanNA[commonFeatures])
 # colname of oscc = c("Unique.ID","Gender","age.at.diagnosis",
 # "margin","T","N",
 # "M","stage_2","OS..months._from.biopsy",
-# "OS_IND","RFS..months._from.op","RFS_IND","H.score_T")
+# "OS_IND","RFS..months._from.op","RFS_IND")
+# x ,"H.score_T")
 
 # ***rename part of colnames (13 features) as osccT [old coding]
 colnames(osccCleanNA) <- coln_osccT[1:13] # colnames (features) of osccT
@@ -541,13 +549,12 @@ oscox <- coxph(Surv(osccCleanNA$OS..months._from.biopsy,
                  #                 neoplasm_histologic_grade +
                #   as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric), 
 data=osccCleanNA)
-#x PMM1_median == IHC score == (H.score_T) in [low, high]
 # warning() X matrix deemed to be singular; variable 8:margin
-# summary(oscox)
+# summary(oscox), n=414; prognosis was significant impacted by age, clinical T, clinical M, margin as well as tobacco.
 
 osHRmulti <- cbind(data.frame(summary(oscox)$conf.int)[-2], data.frame(summary(oscox)$coefficients)[5])
 
-# *** removal the "noise" for each new feature specified
+# *** removal the "noise" NA for each new feature specified
 skipNA <- rownames(osHRmulti) %in% c(1, "marginNA", "tobaccoNA")
 osHRmulti <- osHRmulti[which(!skipNA), ]
 
@@ -555,7 +562,7 @@ osHRmulti <- osHRmulti[which(!skipNA), ]
 # correction of rownames (without RNAseq)
 rownames(osHRmulti) <- featuresUni[1:8]
 #rownames(osHRmulti)[nrow(osHRmulti)] <- paste("PMM1", "_median", sep="")
-osHRmulti <- round(osHRmulti, 3) # rounding them by 3 decimal
+osHRmulti <- round(osHRmulti, 2) # rounding them by 3 decimal
 
 #View(osHRmulti) # table 3 right panel
 
@@ -578,15 +585,27 @@ osHR <- data.frame(matrix(0, nrow=length(features_os), ncol=4))
 
 ## as.formula: text to code (class: forumla list)
 # ***lapply is an advanced coding style
+# define function
 coxph_func <- function(x) as.formula(paste("Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)", x, sep="~"))
-formlist <- lapply(features_os, coxph_func)
+
+formlist <- lapply(features_os, coxph_func) # coxph to each individual feature
+# [1] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~Gender"    
+# [2] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~ageDx"     
+# [3] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~clinical_T"
+# [4] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~clinical_N"
+# [5] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~clinical_M"
+# [6] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~stage"     
+# [7] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~margin"    
+# [8] "Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1)~tobacco"
 #coxph_func2 <- function(x) as.formula(paste(x, ',', "data=osccCleanNA", sep=""))
 #formlist2 <- lapply(formlist, coxph_func2)
 #oscox <- coxph(coxph_func(x), data = osccCleanNA, ties="efron")
-oscox <- lapply(formlist, coxph, data = osccCleanNA) # run coxph, "data=" as additional arguments to FUN. 
+oscox <- lapply(formlist, coxph, data = osccCleanNA) 
+# run coxph, "data=" as additional arguments to FUN. 
 #-> model oscox (list 8)
 # warnings() In FUN(X[[i]], ...) : X matrix deemed to be singular; variable 2
 
+# define function
 coef_func <- function(i, oscox1) {
   x1 <- data.frame(summary(oscox1[[i]])$conf.int)[-2]
   x2 <- data.frame(summary(oscox1[[i]])$coefficients)[5]
@@ -610,7 +629,7 @@ for (ii in c(1:length(uni_CI))) {
 # correction of rownames
 rownames(osHR) <- featuresUni
 # round
-osHR <- round(osHR, 3)
+osHR <- round(osHR, 2)
 # P-value notes:
 # Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
 # if <0.001 => mark as "***"
@@ -619,7 +638,7 @@ osHR$X4[osHR$X4<0.001] <- "***"
 ## DONE and then export part II ##
 
 ## R2Excel export ####
-## and save at "xlsx/"
+## [2019/08/07]
 ## # http://www.sthda.com/english/wiki/r2excel-read-write-and-format-easily-excel-files-using-r-software
 library("xlsx")
 library("r2excel")
@@ -657,14 +676,14 @@ xlsx.addLineBreak(sheet, 3)
 contiT <- contingencyTCGA_tobacco(osccCleanNA) 
 # "Fisher exact test +1"; 
 # "margin" at column 8 of oscc
-# "tobacco" at column 9 of oscc
+# "tobacco" at column 9 of oscc; not in contiT
 #  oscc <- contiT[[2]] # updating PMM1_median
 chiT <- contiT[[2]] # extrac it from list by using [[]]; chiT$X2 is the P-value
 freq <- contiT[[3]] # well DONE
 
 tableChi1 <- contingencyBin_tobacco (osccCleanNA, chiT, freq) # calculating the P-value
 # ***add rownames for tableChi1
-nrow_featuresUni <- length(featuresUni) # aka. 9
+nrow_featuresUni <- length(featuresUni) # aka. 8
 nrow_tableChi1 <- as.character(seq(1, 2*(nrow_featuresUni-1))) # aka. 2 *8 個NA (a vector)
 nrow_tableChi1[c(T,F)] <- featuresUni[-nrow_featuresUni] # skip last one row RNAseq(z-score)
 # > nrow_tableChi1
