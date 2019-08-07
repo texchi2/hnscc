@@ -983,7 +983,7 @@ xlsx.addPlot.candidates<-function( wb, sheet, startRow=NULL,startCol=2,
   #file.rename("plot.png", "Zscore_Pvalue_scatter.png")
 } # Define function
 
-# calling
+# calling and convert tiff to png
 system("convert Rplot10_Zscore_Pvalue.tiff Rplot10_Zscore_Pvalue.png")
 currentRow <- xlsx.addPlot.candidates(wb, sheet) # startRow + a plot
 #print(paste("The z-score summary plot:", filenamex,"was exported successfully."))

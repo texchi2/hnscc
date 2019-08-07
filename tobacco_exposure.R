@@ -501,7 +501,7 @@ browseVignettes("edgeR")
 
 
 # 
-# table 3, table 4 ####
+# table 3, table 4 (by osccCleanNA) ####
 # hazard ratios of features (including tobacco_exposure, without RNAseq) (high/low)
 # By Cox HR [COXPH modelling]
 library(rJava) # PASSED
@@ -708,7 +708,9 @@ rownames(tableChi1) <- nrow_tableChi1 # duplicate 'row.names' are not allowed
 # header
 xlsx.addHeader(wb, sheet, value=paste("Table 2. The clinicopathological features of ", TCGA_cohort, " cohort association with ", "tobacco exposure",  " (Chi square test)", sep=""),
                level=5, color="black", underline=0)
-xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
+
+surv_OS1 <- surv_OS # *** they come together
+xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), "", sep = ""),
                level=5, color="red", underline=0) # total n is taken from surv_OS1$n
 
 #xlsx.addLineBreak(sheet, 1) # add one blank line
@@ -825,7 +827,7 @@ xlsx.addLineBreak(sheet, 25) # more space
 # Add Hyperlink
 #++++++++++++++ show cutoff +++++++++++++++
 # xlsx.addParagraph(wb, sheet, value = paste("Kaplan-Meier survival estimate: \n Cutoff at", round(cutoff1[2], 3), "(", round(cutoff1[1], 2), ")", sep = ""), level=2, colSpan = 5, rowSpan = 2)
-km <- paste("Kaplan-Meier survival estimate: Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = "")
+km <- paste("Kaplan-Meier survival estimate: Cutoff at ", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), "", sep = "")
 xlsx.addParagraph(wb, sheet, value=km, isItalic=TRUE, colSpan=5, 
                   rowSpan=4, fontSize=14) # fontColor="darkgray"
 
@@ -841,213 +843,215 @@ xlsx.addParagraph(wb, sheet, value=km, isItalic=TRUE, colSpan=5,
 
 
 
-# Export KM plots by plotFunction() ####
-#+++++++++++++++++++++++++++++
-# xlsx.addHeader(wb, sheet, "Kaplan-Meier survival estimate: ", level=3)
-xlsx.addLineBreak(sheet, 1)
-
-# # # debug
-# plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-# legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
-# # # debug
-
-# below code was copied from cutofFinder_func.R
-mysurv <- Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) #1==dead
-# Test for difference (log-rank test) between groups (by PMM1_median 0 vs 1)
-tryCatch(surv_OS1 <- survdiff(mysurv ~ as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric"), data=osccCleanNA), error = function(e) return(NA)) # PMM1 high or low
-# pchisq gives the distribution function
-#p_OS1 <- format(pchisq(surv_OS1$chisq, length(surv_OS1$n)-1, lower.tail = FALSE), digits=3)
-# (p_OS1 == p_OS0) is TRUE
-#cases_OS1 <- surv_OS1$n[1]
-OS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
-
-xlsx.addPlot.OS<-function(OS.km, surv_OS1, wb, sheet, startRow=NULL, startCol=2,
-                          width=480, height=480,... )
-{ # OS KM plot
-  #library("xlsx")
-  
-  png(filename = "plot.png", width = width, height = height,...)
-  plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", "tobacco"), ylab="Percent Survival", xlab="Years")
-  legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:1, col=c("blue","red"))
-  
-  dev.off() 
-  #Append plot to the sheet
-  if(is.null(startRow)){
-    rows<- getRows(sheet) #list of row object
-    startRow=length(rows)+1
-  } 
-  # Add the file created previously
-  addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
-  xlsx.addLineBreak(sheet, round(width/20)+1)
-  res<-file.remove("plot.png")
-}
-# calling
-xlsx.addPlot.OS(OS.km, surv_OS1, wb, sheet)
-
-#
-# below code was copied from cutofFinder_func.R
-#RFS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
-
-xlsx.addPlot.RFS<-function(RFS.km, surv_RFS1, wb, sheet, startRow=NULL, startCol=2,
-                           width=480, height=480,... )
-# {  # RFS KM plot
-#   #library("xlsx")
-#   png(filename = "plot.png", width = width, height = height,...)
-#   # plot fuction here
-#   plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-#   legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:1, col=c("blue","red"))
-#   
-#   dev.off() 
-  #Append plot to the sheet
-  if(is.null(startRow)){
-    rows<- getRows(sheet) #list of row object
-    startRow=length(rows)+1
-  } 
-  # Add the file created previously
-  addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
-  xlsx.addLineBreak(sheet, round(width/20)+1)
-  res<-file.remove("plot.png")
-}
-# # NOT calling
-# xlsx.addPlot.RFS(RFS.km, surv_RFS1, wb, sheet)
-# #
-
-xlsx.addLineBreak(sheet, 8)
-
-
-
-# plot cumulative p-value from cutoff finder
-xlsx.addPlot.OSpval<-function(OS, case50_n, p_OS0, wb, sheet, startRow=NULL,startCol=2,
-                              width=480, height=480,... )
-{   # OS P-values dots plot
-  #library("xlsx")
-  png(filename = "plot.png", width = width, height = height,...)
-  # plot fuction here
-  g1<- subset(OS, cases_OS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_OS0)
-  
-  if (g1$p_OS<=0.05) {
-    pOS <- ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
-      #  xlim(70, cutoff_n[2]) +
-      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
-      #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-      scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
-      #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
-      #  coord_trans(y = "log10") +
-      ggtitle(paste("Cumulative P-Value plot for OS under", "tobacco exposure")) +
-      xlab("# of patients in 'low risk' group") + ylab("P-Value(log10)") +
-      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
-      geom_point(data=g1, color="red") +  # this adds a red point
-      geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
-    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
-  } else { #(g1$p_OS > 0.05)
-    pOS <- ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
-      #  xlim(70, cutoff_n[2]) +
-      scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
-      #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-      #scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
-      #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
-      #  coord_trans(y = "log10") +
-      ggtitle(paste("Cumulative P-value plot for OS under", "tobacco exposure")) +
-      xlab("# of patients in 'low risk' group") + ylab("P-Value(log10)") +
-      geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
-      geom_point(data=g1, color="yellow") +  # this adds a red point
-      geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
-    #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
-    
-  }
-  
-  print(pOS) # export to xlsx
-  dev.off() 
-  #Append plot to the sheet
-  if(is.null(startRow)){
-    rows<- getRows(sheet) #list of row object
-    startRow=length(rows)+1
-  } 
-  # Add the file created previously
-  addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
-  xlsx.addLineBreak(sheet, round(width/20)+1)
-  res<-file.remove("plot.png")
-}
-# calling
-xlsx.addPlot.OSpval(OS, case50_n, p_OS0, wb, sheet)
-#
-#
-#
-# #
-# xlsx.addPlot.RFSpval<-function(RFS, case50_n, p_RFS0, wb, sheet, startRow=NULL,startCol=2,
-#                                width=480, height=480,... )
-# {   # RFS P-values dots plot
-#   #library("xlsx")
-#   png(filename = "plot.png", width = width, height = height,...)
-#   # plot fuction here
-#   g1<- subset(RFS, cases_RFS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_RFS0)
-#   
-#   if (g1$p_RFS<=0.05) {
-#     pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
-#       #  xlim(70, cutoff_n[2]) +
-#       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
-#       #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
-#       scale_y_log10(breaks=c(p_RFS0, 1e-05, 1e-03, 0.05), labels=c(p_RFS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
-#       #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
-#       #  coord_trans(y = "log10") +
-#       ggtitle(paste("Cumulative P-Value plot for RFS under", geneName, "expression")) +
-#       xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
-#       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
-#       geom_point(data=g1, color="red") +  # this adds a red point
-#       geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
-#     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
-#   } else { #(g1$p_OS > 0.05)
-#     pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
-#       #  xlim(70, cutoff_n[2]) +
-#       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
-#       
-#       ggtitle(paste("Cumulative P-value plot for RFS under", geneName, "expression")) +
-#       xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
-#       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
-#       geom_point(data=g1, color="yellow") +  # this adds a red point
-#       geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
-#     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
-#     
-#   }
-#   
-#   print(pRFS) # export to xlsx
-#   #  ggsave("plot.png", width=4, height=4, dpi=100) # save as .png
-#   #  dev.off() # "R, plot is done, please print it instead of on-screen device."
-#   dev.off() 
-#   #Append plot to the sheet
-#   if(is.null(startRow)){
-#     rows<- getRows(sheet) #list of row object
-#     startRow=length(rows)+1
-#   } 
+#x # Export KM plots by plotFunction() ####
+# #+++++++++++++++++++++++++++++
+# # xlsx.addHeader(wb, sheet, "Kaplan-Meier survival estimate: ", level=3)
+# xlsx.addLineBreak(sheet, 1)
+# 
+# # # # debug
+# # plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+# # legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
+# # # # debug
+# 
+# # below code was copied from cutofFinder_func.R
+# #mysurv <- Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IND==1) #1==dead
+# # Test for difference (log-rank test) between groups (by PMM1_median 0 vs 1)
+# #tryCatch(surv_OS1 <- survdiff(mysurv ~ as.vector(osccCleanNA[, osccCleanNAM_pos], mode="numeric"), data=osccCleanNA), error = function(e) return(NA)) # PMM1 high or low
+# # pchisq gives the distribution function
+# #p_OS1 <- format(pchisq(surv_OS1$chisq, length(surv_OS1$n)-1, lower.tail = FALSE), digits=3)
+# # (p_OS1 == p_OS0) is TRUE
+# #cases_OS1 <- surv_OS1$n[1]
+# #OS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
+# 
+# xlsx.addPlot.OS<-function(OS.km, surv_OS1, wb, sheet, startRow=NULL, startCol=2, width=480, height=480,... )
+# { # OS KM plot
+# #   #library("xlsx")
+# #   
+# #   png(filename = "plot.png", width = width, height = height,...)
+# #   plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", "tobacco"), ylab="Percent Survival", xlab="Years")
+# #   legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:1, col=c("blue","red"))
+# #   
+# #   dev.off() 
+# #   #Append plot to the sheet
+# #   if(is.null(startRow)){
+# #     rows<- getRows(sheet) #list of row object
+# #     startRow=length(rows)+1
+# #   } 
 #   # Add the file created previously
-#   addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
+#   # KMplot_OS_tobacco_exposure.tiff to .png
+# system("convert KMplot_OS_tobacco_exposure.tiff KMplot_OS_tobacco_exposure.png", intern = FALSE)
+#   addPicture("KMplot_OS_tobacco_exposure.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
 #   xlsx.addLineBreak(sheet, round(width/20)+1)
-#   res<-file.remove("plot.png")
+#   #res<-file.remove("plot.png")
 # }
+# # calling
+# xlsx.addPlot.OS(OS.km, surv_OS1, wb, sheet)
+# 
+# #
+# # below code was copied from cutofFinder_func.R
+# #RFS.km <- survfit(mysurv ~ as.vector(unlist(osccCleanNA[, osccCleanNAM_pos]), mode="numeric"), data=osccCleanNA, type= "kaplan-meier", conf.type = "log-log")
+# 
+#  # xlsx.addPlot.RFS<-function(RFS.km, surv_RFS1, wb, sheet, startRow=NULL, startCol=2, width=480, height=480,... )
+# # {  # RFS KM plot
+# #   #library("xlsx")
+# #   png(filename = "plot.png", width = width, height = height,...)
+# #   # plot fuction here
+# #   plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+# #   legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:1, col=c("blue","red"))
+# #   
+# #   dev.off() 
+#   # #Append plot to the sheet
+#   # if(is.null(startRow)){
+#   #   rows<- getRows(sheet) #list of row object
+#   #   startRow=length(rows)+1
+#   # }
+#   # Add the file created previously
+# #   addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
+# #   xlsx.addLineBreak(sheet, round(width/20)+1)
+# #   res<-file.remove("plot.png")
+# # }
 # # # NOT calling
-# # xlsx.addPlot.RFSpval(RFS, case50_n, p_RFS0, wb, sheet)
+# # xlsx.addPlot.RFS(RFS.km, surv_RFS1, wb, sheet)
 # # #
-
-
-##
-#
-#
-# create a row name table for copy/paste :-( redundent one row
-# #xlsx.addParagraph
-#for (i in 1:(length(featuresUni)-1)) {
-#  xlsx.addParagraph(wb, sheet, value=featuresUni[i], isItalic=TRUE, startCol=12, colSpan=1,
-#                      rowSpan=2, fontSize=14, fontColor="darkblue")
-#}
-
-xlsx.addLineBreak(sheet, 5) 
-# export the p-value from Cutoff Finding
-xlsx.addTable(wb, sheet, data = subset(OS, p_OS <= 0.05)[order(subset(OS, p_OS <= 0.05)$p_OS),], fontSize=12, startCol=8,
-              row.names = F, col.names = T)
-#View(OS[OS$p_OS <= 0.05,1:2])
-xlsx.addTable(wb, sheet, data = subset(RFS, p_RFS <= 0.05)[order(subset(RFS, p_RFS <= 0.05)$p_RFS),], fontSize=12, startCol=9,
-              row.names = F, col.names = T)
-#View(RFS[RFS$p_RFS <= 0.05,1:2])
-#
+# 
+# xlsx.addLineBreak(sheet, 8)
+# 
+# 
+# 
+# # # x plot cumulative p-value from cutoff finder
+# # xlsx.addPlot.OSpval<-function(OS, case50_n, p_OS0, wb, sheet, startRow=NULL,startCol=2,
+# #                               width=480, height=480,... )
+# # {   # OS P-values dots plot
+# #   #library("xlsx")
+# #   png(filename = "plot.png", width = width, height = height,...)
+# #   # plot fuction here
+# #   g1<- subset(OS, cases_OS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_OS0)
+# #   
+# #   if (g1$p_OS<=0.05) {
+# #     pOS <- ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
+# #       #  xlim(70, cutoff_n[2]) +
+# #       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+# #       #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
+# #       scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
+# #       #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
+# #       #  coord_trans(y = "log10") +
+# #       ggtitle(paste("Cumulative P-Value plot for OS under", "tobacco exposure")) +
+# #       xlab("# of patients in 'low risk' group") + ylab("P-Value(log10)") +
+# #       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+# #       geom_point(data=g1, color="red") +  # this adds a red point
+# #       geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
+# #     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+# #   } else { #(g1$p_OS > 0.05)
+# #     pOS <- ggplot(OS, aes(x=cases_OS, y=p_OS)) + geom_point(size=2) +
+# #       #  xlim(70, cutoff_n[2]) +
+# #       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+# #       #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
+# #       #scale_y_log10(breaks=c(p_OS0, 1e-05, 1e-03, 0.05), labels=c(p_OS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
+# #       #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
+# #       #  coord_trans(y = "log10") +
+# #       ggtitle(paste("Cumulative P-value plot for OS under", "tobacco exposure")) +
+# #       xlab("# of patients in 'low risk' group") + ylab("P-Value(log10)") +
+# #       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+# #       geom_point(data=g1, color="yellow") +  # this adds a red point
+# #       geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
+# #     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+# #     
+# #   }
+# #   
+# #   print(pOS) # export to xlsx
+# #   dev.off() 
+# #   #Append plot to the sheet
+# #   if(is.null(startRow)){
+# #     rows<- getRows(sheet) #list of row object
+# #     startRow=length(rows)+1
+# #   } 
+# #   # Add the file created previously
+# #   addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
+# #   xlsx.addLineBreak(sheet, round(width/20)+1)
+# #   res<-file.remove("plot.png")
+# # }
+# # # calling
+# # # #   case50_n <- cutoffReturn[[2]] # of patients to be grouped by tobacco exposure
+# # case50_n <- surv_OS$n[1]
+# # xlsx.addPlot.OSpval(OS, case50_n, p_OS0, wb, sheet)
+# # #
+# #
+# #
+# # #
+# # xlsx.addPlot.RFSpval<-function(RFS, case50_n, p_RFS0, wb, sheet, startRow=NULL,startCol=2,
+# #                                width=480, height=480,... )
+# # {   # RFS P-values dots plot
+# #   #library("xlsx")
+# #   png(filename = "plot.png", width = width, height = height,...)
+# #   # plot fuction here
+# #   g1<- subset(RFS, cases_RFS==case50_n) # optimized cutoff1 at (x=case50_n, y=p_RFS0)
+# #   
+# #   if (g1$p_RFS<=0.05) {
+# #     pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
+# #       #  xlim(70, cutoff_n[2]) +
+# #       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+# #       #  scale_x_discrete(limit = seq(0,500,50), labels = paste(seq(0,500,50), sep=",")) +
+# #       scale_y_log10(breaks=c(p_RFS0, 1e-05, 1e-03, 0.05), labels=c(p_RFS0, "0.00001", 0.001, 0.05)) + #(limits=break_y, labels=c("0", "0.05", "0.10", "0.50")) +
+# #       #  scale_y_discrete(breaks = break_y, labels = break_y) + #c("0", "0.05", "0.10", "0.50", "0.99")) +
+# #       #  coord_trans(y = "log10") +
+# #       ggtitle(paste("Cumulative P-Value plot for RFS under", geneName, "expression")) +
+# #       xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+# #       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+# #       geom_point(data=g1, color="red") +  # this adds a red point
+# #       geom_text(data=g1, label="optimized", color="red", hjust=-0.5) # this adds a label for the red point
+# #     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+# #   } else { #(g1$p_OS > 0.05)
+# #     pRFS <- ggplot(RFS, aes(x=cases_RFS, y=p_RFS)) + geom_point(size=2) +
+# #       #  xlim(70, cutoff_n[2]) +
+# #       scale_x_discrete(limit = seq(80, 180, 20)) + # cutoff_n[2])) + #, labels = paste(seq(0,500,50), sep=",")) +
+# #       
+# #       ggtitle(paste("Cumulative P-value plot for RFS under", geneName, "expression")) +
+# #       xlab("# of patients in 'low exp' group") + ylab("P-Value(log10)") +
+# #       geom_hline(yintercept=0.05, linetype="dashed", color = "red", size=1, show.legend = T) +
+# #       geom_point(data=g1, color="yellow") +  # this adds a red point
+# #       geom_text(data=g1, label="50:50", color="red", hjust=-0.5, vjust=1.0) # this adds a label for the red point
+# #     #geom_vline(xintercept=case50_n, linetype="dashed", color = "green", size=2, show.legend = T)
+# #     
+# #   }
+# #   
+# #   print(pRFS) # export to xlsx
+# #   #  ggsave("plot.png", width=4, height=4, dpi=100) # save as .png
+# #   #  dev.off() # "R, plot is done, please print it instead of on-screen device."
+# #   dev.off() 
+# #   #Append plot to the sheet
+# #   if(is.null(startRow)){
+# #     rows<- getRows(sheet) #list of row object
+# #     startRow=length(rows)+1
+# #   } 
+# #   # Add the file created previously
+# #   addPicture("plot.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
+# #   xlsx.addLineBreak(sheet, round(width/20)+1)
+# #   res<-file.remove("plot.png")
+# # }
+# # # # NOT calling
+# # # xlsx.addPlot.RFSpval(RFS, case50_n, p_RFS0, wb, sheet)
+# # # #
+# 
+# 
+# ##
+# #
+# #
+# # create a row name table for copy/paste :-( redundent one row
+# # #xlsx.addParagraph
+# #for (i in 1:(length(featuresUni)-1)) {
+# #  xlsx.addParagraph(wb, sheet, value=featuresUni[i], isItalic=TRUE, startCol=12, colSpan=1,
+# #                      rowSpan=2, fontSize=14, fontColor="darkblue")
+# #}
+# 
+# xlsx.addLineBreak(sheet, 5) 
+# # export the p-value from Cutoff Finding
+# #xlsx.addTable(wb, sheet, data = subset(OS, p_OS <= 0.05)[order(subset(OS, p_OS <= 0.05)$p_OS),], fontSize=12, startCol=8,
+# #              row.names = F, col.names = T)
+# #View(OS[OS$p_OS <= 0.05,1:2])
+# #xlsx.addTable(wb, sheet, data = subset(RFS, p_RFS <= 0.05)[order(subset(RFS, p_RFS <= 0.05)$p_RFS),], fontSize=12, startCol=9,
+# #              row.names = F, col.names = T)
+# #View(RFS[RFS$p_RFS <= 0.05,1:2])
+# #
 
 # save the workbook to an Excel file and write the file to disk.
 xlsx::saveWorkbook(wb, filenamex)
@@ -1065,19 +1069,19 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 # save(list = c("tableChi1", "tableOS1", "tableRFS1"), file=paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
 
 #tryCatch(
-RFS_pvalue <- OS_pvalue #:-) for HNSCC only
-save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("HNSCC_survivalAnalysis_tobacco_feature", ".Rda", sep=""))
+#RFS_pvalue <- OS_pvalue #:-) for HNSCC only
+save(list = c("tableChi1", "tableOS1"), file=paste("HNSCC_survivalAnalysis_tobacco_grouping", ".Rda", sep=""))
 #, error = function(e) return(NA))
 #print(paste("Create", paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""), "successfully."))
 
 
 ## 
 # Final Return ####
-if (nrow(OS_pvalue) > 0)  { # we hit one gene with P-value < 0.05 in KM plot
-  return(which.min(OS_pvalue$p_OS))} else {return(0)}
-
+# if (nrow(OS_pvalue) > 0)  { # we hit one gene with P-value < 0.05 in KM plot
+#   return(which.min(OS_pvalue$p_OS))} else {return(0)}
+# 
 #  ) #system.time end
-} # function END (survival_marginS)
+
 ##-- -- -- -- --
 
 
