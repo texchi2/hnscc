@@ -582,7 +582,7 @@ run n=414 cohort, survival analysis without RNAseq, and categorized by tobacco_e
 414 名口腔癌患者中，吸菸 vs  不吸菸者，五年存活率分別為  40% vs 60%
 (P-value < 0.05) Test for difference (log-rank test) between groups
 術後第一年的差別不大，大約 90% 能過關，接下來第二、三、四、五年，差距就拉開了。
-2) coxph: table 3 and table 4
+2) coxph: table 3 OS:
 coxph(formula = Surv(osccCleanNA$OS..months._from.biopsy, osccCleanNA$OS_IN == 
     1) ~ +Gender + ageDx + clinical_T + clinical_N + clinical_M + 
     stage + margin + tobacco, data = osccCleanNA)
@@ -599,12 +599,15 @@ tobaccoNA
 ---
 Signif. codes:  
 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+..table 3: univariate/multivariate cox's PH
+=> multivariate
 prognosis was significant impacted by age, clinical T, clinical M, margin as well as tobacco. with HR as 1.4, 2.2, 9.4, 1.7 and 1.5 respectively.(HR 1.5 算是強大的影響力)
 clinical M and margin: P-value < 0.005
 clinical T: HR 2.2 with 95CI as 1.2 ~ 4.2
 tobacco and age: HR around 1.4 with 95CI as 1 ~ 2.
 ***=> age is following the time, while tobacco depends on your mind.
-
+=> univariate
+T (HR 1.4), M (4.1), margin (1.6), tobacco (1.4)
 
 
 # ***article review...Embase or PubMed
