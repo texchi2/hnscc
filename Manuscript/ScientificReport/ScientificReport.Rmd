@@ -4,7 +4,8 @@
 # TypesetIO: https://www.typeset.io/edit/51a7cf1a-1a39-4a40-94c1-6f47608286ff BMC Cancer
 #*** sharlatex and overleaf, sync with Github (vim): https://www.overleaf.com/project/5d1f4419460443357489e46f
 #
-title: A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
+title: Interrogating Biomarkers in HNSCC Survival Assessment
+A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
 Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
 subtitle: A Optimizated Cutoff Finder for Biomarker Discovery for Head and Neck Squamous Cell Carcinoma
 titlerunning: 
@@ -98,7 +99,11 @@ https://github.com/texchi2/docker4seq
 
 # Material and method
 <!-- # since the date [2019/05/13] after -->
-*** template 範例 Deep Learning–Based Multi-Omics Integration Robustly Predicts Survival in Liver Cancer\cite{Chaudhary2018}
+*** [template of my manuscript] 範例 
+1) https://www.hindawi.com/journals/bmri/2019/ 5450617/
+Construction of the ceRNA Network 
+HOTTIP Functions as a Key Candidate Biomarker in Head and Neck Squamous Cell Carcinoma by Integrated Bioinformatic Analysis
+2) Deep Learning–Based Multi-Omics Integration Robustly Predicts Survival in Liver Cancer\cite{Chaudhary2018}
 http://clincancerres.aacrjournals.org/content/24/6/1248
 
 #set up a data science environment on Google Cloud Platform (GCP) {#sec:1}
