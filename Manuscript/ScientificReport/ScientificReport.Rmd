@@ -75,6 +75,7 @@ https://www.biomedcentral.com/journals#Life-Sciences
 
 #Introduction {#intro}
 project rationale: 人工決定 cutoff 需要天啟, it is difficult.
+About 95% of all oral cancers occur in persons over 40 years of age.[https://doi.org/10.1136/bmj.h4238]
 https://www.cancer.gov/types/head-and-neck/hp HNSCC
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
 Currently, there is no global view of the expression profiles of the human cancer genes expression obtained from next-generation sequencing (NGS) technologies such as RNA sequencing (RNA-seq). The expression data is available from a large-scale studies like The Cancer Genome Atlas (TCGA: http://cancergenome.nih.gov/).
@@ -611,7 +612,17 @@ T (HR 1.4), M (4.1), margin (1.6), tobacco (1.4)
 
 
 # ***article review...Embase or PubMed
-
+{\cite{Mira2019}
+The database of the Surveillance, Epidemiology, and End Results (SEER) analytical study reported that the primary cancers of the oral cavity, pharynx, and esophagus are strongly related to tobacco exposure and are also associated with alcohol abuse and low fruit intake. SEER-based research also found that the survivors of cancers of the oral cavity and pharynx have more than a two-fold excess risk of developing subsequent primary cancers (SPCs), and tobacco and/or alcohol consumption probably account for much of the increased risk [7, 14]
+7.\cite{Weir2016}
+14.Caporaso NE, Dodd KW, Tucker MA. New malignancies following cancer of the respiratory tract. In: Curtis RE, Freedman DM, Ron E, et al., eds. New Malignancies Among Cancer Survivors: SEER Cancer Registries, 1973-2000, 2006. Bethesda, MD p. 145-180. (NIH Publ. No. 05-5302; Available at http://seer.cancer.gov/publications).
+https://seer.cancer.gov/data-software/
+https://surveillance.cancer.gov/tools/
+https://www.ncbi.nlm.nih.gov/pubmed/26286216
+https://www.ncbi.nlm.nih.gov/pubmed/28743940
+in R: SEERaBomb: https://github.com/radivot/SEERaBomb
+http://epbi-radivot.cwru.edu/SEERaBomb/SEERaBomb.html
+}
 6)
 =Michael2
 Dato 共同第一作者: 成大 n=44 microarray
