@@ -574,7 +574,8 @@ cTNM alone (in KM analysis);
 The criteria of candidate genes: more 2500 genes (top 100)
 gene of non-coding RNA lncRNA in HNSCC?
 
-5) ***[hypothesis] to prove by bioinformatic way: Nicotinic acetylcholine receptor signaling pathway. 
+5) ***[hypothesis] to prove by bioinformatic way: Nicotinic acetylcholine receptor signaling pathway.
+This is especially important for the one who has an extensive history of tobacco use.
 # nicotine consumption has oral cancer prognostic impact as well as tumor initiation
 1) KM plot: P-value = 0.0431
 run n=414 cohort, survival analysis without RNAseq, and categorized by tobacco_exposure high/low, P-value = 0.0431[2019/08/01]
@@ -611,7 +612,7 @@ tobacco and age: HR around 1.4 with 95CI as 1 ~ 2.
 T (HR 1.4), M (4.1), margin (1.6), tobacco (1.4)
 
 
-# ***article review...Embase or PubMed
+# ***tobacco article review...Embase or PubMed
 {\cite{Mira2019}
 The database of the Surveillance, Epidemiology, and End Results (SEER) analytical study reported that the primary cancers of the oral cavity, pharynx, and esophagus are strongly related to tobacco exposure and are also associated with alcohol abuse and low fruit intake. SEER-based research also found that the survivors of cancers of the oral cavity and pharynx have more than a two-fold excess risk of developing subsequent primary cancers (SPCs), and tobacco and/or alcohol consumption probably account for much of the increased risk [7, 14]
 7.\cite{Weir2016}
@@ -620,9 +621,16 @@ https://seer.cancer.gov/data-software/
 https://surveillance.cancer.gov/tools/
 https://www.ncbi.nlm.nih.gov/pubmed/26286216
 https://www.ncbi.nlm.nih.gov/pubmed/28743940
-in R: SEERaBomb: https://github.com/radivot/SEERaBomb
+in R: SEERaBomb: https://github.com/radivot/SEERaBomb demo
 http://epbi-radivot.cwru.edu/SEERaBomb/SEERaBomb.html
 }
+Five years after quitting, Your risk of cancers of the mouth, throat, esophagus, and bladder is cut in half. Cervical cancer risk falls to that of a non-smoker. By American Cancer Society https://www.cancer.org/healthy/stay-away-from-tobacco/benefits-of-quitting-smoking-over-time.html
+Tobacco Control: Reversal of Risk after Quitting Smoking
+IARC Handbooks of Cancer Prevention Volume 11
+http://publications.iarc.fr/Book-And-Report-Series/Iarc-Handbooks-Of-Cancer-Prevention/Tobacco-Control-Reversal-Of-Risk-After-Quitting-Smoking-2007
+The relative risk for oral and pharyngeal cancers remains higher for at least 20 years after cessation.\cite{Dresler2006} (Lancet)
+
+
 6)
 =Michael2
 Dato 共同第一作者: 成大 n=44 microarray
