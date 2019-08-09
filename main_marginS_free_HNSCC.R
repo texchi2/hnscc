@@ -1301,7 +1301,10 @@ oscc$margin[osccT$margin_status %in% c("close", "positive")] <- 1 # positive sur
 # table(complete.cases(osccY)), TRUE=298
 # osccY <- subset(osccT, select=c("tcga_participant_barcode", "number_pack_years_smoked","stopped_smoking_year","year_of_initial_pathologic_diagnosis"))
 #R4> table(complete.cases(osccY)), TRUE=144
-
+# smoking above 10 pack years (p = 0.04),\cite{Sivarajah2019} 
+# smoking above 20 pack years (p < 0.001)
+# Total EGFR tumor levels are predictive of 5-year DSS(RFS). 
+# EGFR levels correlate with smoking and could be an objective marker for this disease etiology.
 
 
 # [OS] overall survival ####
