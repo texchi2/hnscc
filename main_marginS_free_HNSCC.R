@@ -1421,7 +1421,7 @@ oscc$RFS_months <- oscc$OS_months
 # # 
 # # 
 
-# 97.5% smoker (skipped this feature)
+# 97.5% smoker (*** this feature) \cite{Sivarajah2019}
 # (smoking/smokeless, alcohol, egfr_amplication_status, HPV) status ####
 # [66] "number_pack_years_smoked" # from 0.0167 to 300 pack per year; NaN n=230 
 #x [83] "smokeless_tobacco_use_age_at_quit"  # snuff, dip and chewing tobacco. The product is chewed or sucked and any juice is spit out making it a very unattractive habit.                
@@ -1437,6 +1437,9 @@ oscc$RFS_months <- oscc$OS_months
 # https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=exposure&anchor=tobacco_smoking_status
 # CDE: 2181650 - caDSR
 # [103] "year_of_tobacco_smoking_onset" 
+
+
+
 
 #> # [3b.prepare T: RNAseq] ####
 # n=528, features 5, OS, RFS, RNAseq(z.score) of gene 1......20499

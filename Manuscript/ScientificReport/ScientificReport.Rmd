@@ -104,6 +104,7 @@ https://github.com/texchi2/docker4seq
 1) https://www.hindawi.com/journals/bmri/2019/ 5450617/
 Construction of the ceRNA Network 
 HOTTIP Functions as a Key Candidate Biomarker in Head and Neck Squamous Cell Carcinoma by Integrated Bioinformatic Analysis
+
 2) Deep Learning–Based Multi-Omics Integration Robustly Predicts Survival in Liver Cancer\cite{Chaudhary2018}
 http://clincancerres.aacrjournals.org/content/24/6/1248
 
@@ -613,6 +614,10 @@ T (HR 1.4), M (4.1), margin (1.6), tobacco (1.4)
 
 
 # ***tobacco article review...Embase or PubMed
+*** tobacco exposure: 1 pack year
+A way to measure the amount a person has smoked over a long period of time. It is calculated by multiplying the number of packs of cigarettes smoked per day by the number of years the person has smoked. For example, 1 pack year is equal to smoking 1 pack per day for 1 year, or 2 packs per day for half a year, and so on.
+For example: a person who has smoked 15 cigarettes a day for 40 years has a (15/20) x 40 = 30 pack-year smoking history. One pack-year is smoking 20 cigarettes a day for one year. If someone has smoked 10 cigarettes a day for 6 years they would have a 3 pack-year history. accessed at 2019/08/09: https://www.cancer.gov/publications/dictionaries/cancer-terms/def/pack-year?redirect=true
+
 {\cite{Mira2019}
 The database of the Surveillance, Epidemiology, and End Results (SEER) analytical study reported that the primary cancers of the oral cavity, pharynx, and esophagus are strongly related to tobacco exposure and are also associated with alcohol abuse and low fruit intake. SEER-based research also found that the survivors of cancers of the oral cavity and pharynx have more than a two-fold excess risk of developing subsequent primary cancers (SPCs), and tobacco and/or alcohol consumption probably account for much of the increased risk [7, 14]
 7.\cite{Weir2016}
@@ -630,6 +635,22 @@ IARC Handbooks of Cancer Prevention Volume 11
 http://publications.iarc.fr/Book-And-Report-Series/Iarc-Handbooks-Of-Cancer-Prevention/Tobacco-Control-Reversal-Of-Risk-After-Quitting-Smoking-2007
 The relative risk for oral and pharyngeal cancers remains higher for at least 20 years after cessation.\cite{Dresler2006} (Lancet)
 
+the TP53 pathway (p14ARF, MDM2, p21, BAX and HMGA2): DOI 10.1007/s10654-016-0183-1
+Analysis of gene expression networks in head and neck squamous cell carcinoma
+European Journal of Epidemiology 2016 31 Supplement 1 (S55)
+=> acting upstream (p14ARF, HMGA2, MDM2) -> TP53 -> downstream (p21(CDKN1A), BAX)
+High p14ARF(CDKN2A) expression is a hallmark of human papilloma virus (HPV) associated HNSCC and patients have a favorable outcome.
+
+The changes in TP53 transcriptional regulation, mammalian target of Rapamycin (mTOR) signaling and mitochondrial function were associated with a history of tobacco use. [Examining the contribution of smoking and HPV towards the etiology of oral cavity squamous cell carcinoma using high-throughput sequencing: A prospective observational study] \cite{Zammit2018}
+
+Association between cigarette smoking and mutation of the p53 gene in squamous-cell carcinoma of the head and neck.
+Brennan J Boyle J Koch W Goodman S Hruban R et. al.
+The New England journal of medicine
+1995 vol: 332 (11) pp: 712-7
+
+**** TCGA:  (smoking/smokeless, alcohol, egfr_amplication_status, HPV) status is available ####
+Epidermal growth factor receptor (EGFR) as a biomarker of smoking status and survival in oropharyngeal squamous cell carcinoma. 5-year disease specific survival (DSS). A Cox proportional hazard model of DSS showed smoking status and eGFR expression to be dependent of each other on predicting 5-year DSS. EGFR expression has been associated with several downstream pathways leading to a high tumor proliferation rate, inhibition of apoptosis, enhanced tumor invasion, and metastasis [6]. EGFR protein over-expression has been reported in 70 to 100% of head and neck squamous cell carcinomas (HNSCCs), and 46–72% of OPSCCs.\cite{Sivarajah2019}
+The correlation between smoking and prognosis amongst HPV-positive and negative OPSCC patients has been well established in the literature [2, 3, 15]. Kumar et al. observed that EGFR expression was significantly higher in current smokers than in past smokers, who in turn had higher EGFR levels than those who never smoked [16]. This finding was corroborated by Baumeister et al. [6]. However, these studies did not define pack-years of tobacco smoking, include survival data.
 
 6)
 =Michael2
