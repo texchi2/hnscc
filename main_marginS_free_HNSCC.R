@@ -723,7 +723,7 @@ f <- e + 100
 # #
 # 
 # 
-# # ** margin issue: 0 or 1 or NaN ####
+# # ** margin issue: 0 or 1 or NaN ###
 # # with r1 or r2 (residual tumor) => person_neoplasm_cancer_status (with tumor) is NOT recurrence
 # # while clincal "tumor free" cases with r1 or r2 => Amazing ! selflimited :-)
 # # residual_tumor in HNSCC: The status of a tissue margin following surgical resection:
@@ -1161,7 +1161,7 @@ for (i in c(1:length(RNAseq_geneNum)))
 # or transfer from HNSCC
 
 #load(file.choose()) # self choice
-load(file="HNSCC.clinical.Fire.Rda")
+load(file="~/R/HNSCC.clinical.Fire.Rda")
 osccT <- HNSCC.clinical.Fire # n=528; #HNSCC.clinical.Fire.Rda
 
 # ignore patient_ID (it is NOT true; anonymous)
@@ -1260,6 +1260,48 @@ oscc$margin[osccT$margin_status %in% c("close", "positive")] <- 1 # positive sur
 # to create vectors for both 'time to new tumor' (recurrence) and 'time to death' (overall survival) that
 # contain also the data from censored individuals.
 # https://www.biostars.org/p/153013/
+
+
+# # *** nicotine, nicotinic acetylcholine receptors in the brain (those effected by smoking cigarettes)
+# [2019/07/27] 97.5% smoker/nicotine issue (*** this feature) \cite{Sivarajah2019}
+# ** smoking/smokeless, alcohol, egfr_amplication_status, HPV status ####
+# [66] "number_pack_years_smoked" # from 0.0167 to 300 "pack year"; NaN has n=230 
+#x [83] "smokeless_tobacco_use_age_at_quit"  # snuff, dip and chewing tobacco. The product is chewed or sucked and any juice is spit out making it a very unattractive habit.                
+#x [84] "smokeless_tobacco_use_age_at_start"                 
+#x [85] "smokeless_tobacco_use_at_diag"                      
+#x [86] "smokeless_tobacco_use_per_day"                      
+#x [87] "smokeless_tobacco_use_regularly"     # n=20 yes               
+# [88] "stopped_smoking_year" # quit for ? year 
+# ***[95] "tobacco_smoking_history" => Category describing current smoking status and smoking history
+# n=515 (smoker), NaN n=13 (never smoker)
+#1   2   3   4   5 
+#122 178  73 140   2 
+# https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=exposure&anchor=tobacco_smoking_status
+# CDE: 2181650 - caDSR
+# => # ***[95] "tobacco_smoking_history" => 
+# # 'Lifelong Non-Smoker', 1
+# # 'Current Smoker', 2
+# # 'Current Reformed Smoker for > 15 yrs', 3
+# # 'Current Refomed Smoker for < or = 15 yrs', 4
+# # 'Current Reformed Smoker Duration Not Specified', 5
+# # in hnscc_nicotine, n=521
+# # [11] "tobacco_exposure"             
+# 1   2   3   4   5 
+# 117 177  73 139   2 
+# tobacco_exposure feature was created on [2019/07/27]
+# # 60.65% is in high risk smoking group (HNSCC cohort n=521)
+# # ==> [tobacco_exposure] a new binomial variable (categorizing) as risk of [high/low]:
+# #       level low by c(1, 3, 5)
+# #       level high by c(2, 4)
+# [103] "year_of_tobacco_smoking_onset"
+# from [103] to [88]: smoking duration 
+# osccY <- subset(osccT, select=c("tcga_participant_barcode", "number_pack_years_smoked", "stopped_smoking_year",'year_of_tobacco_smoking_onset', "year_of_initial_pathologic_diagnosis"))
+# complete.cases(osccY) (poor)
+# osccY <- subset(osccT, select=c("tcga_participant_barcode", "number_pack_years_smoked"))
+# table(complete.cases(osccY)), TRUE=298
+# osccY <- subset(osccT, select=c("tcga_participant_barcode", "number_pack_years_smoked","stopped_smoking_year","year_of_initial_pathologic_diagnosis"))
+#R4> table(complete.cases(osccY)), TRUE=144
+
 
 
 # [OS] overall survival ####
@@ -1421,22 +1463,6 @@ oscc$RFS_months <- oscc$OS_months
 # # 
 # # 
 
-# 97.5% smoker (*** this feature) \cite{Sivarajah2019}
-# (smoking/smokeless, alcohol, egfr_amplication_status, HPV) status ####
-# [66] "number_pack_years_smoked" # from 0.0167 to 300 pack per year; NaN n=230 
-#x [83] "smokeless_tobacco_use_age_at_quit"  # snuff, dip and chewing tobacco. The product is chewed or sucked and any juice is spit out making it a very unattractive habit.                
-#x [84] "smokeless_tobacco_use_age_at_start"                 
-#x [85] "smokeless_tobacco_use_at_diag"                      
-#x [86] "smokeless_tobacco_use_per_day"                      
-#x [87] "smokeless_tobacco_use_regularly"     # n=20 yes               
-# [88] "stopped_smoking_year" 
-# ***[95] "tobacco_smoking_history" => Category describing current smoking status and smoking history
-# n=515 (smoker), NaN n=13 (never smoker)
-#1   2   3   4   5 
-#122 178  73 140   2 
-# https://docs.gdc.cancer.gov/Data_Dictionary/viewer/#?view=table-definition-view&id=exposure&anchor=tobacco_smoking_status
-# CDE: 2181650 - caDSR
-# [103] "year_of_tobacco_smoking_onset" 
 
 
 

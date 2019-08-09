@@ -496,7 +496,10 @@ BiocManager::install("edgeR")
 BiocManager::install("nlme")
 browseVignettes("edgeR")
 # volcano plot
-
+# edgeR vs. SAMSeq
+# #  DGE n=253/161 (high/low risk) 以此為 grouping，找出 differential gene expression (FDR), run DGE analysis in R => pathway analysis => ? Nicotinic acetylcholine receptor signaling pathway. 
+# in R, SAMSeq was used to identify the differentially expressed genes. Unsupervised hierarchical clustering of the TCGA OPSCC samples with available p16 status (n = 31) was performed for external validation of the results. Statistical significance was further tested by Fisher's exact test.[\cite{Seby2017}]
+# or https://davetang.org/muse/2012/01/25/edger-vs-samseq/
 
 
 
