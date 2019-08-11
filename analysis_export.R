@@ -662,8 +662,6 @@ save(pubmed_hnscc_genes, file=file.path(path_cohort, "pubmed_hnscc_genes.Rda"))
 # load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) 
 # pubmed_hnscc_genes
 write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
-
-em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes$GeneSymbol)
 pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol)
 pubmed_articles_5 <- pubmed_articles[pubmed_articles>=5]
 par(mar = c(7, 4, 2, 2) + 0.2) #add room for the rotated labels
@@ -679,6 +677,7 @@ text(seq(1.5, end_point, by=2), par("usr")[3]-0.25,
      labels = paste(rownames(pubmed_articles_5)), cex=0.65)
 
 # R4> em_Index # n=75
+em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes$GeneSymbol)
 # [1]   26   67  206  284  427  484  530  609  809  971 1020 1067 1137 1178 1193
 # [16] 1365 1404 1423 1501 1518 1523 1698 1819 1881 2036 2104 2197 2212 2360 2380
 # [31] 2490 2696 2706 2759 2808 2926 2953 2992 3287 3392 3550 3700 3796 3848 3854
