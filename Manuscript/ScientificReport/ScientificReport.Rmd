@@ -495,6 +495,7 @@ We used R packages "rentrez" and "pubmed.mineR" to process the abstracts from Pu
 [PubMed] search keyword
 "((((marker[Abstract] OR biomarker[Abstract])) AND (HNSCC OR HNSC OR oral))) AND (prognostic[Title] OR prognosis[Title])", retmax=2000
 [embase] search keyword: (prognosis:ti OR prognostic:ti OR 'tumor marker') AND cancer:ti AND 'head and neck squamous cell carcinoma'; excluding other cancer type via "disease filter"
+asscess at [2019/07/20] 503 articles
 => expanded as
 ('cancer of unknown primary site'/dm OR 'esophageal adenocarcinoma'/dm OR 'esophageal squamous cell carcinoma'/dm OR 'esophagus cancer'/dm OR 'esophagus carcinoma'/dm OR 'head and neck cancer'/dm OR 'head and neck carcinoma'/dm OR 'head and neck squamous cell carcinoma'/dm OR 'head and neck tumor'/dm OR 'head cancer'/dm OR 'hypopharynx cancer'/dm OR 'hypopharynx carcinoma'/dm OR 'hypopharynx squamous cell carcinoma'/dm OR 'larynx cancer'/dm OR 'larynx carcinoma'/dm OR 'larynx squamous cell carcinoma'/dm OR 'mouth cancer'/dm OR 'mouth carcinoma'/dm OR 'mouth squamous cell carcinoma'/dm OR 'nasopharynx cancer'/dm OR 'nasopharynx carcinoma'/dm OR 'neck cancer'/dm OR 'oropharynx cancer'/dm OR 'oropharynx carcinoma'/dm OR 'oropharynx squamous cell carcinoma'/dm OR 'oropharynx tumor'/dm OR 'pharynx cancer'/dm OR 'salivary gland cancer'/dm OR 'thyroid cancer'/dm OR 'tongue cancer'/dm OR 'tonsil cancer'/dm) AND (prognostic:ti OR 'tumor marker' OR 'biological marker' OR prognosis)
 AND 'mRNA expression level'

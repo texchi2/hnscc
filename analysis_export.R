@@ -216,7 +216,8 @@ for (ip in (bb:aa)) { # 3 hours for each run
 
 
 #_marginS_ or _marginFree_ by SFree; saving on ./run04_marginS_, files => 17030
-save(candidate_sample, candidate_cox, n_percent_Bonferroni, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) #ok; with KM_sig and Remark, and Cox HR
+save(candidate_sample, candidate_cox, n_percent_Bonferroni, 
+     file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) #ok; with KM_sig and Remark, and Cox HR
 setwd(path_cohort) 
 #_marginS_ by marginTag
 # saved file="HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda" above
@@ -335,7 +336,7 @@ abline(v=alpha_HNSCC, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-
 # curve(predict(m, data.frame(p_value = x), type="response", col="green"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
 # #lines(p_value, predict(m), lty=2, col="green", lwd=3)
 
-legend("bottomleft", legend=c(paste("Z-score at ", zcut), paste("P-value at ", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
+legend("topright", legend=c(paste("Z-score at ", zcut), paste("P-value at ", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
 # figure legend: logistic regression, LR, by Generalized linear model, glm
 #detach(HNSCC_OS_marginS_pvalue005_sorted)
 
@@ -346,7 +347,7 @@ legend("bottomleft", legend=c(paste("Z-score at ", zcut), paste("P-value at ", a
 # ***after Bonferroni correction => n=26 in _marginS_
 # ***after Bonferroni correction => n=33 in _marginFree_
 #attach(HNSCC_OS_marginS_pvalue005_sorted)
-HNSCC_OS_marginS_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue005_sorted[which(p_value<=alpha_HNSCC & z_score>=zcut), -1]
+HNSCC_OS_marginS_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue005_sorted[which(p_value <= alpha_HNSCC & z_score >= zcut), -1]
 # discard "number"
 HNSCC_OS_marginS_pvalue1e_6_zscore0_6$p_value <- signif(HNSCC_OS_marginS_pvalue1e_6_zscore0_6$p_value, 3)
 HNSCC_OS_marginS_pvalue1e_6_zscore0_6$z_score <- signif(HNSCC_OS_marginS_pvalue1e_6_zscore0_6$z_score, 3)
@@ -417,6 +418,7 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
 
 # [part II] new variable: KM + Cox, n=1475
 HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6
+# add more columns
 HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
 for (ip in 1:nrow(HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR)) {
   pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR$gene_id
@@ -662,6 +664,20 @@ save(pubmed_hnscc_genes, file=file.path(path_cohort, "pubmed_hnscc_genes.Rda"))
 write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
 
 em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes$GeneSymbol)
+pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol)
+pubmed_articles_5 <- pubmed_articles[pubmed_articles>=5]
+par(mar = c(7, 4, 2, 2) + 0.2) #add room for the rotated labels
+end_point = 0.5 + nrow(pubmed_articles_5) + nrow(pubmed_articles_5)-1 #this is the line which does the trick (together with barplot "space = 1" parameter)
+barplot(pubmed_articles_5, col="grey50",
+        xlab=NULL, horiz=F, space=1,
+        ylim=c(0, 5+max(pubmed_articles_5)))
+title(main=paste(TCGA_cohort, "genes published until [", Sys.Date(), "]"), 
+      ylab="Frequence", )
+#rotate 60 degrees, srt=60
+text(seq(1.5, end_point, by=2), par("usr")[3]-0.25, 
+     srt = 60, adj= 1, xpd = TRUE,
+     labels = paste(rownames(pubmed_articles_5)), cex=0.65)
+
 # R4> em_Index # n=75
 # [1]   26   67  206  284  427  484  530  609  809  971 1020 1067 1137 1178 1193
 # [16] 1365 1404 1423 1501 1518 1523 1698 1819 1881 2036 2104 2197 2212 2360 2380
@@ -923,7 +939,7 @@ xlsx.addLineBreak(sheet, 1) # add one blank line
 
 # a candidate genes table
 # > colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
-# [1] "gene_id" "p_value" "z_score"
+# [1] "gene_id" "p_value" "z_score" to "Gene_id", "P_value", "Z_score"
 colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6) <- c("Gene_id", "P_value", "Z_score") # Z_score
 # # no more Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
 attach(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
@@ -1738,12 +1754,27 @@ library(igraph)
 
 
 
-# tobacco HR plot under candidate gene signature
-# high in bad guy gene vs low in good guy gene
+# Tobacco HR plot under candidate gene signature ####
 # [2019/08/11]
-# percentage of tobacco high on each gene Cox PH table 3
+# load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")))
+# as candidate_sample, candidate_cox, n_percent_Bonferroni,
+# R4> colnames(candidate_sample)
+# [1] "number"  "gene_id" "p_value"
+# candidate_cox[[]] from aa to bb (full TableChi1, table 3 + KM P-value)
+# at HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda
+# > Tobacco HR plot under candidate gene signature
+# high in bad guy gene vs low in good guy gene
 
- 
+
+# > percentage of tobacco high on each gene Cox PH table 3
+# HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
+# 
+
+# > HR of tobacco high (和 margin or clinical T 比較)
+# (HR when P-value <= 0.05)
+
+
+
 
 # >Analysis finish; tar until here (refinement ok) ####
 # R4> options(prompt="R4_plus>")
