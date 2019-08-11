@@ -23,7 +23,10 @@ rm(raw)
 # [2019/07/03-2019/07/22] they are stored at ./xlsx => moved to ./marginS
 # [2019/07/03-2019/07/22] they are stored at ./xlsx => moved to ./marginFree
 # [2019/07/03-2019/07/22] they are stored at ./xlsx => moved to ./marginPlus
-path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag)) # e.x. marginS
+# [2019/07/30-2019/08/09] they are stored at ./xlsx => moved to ./marginS/tobacco
+
+# source of .Rda from cutoff finding
+path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "tobacco") # e.x. marginS/tobacco
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
 # 3 hours for 1,000 genes to be scanned under GCP Rstudio server
@@ -127,7 +130,7 @@ candidate_cox <- replicate(aa, list()) # empty list(), which doesn't need colnam
 # #}
 
 
-setwd(path_ZSWIM2) # set for a while (for ip loop) at ./marginS
+setwd(path_ZSWIM2) # set for a while (for ip loop) at ./marginS/tobacco
 for (ip in (bb:aa)) { # 3 hours for each run
   geneName <- candidate_sample$gene_id[ip]
   #print(paste("At", path_ZSWIM2, "=> (", ip, ")", geneName), sep="")
@@ -148,7 +151,7 @@ for (ip in (bb:aa)) { # 3 hours for each run
     #  load(file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
     # load list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue")
     # a example: geneName <- "TRIP13"
-    print(paste(marginTag, ", there is ", nrow(OS_pvalue, " OS P-values")))
+    print(paste(marginTag, ", there is ", nrow(OS_pvalue), " OS P-values"))
     if (nrow(OS_pvalue) > 0) {
       candidate_sample$p_value[ip] <- min(OS_pvalue$p_OS) # most sigificant P-value
       candidate_sample$number[ip] <- nrow(OS_pvalue) 
