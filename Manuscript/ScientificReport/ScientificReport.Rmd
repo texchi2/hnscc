@@ -487,7 +487,7 @@ PROGgene http://genomics.jefferson.edu/proggene/; cancer prognostic database
 ***Michael: less than 30 published articles in pubmed
 {checking: article number for each genes{\todo}
 list of Cancer Gene Census (575 genes)
-list of HNSCC genes from Embase
+list of HNSCC genes from Embase (pubmed_hnscc_genes.csv, and a barplot)
 }
 [GDC data portal]
 ***(OK)GDC data portal: d/l Cancer Gene Census (575 genes)

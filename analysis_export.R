@@ -25,7 +25,8 @@ rm(raw)
 # [2019/07/03-2019/07/22] they are stored at ./xlsx => moved to ./marginPlus
 # [2019/07/30-2019/08/09] they are stored at ./xlsx => moved to ./marginS/tobacco
 
-# source of .Rda from cutoff finding
+# set path to the source of .Rda from cutoff finding
+path_cohort <- getwd()
 path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "tobacco") # e.x. marginS/tobacco
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
@@ -659,7 +660,8 @@ pubmed_hnscc_genes <- pubmed_hnscc_genes[complete.cases(pubmed_hnscc_genes$GeneS
 
 # *** There is n= 785 HNSCC related genes
 save(pubmed_hnscc_genes, file=file.path(path_cohort, "pubmed_hnscc_genes.Rda"))
-# load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) 
+load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) # as pubmed_hnscc_genes
+ 
 # pubmed_hnscc_genes
 write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
 pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol)
