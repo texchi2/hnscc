@@ -1735,7 +1735,16 @@ library(igraph)
 
 
 # IHC cross validation
-# 
+
+
+
+# tobacco HR plot under candidate gene signature
+# high in bad guy gene vs low in good guy gene
+# [2019/08/11]
+# percentage of tobacco high on each gene Cox PH table 3
+
+ 
+
 # >Analysis finish; tar until here (refinement ok) ####
 # R4> options(prompt="R4_plus>")
 # tar

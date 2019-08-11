@@ -4,6 +4,9 @@
 # By Cox HR
 ## START:  ####
 # since [2019/06/06][2019/07/31] tobacco_exposure
+# n=521 cohort, survival analysis without RNAseq, and categorized by tobacco_exposure high/low., P-value = 0.0431
+# (KMplot_OS_tobacco_exposure.tiff)
+# 
 TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
 path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4 as well as local Macbook Pro 2009
 setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GCP
