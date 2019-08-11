@@ -5,6 +5,7 @@
 #marginTag <- "_marginS_" #at ./marginS
 #marginTag <- "_marginFree_" #at ./marginFree
 #marginTag <- "_marginPlus_" #at ./marginPlus
+TCGA_cohort <- "HNSCC"
 raw <- 
   readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
 select_margin <- function(x) {
@@ -662,22 +663,35 @@ pubmed_hnscc_genes <- pubmed_hnscc_genes[complete.cases(pubmed_hnscc_genes$GeneS
 save(pubmed_hnscc_genes, file=file.path(path_cohort, "pubmed_hnscc_genes.Rda"))
 load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) # as pubmed_hnscc_genes
  
-# pubmed_hnscc_genes
+# pubmed_hnscc_genes [2019/08/12]
 write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
-pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol)
+pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol) # TP53 == p53 :-)
 pubmed_articles_5 <- pubmed_articles[pubmed_articles>=5]
+pubmed_articles_5[[4]] <- pubmed_articles_5[[4]] + pubmed_articles_5[[9]]
+pubmed_articles_5[[8]] <- pubmed_articles_5[[8]] + pubmed_articles_5[[11]]
+#pubmed_articles_5 <- data.frame(cbind(pubmed_articles_5))[c(1:8, 10), ]
+pubmed_articles_5 <- as.data.frame(pubmed_articles_5)[c(1:8, 10), ]
+colnames(pubmed_articles_5) <- c("GeneSymbol", "Freq")
+#pubmed_articles_5vector <- as.vector(unlist(pubmed_articles_5$Freq))
+pubmed_articles_5vector <- pubmed_articles_5[["Freq"]]
+# barplot needs a vector or table (freq)
+# tiff(file=paste(TCGA_cohort, "_genes_embase5_barplot.tiff"), units="cm", width=5, height=5, res=300)
 par(mar = c(7, 4, 2, 2) + 0.2) #add room for the rotated labels
 end_point = 0.5 + nrow(pubmed_articles_5) + nrow(pubmed_articles_5)-1 #this is the line which does the trick (together with barplot "space = 1" parameter)
-barplot(pubmed_articles_5, col="grey50",
-        xlab=NULL, horiz=F, space=1,
-        ylim=c(0, 5+max(pubmed_articles_5)))
+barplot(pubmed_articles_5vector, col="grey50",
+        xlab="", horiz=F, space=1, names.arg="", cex.names=0.5,
+        ylim=c(0, 5+max(pubmed_articles_5vector)))
+# ***barplot has bug (vector checking is not well)
+# name of bar label: names.arg (taken from colname of vector)
 title(main=paste(TCGA_cohort, "genes published until [", Sys.Date(), "]"), 
       ylab="Frequence", )
 #rotate 60 degrees, srt=60
+#bar_label_index <- which(pubmed_hnscc_genes$EntrezGene==rownames(pubmed_articles_5))
 text(seq(1.5, end_point, by=2), par("usr")[3]-0.25, 
      srt = 60, adj= 1, xpd = TRUE,
-     labels = paste(rownames(pubmed_articles_5)), cex=0.65)
+     labels = paste(pubmed_articles_5$GeneSymbol), cex=0.8)
 
+#dev.off()
 # R4> em_Index # n=75
 em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes$GeneSymbol)
 # [1]   26   67  206  284  427  484  530  609  809  971 1020 1067 1137 1178 1193
@@ -726,7 +740,7 @@ detach(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
 #plot(HNSCC_OS_marginS_THREE_pvalue005$p_value,  HNSCC_OS_marginS_THREE_pvalue005$uni_HR)
 # plot multi_HR, n=1408
 attach(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
-# tiff(Rplot07_cox_multiHR.tiff)
+# tiff("Rplot07_cox_multiHR.tiff")
 plot(p_value, multi_HR, type="p", main=paste(TCGA_cohort, "Cox's Harzard Ratios (multivariate)"), 
      ylab="Cox's HR", xlab="P-value (KM survival)", log="y", cex=0.3, , cex.main=1.5, cex.lab=1.3, cex.axis=1)
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
