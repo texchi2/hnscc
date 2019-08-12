@@ -1,7 +1,15 @@
 ---
 # Preparing your manuscript
-#of BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript (BioMedCentral_article temple of Tex)
-# TypesetIO: https://www.typeset.io/edit/51a7cf1a-1a39-4a40-94c1-6f47608286ff BMC Cancer
+
+PREPARING YOUR FILES
+Follow the checklist below to ensure that your LaTeX files will properly convert to PDF.
+  Files were generated using pdfTeX Version 3.1415926-2.4-1.40.13, TeXLive 2012 or earlier versions.
+  Verify your images, graphs, drawings or tables are in any of these formats: gif, jpg, png, ps, eps, pdf
+  All supplemental LaTeX files such as classes/styles, reference files, and bibliographies are referenced properly in the main document. Verify that they are referenced and uploaded with exactly same name and capitalization.
+  Verify your images are in single, flattened layer.
+  The commands to include your images in the LaTeX (.tex) main document do not begin with dots or slashes before the image name. For example, the correct command would be "\includegraphics[xxx]{fig1.eps}" instead of "\includegraphics[xxx]{./fig1.eps}". It is recommended that all of your LaTeX- related files are created and saved in a single folder.
+
+
 #*** sharlatex and overleaf, sync with Github (vim): https://www.overleaf.com/project/5d1f4419460443357489e46f
 #Overleaf:
 #https://www.overleaf.com/project/5bfff217eedfa811462b1ad5
@@ -20,6 +28,25 @@ Structure your project into the following steps:
 -Analysis (processed data to results)
 -Presentation (results presentation)
 
+==
+Submissions should be organized as follows:
+
+Cover letter
+Title page
+
+Manuscript text:
+
+Abstract
+Keywords
+Introduction
+Materials and Methods
+Results
+Discussion
+Acknowledgements
+References
+Figure/Table Legends
+Figures/Tables
+Supplementary Material
 # }
 title: Interrogating Biomarkers in HNSCC Survival Assessment
 A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
@@ -70,25 +97,7 @@ abstract: {#abstract}
 
 
 ---
-*** https://journalfinder.elsevier.com
-#target journal:
-BMC Cancer, BMC Medical Genomics, Nucleic Acids Res. 
-https://cancersheadneck.biomedcentral.com/submission-guidelines?utm_source=hybris&utm_medium=email&utm_content=internal&utm_campaign=BSCH_2_AC_BSCH-BMC-41199-CHEN&sap-outbound-id=9F691E593C1E47A120B7CD007507CA4FE0DD5BF4
-BBRC: Biochemical and Biophysical Research Communications 
-impact factor 2.559
-https://www.journals.elsevier.com/biochemical-and-biophysical-research-communications
-https://bmcbioinformatics.biomedcentral.com 
-BMC Bioinformatics, impact factor 2
-https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript
-***Bioinformatics (Oxford Academic) => Oxford University Press (OUP) https://academic.oup.com/journals/pages/announcements_from_oup/oup_announces_impact_factor_results
-User Name: texchi2@gmail.com and pw=jacklee523
-Impact Factor4.531
-https://academic.oup.com/bioinformatics/pages/General_Instructions
-https://mc.manuscriptcentral.com/bioinformatics/
-The name of the software should be included in the title of the paper wherever possible.
-(https://www.letpub.com/index.php?page=journalapp&view=detail&journalid=1243&xuanxiangk_id=2)
-https://www.biomedcentral.com/journals#Life-Sciences
-(TCGA publication guideline: https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga)
+
 
 #Introduction {#intro}
 project rationale: 人工決定 cutoff 需要天啟, it is difficult.
