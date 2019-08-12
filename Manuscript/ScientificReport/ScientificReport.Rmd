@@ -3,7 +3,24 @@
 #of BMC Bioinformatics: https://bmcbioinformatics.biomedcentral.com/submission-guidelines/preparing-your-manuscript (BioMedCentral_article temple of Tex)
 # TypesetIO: https://www.typeset.io/edit/51a7cf1a-1a39-4a40-94c1-6f47608286ff BMC Cancer
 #*** sharlatex and overleaf, sync with Github (vim): https://www.overleaf.com/project/5d1f4419460443357489e46f
+#Overleaf:
+#https://www.overleaf.com/project/5bfff217eedfa811462b1ad5
+#https://www.overleaf.com/project/5bfff383eedfa811462b1bef (template of Scientific Reports)
 #
+# { The workflow to create such a document with R is:
+# http://www.geo.uzh.ch/microsite/reproducible_research/post/rr-r-publication/
+Create an .Rmd file (Markdown with R code blocks, called “code chunks”)
+Write your report and include your data, code, analysis and text
+Use the knitr package to combine text and the R scripts and render a markdown file from the RMarkdown
+Convert the files with Pandoc (TexStudio; MacTex or Miktex) to generate HTML (can be self-contained), PDF, Word documents
+
+Structure your project into the following steps:
+-Data collection (raw data)
+-Preprocessing (raw data to processed data)
+-Analysis (processed data to results)
+-Presentation (results presentation)
+
+# }
 title: Interrogating Biomarkers in HNSCC Survival Assessment
 A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
 Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
