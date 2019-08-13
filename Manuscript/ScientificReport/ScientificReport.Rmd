@@ -292,6 +292,22 @@ load(file="whole_genome.Rda") # the name list of protein coding genome
 # below 2 lines: it needs to be modified for a function cal
 LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3", keep it LUAD_n as gene number
 **margin issue
+Insufficient surgical margins and extracapsular extension are main
+risks for a reduced overall and recurrence free survival.\cite{Backes2017}
+[Statistical analysis]
+Differences between the groups were analyzed using
+the Chi square test and Fisher exact test for categorical,
+and the unpaired student’s t-test for continuous variables.
+ANOVA and Tukey’s post-hoc was performed for analysis
+of more than two groups. Survival rates and curves were
+calculated and illustrated by the Kaplan-Meier method and
+further analyzed by the log-rank. Variables that revealed
+prognostic or effect modifying potential on the outcome
+were subsequently evaluated by the proportional Cox
+regression for forward selection. p-values <0.05 were
+considered statistically significant. Statistical analysis was
+done using SPSS (SPSS Inc., Chicago, IL).\cite{Backes2017}
+
 **16789 # SLC35E2 RNAseq has two measurement for each participants => there is two genes: SLC35E2A and SLC35E2B
 whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
 clean and rearrange by geneID => whole_genome has 20500.
