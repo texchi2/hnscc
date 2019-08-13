@@ -663,9 +663,10 @@ pubmed_hnscc_genes <- pubmed_hnscc_genes[complete.cases(pubmed_hnscc_genes$GeneS
 save(pubmed_hnscc_genes, file=file.path(path_cohort, "pubmed_hnscc_genes.Rda"))
 load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) # as pubmed_hnscc_genes
  
-# pubmed_hnscc_genes [2019/08/12]
+# pubmed_hnscc_genes [2019/08/13]
 write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
 pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol) # TP53 == p53 :-)
+# row order (GeneSymbol) are different in each run :-)
 pubmed_articles_5 <- pubmed_articles[pubmed_articles>=5]
 pubmed_articles_5[[4]] <- pubmed_articles_5[[4]] + pubmed_articles_5[[9]]
 pubmed_articles_5[[8]] <- pubmed_articles_5[[8]] + pubmed_articles_5[[11]]
