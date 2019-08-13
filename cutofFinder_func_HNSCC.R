@@ -12,7 +12,7 @@ cutofFinder_func <- function(geneName, marginTag) {
 # to assembly osccCleanNA data.frame
 #load(file="TMU_TA51BCDE_T70_clinical_fullFeatures13_dichotomized.Rda") # as oscc (without margin feature)
 # or ***
-load(file="~/R/HNSCC.clinical.RNAseq.Fire.Rda") 
+load(file=paste(path_cohort, "/Rda_repository/HNSCC.clinical.RNAseq.Fire.Rda", sep="")) 
   # n=521, x as clean6_oscc -> clean6_oscc_tobacco
 # updated [2019/07/27] # as clean6_oscc_tobacco (with tobacco_exposure feature created)
   # [1] "tcga_participant_barcode" "gender"                  

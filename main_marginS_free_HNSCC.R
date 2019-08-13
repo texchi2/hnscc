@@ -81,7 +81,7 @@ while(all.Found == F){
 }
 HNSCC.clinical.Fire <- do.call(rbind, HNSCC.clinical.Fire)
 #}
-save(HNSCC.clinical.Fire, file="HNSCC.clinical.Fire.Rda")
+save(HNSCC.clinical.Fire, file="Rda_repository/HNSCC.clinical.Fire.Rda")
 # 
 # x inner join: merging 2D tables # NOT by "patient_id"
 # p16 HPV status is present
