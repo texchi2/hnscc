@@ -665,14 +665,19 @@ load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) # as pubmed_hnscc_ge
  
 # pubmed_hnscc_genes [2019/08/13]
 write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
-pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol) # TP53 == p53 :-)
+pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol) 
+# TP53 == p53; EGFR == epidermal growth factor receptor :-)
 # row order (GeneSymbol) are different in each run :-)
 pubmed_articles_5 <- pubmed_articles[pubmed_articles>=5]
-pubmed_articles_5[[4]] <- pubmed_articles_5[[4]] + pubmed_articles_5[[9]]
-pubmed_articles_5[[8]] <- pubmed_articles_5[[8]] + pubmed_articles_5[[11]]
-#pubmed_articles_5 <- data.frame(cbind(pubmed_articles_5))[c(1:8, 10), ]
-pubmed_articles_5 <- as.data.frame(pubmed_articles_5)[c(1:8, 10), ]
+#pubmed_articles_5[[4]] <- pubmed_articles_5[[4]] + pubmed_articles_5[[9]]
+pubmed_articles_5 <- as.data.frame(pubmed_articles_5)
 colnames(pubmed_articles_5) <- c("GeneSymbol", "Freq")
+pubmed_articles_5[pubmed_articles_5=="TP53", 2] <- pubmed_articles_5[pubmed_articles_5=="TP53", 2] + pubmed_articles_5[pubmed_articles_5=="p53", 2]
+pubmed_articles_5[pubmed_articles_5=="EGFR", 2] <- pubmed_articles_5[pubmed_articles_5=="EGFR", 2] + pubmed_articles_5[pubmed_articles_5=="epidermal growth factor receptor", 2]
+#pubmed_articles_5 <- data.frame(cbind(pubmed_articles_5))[c(1:8, 10), ]
+egfr_pos <- which(pubmed_articles_5=="epidermal growth factor receptor") # 5
+p53_pos <- which(pubmed_articles_5=="p53") # 7
+pubmed_articles_5 <- pubmed_articles_5[c(1:(egfr_pos-1), (egfr_pos+1):(p53_pos-1), (p53_pos+1):nrow(pubmed_articles_5)), ]
 #pubmed_articles_5vector <- as.vector(unlist(pubmed_articles_5$Freq))
 pubmed_articles_5vector <- pubmed_articles_5[["Freq"]]
 # barplot needs a vector or table (freq)
