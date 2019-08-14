@@ -116,7 +116,7 @@ oscc_n415 <- osccCleanNA # n=415 * 15; removal of NA cases; spare data
 # ***_marginS_: margin positive and negative cohort (n=415) ####
 osccCleanNA <- oscc_n415
 
-# by marginTag:   # surgical margin status
+# by marginTag:   # determing the surgical margin status
 if (marginTag == "_marginS_") {
   
   } else if (marginTag == "_marginFree_") {
