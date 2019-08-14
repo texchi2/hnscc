@@ -235,13 +235,13 @@ oscox <- lapply(formlist, coxph, data = osccCleanNA) # run coxph, "data=" as add
 #-> model oscox (list 8)
 # warnings() In FUN(X[[i]], ...) : X matrix deemed to be singular; variable 2
 
-coef_func <- function(i, oscox1) {
+os_coef_func <- function(i, oscox1) {
   x1 <- data.frame(summary(oscox1[[i]])$conf.int)[-2]
   x2 <- data.frame(summary(oscox1[[i]])$coefficients)[5]
   return(list(x1, x2))
 }
 #osHR <- rbind(osHR, cbind(unlist(uni_CI)))
-uni_CI <- lapply(c(1:length(oscox)), coef_func, oscox) # for (i = 1:8)
+uni_CI <- lapply(c(1:length(oscox)), os_coef_func, oscox) # for (i = 1:8)
 for (ii in c(1:length(uni_CI))) {
   # ii=7 has 8 values in two rows <- marginNA issue => pick up first row by index [1, ]
   osHR[ii, ] <- t(c(unlist(uni_CI[[ii]][[1]][1,]), unlist(uni_CI[[ii]][[2]][1,])))
@@ -335,13 +335,13 @@ rfscox <- lapply(formlist, coxph, data = osccCleanNA) # run coxph, "data=" as ad
 #-> model rfscox (list 8)
 # warnings() In FUN(X[[i]], ...) : X matrix deemed to be singular; variable 2
 
-coef_func <- function(i, rfscox1) {
+rfs_coef_func <- function(i, rfscox1) {
   x1 <- data.frame(summary(rfscox1[[i]])$conf.int)[-2]
   x2 <- data.frame(summary(rfscox1[[i]])$coefficients)[5]
   return(list(x1, x2))
 }
 #rfsHR <- rbind(rfsHR, cbind(unlist(uni_CI)))
-uni_CI <- lapply(c(1:length(rfscox)), coef_func, rfscox) # for (i = 1:8)
+uni_CI <- lapply(c(1:length(rfscox)), rfs_coef_func, rfscox) # for (i = 1:8)
 for (ii in c(1:length(uni_CI))) {
   # ii=7 has 8 values in two rows <- marginNA issue => pick up first row by index [1, ]
   rfsHR[ii, ] <- t(c(unlist(uni_CI[[ii]][[1]][1,]), unlist(uni_CI[[ii]][[2]][1,])))
@@ -473,6 +473,11 @@ xlsx.addLineBreak(sheet, 2)  # add two blank lines
 #ciUniMti <- c("Features",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value",	"HR",	"CI95%(L)",	"CI95%(H)",	"P-value")
 tableOS <- cbind(as.data.frame(colUni_1), osHR, osHRmulti) # colUni_1: values of feature [male/female...]
 rownames(tableOS) <- featuresUni # 8 features of rownames [gender, age....]
+# featuresUni
+# [1] "Gender"                 "Age at diagnosis"      
+# [3] "Clinical T Status"      "Clinical N Status"     
+# [5] "Clinical M Status"      "Clinical Stage"        
+# [7] "Surgical Margin status" "Tobacco Exposure"
 colnames(tableOS) <- ciUniMti # colnames
 
 # for xlsx output (*** dynamic tableOS) following new feature
