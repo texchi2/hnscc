@@ -1805,6 +1805,7 @@ right <- anti_join(package_must, package_list, by="Package") # warnings() => nev
 
 
 ## START:  ####
+# [2019/08/14] os_coef_func 痛改前非
 # since [2019/06/06][2019/07/30] tobacco_exposure
 TCGA_cohort <- "HNSCC" # cancer type: LUAD or HNSCC, defined
 path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4

@@ -234,7 +234,7 @@ formlist <- lapply(features_os, coxph_func)
 oscox <- lapply(formlist, coxph, data = osccCleanNA) # run coxph, "data=" as additional arguments to FUN. 
 #-> model oscox (list 8)
 # warnings() In FUN(X[[i]], ...) : X matrix deemed to be singular; variable 2
-
+# correction on [2019/08/14]
 os_coef_func <- function(i, oscox1) {
   x1 <- data.frame(summary(oscox1[[i]])$conf.int)[-2]
   x2 <- data.frame(summary(oscox1[[i]])$coefficients)[5]
