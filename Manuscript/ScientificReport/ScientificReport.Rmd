@@ -316,11 +316,13 @@ TCGA states: "For mRNA and microRNA expression data, we typically compute the re
 
 
 #introduce R scripts: 
-TCGA_HNSCC_marginFree.R  
-TCGA_HNSCC_marginS.R  
+xTCGA_HNSCC_marginFree.R  
+xTCGA_HNSCC_marginS.R
+TCGA_HNSCC_marginSFP.R
 cutofFinder_func_HNSCC.R  
-main_marginS_free_HNSCC.R
+main_marginSFP_HNSCC.R
 analysis_export.R
+and tobacco_exposure.R
 https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0
 Features selection:
 pathologic_T => clinical_T of coln_osccT

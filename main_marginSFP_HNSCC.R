@@ -1812,12 +1812,34 @@ path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on G
 setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GCP
 load(file="whole_genome.Rda") # the name list of protein coding genome
 LUAD_n <- length(whole_genome) # n=20499 -> now is 20500, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
-#library(FirebrowseR)
-# rename path_LUAD ad path_cohort
-#path_cohort <- "~/R/HNSCC_Tex_survival/hnscc_github" # under rstudio-server on GCP instance 4
 # keep it LUAD_n as gene number
+# >*** [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
+#marginTag <- "_marginS_" #at ./marginS
+#marginTag <- "_marginFree_" #at ./marginFree
+#marginTag <- "_marginPlus_" #at ./marginPlus
+raw <- 
+  readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
+select_margin <- function(x) {
+  switch(x,
+         s = "_marginS_",
+         f = "_marginFree_",
+         p = "_marginPlus_",
+         S = "_marginS_",
+         #         F = "_marginFree_",
+         P = "_marginPlus_",
+         stop("Unknown input")
+  )
+}
+marginTag <- select_margin(raw)
+rm(raw)
+# [2019/08/14-2019/08/21] they are stored at  ./marginS
+# [2019/08/14-2019/08/21] they are stored at  ./marginFree
+# [2019/08/14-2019/08/21] they are stored at  ./marginPlus
+#x [2019/07/30-2019/08/09] they are stored at ./xlsx => moved to ./marginS/tobacco
 
-# # source our functions; automatically source all of the functions in a directory, "/tmp", 
+
+
+# x # source our functions; automatically source all of the functions in a directory, "/tmp", 
 # # which makes it easy to run a long script with a single run:
 # code.dir <- "/tmp"
 # code.files = dir(code.dir, pattern = "[.r]")
@@ -1828,8 +1850,9 @@ LUAD_n <- length(whole_genome) # n=20499 -> now is 20500, such as "ZZZ3"   "ZZEF
 # by "Source on Save" checked
 #source(paste(path_cohort, "TCGA_HNSCC_marginS.R", sep="")) # survival_marginS <- function() {} in TCGA_HNSCC_marginS.R
 #source(paste(path_cohort, "TCGA_HNSCC_marginFree.R", sep="")) # survival_marginFree <- function() {} in TCGA_HNSCC_marginFree.R
-source(file=file.path(path_cohort, "TCGA_HNSCC_marginS.R")) # survival_marginS <- function() {} in TCGA_HNSCC_marginS.R
-source(file=file.path(path_cohort, "TCGA_HNSCC_marginFree.R")) # survival_marginFree <- function() {} in TCGA_HNSCC_marginFree.R
+source(file=file.path(path_cohort, "TCGA_HNSCC_marginSFP.R")) # survival_marginS <- function() {} in TCGA_HNSCC_marginS.R
+# 3 in one
+#source(file=file.path(path_cohort, "TCGA_HNSCC_marginFree.R")) # survival_marginFree <- function() {} in TCGA_HNSCC_marginFree.R
 source(file=file.path(path_cohort, "cutofFinder_func_HNSCC.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
 # https://support.rstudio.com/hc/en-us/articles/200484448-Editing-and-Executing-Code
 
@@ -2408,8 +2431,8 @@ if (exists("cases_OS")) {rm(cases_OS)}
 if (exists("p_OS")) {rm(p_OS)}
 #aa <- 13422
 for (main_i in aa:bb) {
-  #browser()
-  ZSWIM2[main_i, 2] <- survival_marginS(whole_genome[main_i]) 
+  #browser(); # marginTag tells "_marginS_" "_marginFree_" "_marginPlus_"
+  ZSWIM2[main_i, 2] <- survival_marginSFP(whole_genome[main_i], marginTag) 
   # codes at source("TCGA_HNSCC_marginS.R")
   # gene scan; return() at X2; for loop, we need ZSWIM2 data to be saved
   save(ZSWIM2, file=desti_ZSWIM2)

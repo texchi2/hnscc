@@ -1,5 +1,5 @@
 # debug: geneName <- whole_genome[main_i]
-survival_marginS <- function(geneName) { 
+survival_marginSFP <- function(geneName, marginTag) { 
 #  source(paste(path_LUAD, "cutofFinder_func.R", sep="")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
 # for HNSCC: already defined on main, source(file=file.path(path_cohort, "cutofFinder_func_HNSCC.R")) # cutofFinder_func <- function(geneName) {} in cutofFinder_func.R
   
@@ -86,7 +86,7 @@ survival_marginS <- function(geneName) {
 # TCGA_cohort <- "HNSCC" # cancer type
 
 # 6) call cutofFinder_func_HNSCC.R, run100; source defined on main ####
-  marginTag <- "_marginS_" # with margin 0 or 1
+  #marginTag <- "_marginS_" # with margin 0 or 1
   #browser()
   cutoffReturn <- cutofFinder_func(geneName, marginTag) # with return cutoff1 at # of patient
 if (length(cutoffReturn) == 8) {
@@ -382,7 +382,7 @@ library("r2excel")
 setwd(path_cohort) # change working directory to the HNSCC, GCP
 
 # filename for all margins cases, defined as HNSCC
-filenamex <- paste("xlsx/", TCGA_cohort, "_survivalAnalysis_marginS_", geneName, ".xlsx", sep = "")
+filenamex <- paste(gsub("_", "", marginTag), "/", TCGA_cohort, "_survivalAnalysis", marginTag, geneName, ".xlsx", sep = "")
 wb <- createWorkbook(type="xlsx")
 # Create a sheet in that workbook
 sheet <- xlsx::createSheet(wb, sheetName = paste(geneName, "_multivariate"))
@@ -802,7 +802,7 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 
 #tryCatch(
   RFS_pvalue <- OS_pvalue #:-) for HNSCC only
-  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste("xlsx/HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+  save(list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue"), file=paste(gsub("_", "", marginTag), "/HNSCC_survivalAnalysis", marginTag, geneName, ".Rda", sep=""))
 #, error = function(e) return(NA))
 #print(paste("Create", paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda", sep=""), "successfully."))
 
@@ -813,7 +813,7 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
     return(which.min(OS_pvalue$p_OS))} else {return(0)}
 
 #  ) #system.time end
-} # function END (survival_marginS)
+} # function END (survival_marginSFP)
 ##-- -- -- -- --
 
 
