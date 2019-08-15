@@ -1069,7 +1069,7 @@ print(paste("case50_n=",case50_n,";", filenamex, "successfully."))
 
 
 ## 
-## save to  individual gene to an R data file.####
+## save to  individual gene to an R data file ####
 
 # Added code for table 2, table 3, table 4 and survival p-value save as .Rda
 # save(list = c("tableChi1", "tableOS1", "tableRFS1"), file=paste("LUAD_survivalAnalysis_marginS_", geneName, ".Rda"))
@@ -1082,12 +1082,17 @@ save(list = c("tableChi1", "tableOS1"), file=paste("HNSCC_survivalAnalysis_tobac
 
 
 ## 
-# Final Return ####
-# if (nrow(OS_pvalue) > 0)  { # we hit one gene with P-value < 0.05 in KM plot
-#   return(which.min(OS_pvalue$p_OS))} else {return(0)}
-# 
-#  ) #system.time end
 
-##-- -- -- -- --
-
-
+# HR plot of tobacco ####
+# (Ok) cumulative P-value plot: 形狀相似(yes)
+# () WDR37: V shape below 0.05, all are significant; number of sig P.
+# ()tobacco_exposure: high => poor prognosis, HR = 1.364
+# , HR of tobacco (和 margin or clinical T N M 比較)
+# ()tobacco HR plot under candidate gene signature: (univariate) 全部都一樣數值
+# ()% tobacco high on each gene Cox PH table 3, R't panel 
+# *** multivariate HR plot 解釋含意: 排除 features 共同效果，釐清其獨立效應
+# => HR plot of tobacco 條件: *** 95%CI confidence interval 要窄(<0.7; (2.152-1.122)/1.554=0.66)、P<0.05 => 看看它們的 distribution
+# high in bad guy gene?
+# low in good guy gene?
+# HR > 1.3 => +30% faster to die (非常有意義 hazard ratio is a relative speed) https://www.ncbi.nlm.nih.gov/pmc/articles/PMC478551/
+# [remark: case-control study OR > 4; cohort study: RR >3 比較有意義]
