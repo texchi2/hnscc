@@ -656,6 +656,8 @@ tobacco and age: HR around 1.4 with 95CI as 1 ~ 2.
 ***=> age is following the time, while tobacco depends on your mind.
 => univariate
 T (HR 1.4), M (4.1), margin (1.6), tobacco (1.4)
+3) Clinical features of the patients with reactive and non-reactive lymphadenopathy were evaluated. We used Fisher’s exact test for categorical variables and the Student’s t-test or Wilcoxon test for continuous variables, as guided by the normality of the data. We calculated odds ratios (OR) for bivariate predictors of etiology. We performed multivariate logistic regression to determine independent predictors of lymphadenopathy etiology and summarized these results with adjusted odds ratios (AOR). CD4 cell count was log-transformed to normalize the distribution. A cutoff criteria of p<0.2 on bivariate analysis was used to select variables for imputation into the multivariate model. We performed Allen-Cady modified, backward selection procedure with age, sex, viral load detectability and CD4 cell count nadir included by default. Bivariate and multivariate analyses were carried out using R (R Foundation for Statistical Computing). 
+
 
 
 # ***tobacco article review...Embase or PubMed
