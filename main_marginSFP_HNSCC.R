@@ -2544,7 +2544,8 @@ print(paste("Expended duration:", end_time - start_time, "hours"))
 
 
 
-# [Results] _marginsS_ ####
+#xx [Results] _marginsS_ #### 
+# refer to analysis_export.R 
 #====== Analysis of output .Rda of _marginS_ on GCE i-4 or _marginFree_ on GCE i-4Free
 # [2019/06/26] they are stored at ./xlsx
 path_ZSWIM2 <- file.path(path_cohort, "xlsx")
@@ -3627,7 +3628,7 @@ print(paste("Duration: ", (end_time - start_time)))
 
 
 
-# [Results] _marginsFree_ ####
+#x [Results] _marginsFree_ ####
 #====== Analysis of output .Rda of _marginS_ on GCE i-4 or _marginFree_ on GCE i-4Free
 # [2019/06/26] they are stored at ./xlsx
 path_ZSWIM2 <- file.path(path_cohort, "xlsx")
@@ -4566,14 +4567,14 @@ xlsx::saveWorkbook(wb, filenamex)
 # (skip) [mainC _marginPlus_]####
 
 
-# DAVID ####
-# https://david.ncifcrf.gov/conversion.jsp?VFROM=NA DAVID pathway analysis
-david_bad <- merge(candidate_bad_uni_HR2p5, candidate_bad_multi_HR2p5, by="gene_id", all=TRUE) #joint by union
-# ? (Family With Sequence Similarity 111 Member B) => converting to Entrez Gene ID(374393)
-# > david_bad$gene_id
-
+# x# DAVID ####
+# # https://david.ncifcrf.gov/conversion.jsp?VFROM=NA DAVID pathway analysis
+# david_bad <- merge(candidate_bad_uni_HR2p5, candidate_bad_multi_HR2p5, by="gene_id", all=TRUE) #joint by union
+# # ? (Family With Sequence Similarity 111 Member B) => converting to Entrez Gene ID(374393)
+# # > david_bad$gene_id
 # 
-david_good <- merge(candidate_good_uni_HR0p5, candidate_good_multi_HR0p5, by="gene_id", all=TRUE) #joint by union
+# # 
+# david_good <- merge(candidate_good_uni_HR0p5, candidate_good_multi_HR0p5, by="gene_id", all=TRUE) #joint by union
 
 
 
@@ -4640,23 +4641,7 @@ append.Rda(OS[OS$p_OS <= 0.05,1:2], paste("HNSCC_survivalAnalysis_marginFree_", 
 # append.Rda(RFS[RFS$p_RFS <= 0.05,1:2], paste("HNSCC_survivalAnalysis_marginFree_", geneName, ".Rda"))
 
 ##
-# a new comparison table for impact genes ####
-paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda")
-# a new comparison for margin issue
-paste("HNSCC_survivalAnalysis_marginFree_", geneName, ".Rda")
 
-##
-oby <- read.table(header=TRUE, text='
-                  Var1 Var2 Freq
-                  0      1    36
-                  1      1   91
-                  0     2    41
-                  1       2   88
-                  ')
-# x oby <- read.table(stdin(), header=TRUE) 
-# 
-# 
-# 
 # ----------------------------##
 # Spared codes ***
 # # 
