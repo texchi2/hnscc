@@ -1,6 +1,7 @@
 ---
 # Preparing your manuscript
-
+# Scientific Data: article type as Data Descriptor %>%  https://www.nature.com/sdata/publish/submission-guidelines#sec-1
+#*** http://osf.io/ Open Science Framework (data repository), OSF; ORCID,  connected to Github, Mendely => Texchi https://osf.io/4c5t6/?
 PREPARING YOUR FILES
 Follow the checklist below to ensure that your LaTeX files will properly convert to PDF.
   Files were generated using pdfTeX Version 3.1415926-2.4-1.40.13, TeXLive 2012 or earlier versions.
@@ -49,7 +50,8 @@ Figures/Tables
 Supplementary Material
 # }
 title: Interrogating Biomarkers in HNSCC Survival Assessment
-A Global Genome Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
+A Global Genome-wide Scan with Cutoff Mining for Emerging Biomarkers in Head and Neck Squamous Cell Carcinoma
+A Global Genome-wide Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
 Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
 subtitle: A Optimizated Cutoff Finder for Biomarker Discovery for Head and Neck Squamous Cell Carcinoma
 titlerunning: 
@@ -152,6 +154,144 @@ Submit data to a reputable DOI-issuing repository so that others can access and 
 TCGA-Assembler was used to download RNA-seq data from TCGA data portal. Raw counts data with paired samples (tumor and normal) were extracted and analyzed using DEseq R package with default parameters: method1⁄4‘blind’, sharingMode1⁄4‘fit-only’, fitType1⁄4‘local’. DEseq normalization method has been reported to outperform other normalization methods. Fold changes, not absolute expression values, are displayed based on analysis described above. False discovery rates are not defined due to the low number of replicates for samples. This approach allows the user to determine the significance of differentially expressed genes on an individual basis.\cite{Wan2015}
 
 # [FirebrowseR] data preparation
+
+OPEN JOURNAL SYSTEMS
+Journal Help
+USER
+Username	
+Password	
+ Remember me
+
+FEEDS
+RSS
+Atom
+NOTIFICATIONS
+View
+Subscribe
+JOURNAL CONTENT
+Search 
+
+Search Scope 
+
+
+
+Browse
+By Issue
+By Author
+By Title
+FONT SIZE
+Make font size smallerMake font size defaultMake font size larger
+Home | Mission | Instructions for Authors | Style Guide | Editorial Board | Contact | Register
+Current Volume | Archives | Search
+Home > Style Guide
+Style Guide
+
+In addition to the general instructions for manuscripts, we require all submissions to be formatted using LaTeX and the JSS style files (linked below along with the templates). It is recommended to keep the LaTeX code as simple as possible, i.e., avoid inclusion of packages/commands that are not necessary. We ask you to pay special attention to the frequently asked questions (FAQ).
+
+To facilitate authoring manuscripts in JSS style, we provide several templates on this page. Specifically, a short demo article is available using either plain LaTeX or in combined R/LaTeX. For outlining the typical structure of a JSS article some brief text snippets are employed that have been inspired by doi:10.18637/jss.v027.i08 (Zeileis et al. 2008), discussing count data regression in R.
+
+For authors of R software we recommend to write an R/LaTeX document (.Rnw) using Sweave or knitr. From this the LaTeX document (.tex) can be obtained by weaving/knitting along with the R replication code (.R) by tangling.
+
+LaTeX
+When using plain LaTeX, you may start from the following article template: jss-article-tex.zip (including all necessary style files). The source file article.tex can be edited in any text editor or dedicated LaTeX editor (including RStudio). To produce the manuscript pdfLaTeX should be used for which dedicated editors usually have a "Compile PDF" button or something similar. On the command line texi2pdf is convenient:
+
+texi2pdf article.tex
+The corresponding references are in the BibTeX bibliography ref.bib. The replication code article.R has to be prepared separately and should ideally include comments that make it easy to match it to the manuscript.
+
+Code Snippets
+Code snippet contributions are produced in the same way as articles. You only have to switch the from \documentclass[article]{jss} to \documentclass[codesnippet]{jss} in the first line of the LaTeX document.
+
+Software and Book Reviews
+For software and book reviews, LaTeX templates are provided in jss-review-tex.zip (including all necessary style files). The procedure to generate PDF output does not change from the above LaTeX section.
+
+R/LaTeX via Sweave or knitr
+For producing a JSS article with R/Latex, please start from the following template: jss-article-rnw.zip (including all necessary style files). The source files for the JSS contribution are the article.Rnw manuscript and the ref.bib bibliography in BibTeX format. To produce the PDF manuscript the article must first be weaved:
+
+Sweave("article.Rnw")
+yielding article.tex along with the graphics file (here article-visualization.pdf). This LaTeX file can be compiled in the "usual" way to the PDF using pdfLaTeX, i.e., using the shell, some LaTeX editor (see also above), or simply with R:
+
+library("tools")
+texi2pdf("article.tex")
+An alternative route for RStudio users is to use the "Compile PDF" button directly for the article.Rnw. However, make sure not to use concordance mode: Tools > Global Options > Sweave > Uncheck: Always enable Rnw concordance.
+
+The replication code can be obtained by tangling:
+
+Stangle("article.Rnw")
+yielding article.R. However, editing the comments of this .R file typically makes it more accessible to the readers/reviewers.
+
+If knitr is used to prepare the article.Rnw file, the render_sweave() hook should be used to ensure JSS style code formatting. The weaving and tangling can then by done by knit() and purl(), respectively.
+
+Frequently Asked Questions
+What are the most important style guidelines in JSS?
+What are the capitalization rules in JSS? What is title style and sentence style?
+How to cite software?
+How to cite R packages?
+What are the different \cite, \citet, \citep commands about?
+How should abbreviations be formatted?
+How to format figure/table captions?
+How should code be formatted in the manuscript?
+What is a good pen-to-paper ratio for my graphics?
+Some of my graphics files are very large, what should I do?
+How should my R package reflect that a manuscript about it was published in JSS?
+How can I turn my JSS paper into an R package vignette?
+Which naming conventions are used for software, journal, and publisher names in JSS?
+My LaTeX paper does not compile when there is JSS markup in section titles, what should I do?
+Compiling my LaTeX paper fails with an error at \begin{document}, what went wrong?
+Miscellaneous
+What are the most important style guidelines in JSS?
+The items below provide a quick style checklist for the most important style guidelines in JSS. More details can be found in the JSS style manual (jss.pdf) and in the other FAQ items.
+
+The manuscript can be compiled by pdfLaTeX.
+\proglang, \pkg and \code have been used for highlighting throughout the paper (including titles and references), except where explicitly escaped.
+References are provided in a .bib BibTeX database and included in the text by \cite, \citep, \citet, etc.
+Titles and headers are formatted as described in the JSS manual:
+\title in title style,
+all titles in the BibTeX file in title style.
+\section, \subsection, etc. in sentence style,
+annotations of figures/tables (including captions) in sentence style
+Figures, tables and equations are marked with a \label and referred to by \ref, e.g., Figure~\ref{...}.
+Software packes are \cite{}d properly.
+What are the capitalization rules in JSS? What is title style and sentence style?
+In English there are basically two styles of capitalization in titles, typically referred to as "sentence style" (or "sentence case") and "title style" (or "title case"). Although there are few strict rules, the subsequent set of guidelines should be helpful.
+
+Sentence style: Only the first word in a title is capitalized, as is the first word after a colon or a hyphen. Of course, proper names remain in upper case. A simple example would be
+A fancy topic: Implementation in Java
+
+Title style: All principal words should be capitalized. This includes the first and last words of a headline, and all nouns, pronouns, adjectives, verbs, adverbs, and subordinating conjunctions (if, because, as, that, etc.). Do capitalize the first word after a colon. Articles (a, an, the), coordinating conjunctions (and, but, or, nor, for), and prepositions of any length, are to remain lowercased. However, if any of these are the first or last word of the headline, they should be capitalized. If you have an abbreviation in your headline that is normally lowercase, it should be left lowercase, particularly abbreviations for units of measure. Two part words separated by a hyphen should have both words capitalized. Examples:
+
+Come Join Us for a Celebration
+Caring for Your Houseplants
+We're Getting Ready for an Early Spring
+The Forecast for Summer: Hot!
+As the Wind Blows
+Spraying Schedule Posted on Office Memo Board
+Remember to Observe All Parking Rules
+What Are They Fighting For?
+A New Record: 37-in. Snow Fall Accumulation
+Tick-Tock: It's Daylight Savings Time Again!
+
+How to cite software?
+Many software packages tell their users how they want to be cited, i.e., there may be a pointer on the webpage or in the manual to a suitable publication (book, journal article, technical reports, etc.). If there is no recommended citation, please cite the corresponding manual or webpage. An example is given below for SAS/STAT 9.1.
+
+@Manual{SAS-STAT,
+  author  = {{\proglang{SAS} Institute Inc.}},
+  title   = {\proglang{SAS/STAT} Software, Version~9.1},
+  year    = {2003},
+  address = {Cary, NC},
+  url     = {https://www.sas.com/}
+}
+How to cite R packages?
+Please check if there is an official citation for the package. If so, this can be seen on the associated CRAN webpage, i.e., https://CRAN.R-project.org/package=foo or queried in R (if the package is installed) via citation("foo"). If there is no citation, please use a CRAN style reference as exemplified for the rJava package below.
+
+In any case, please make sure that the BibTeX is valid, that the title is in title style and that \proglang/\pkg/\code are used where appropriate.
+cite R packages: https://www.jstatsoft.org/pages/view/style
+@Manual{rJava,
+  title  = {\pkg{rJava}: Low-Level \proglang{R} to \proglang{Java} Interface},
+  author = {Simon Urbanek},
+  year   = {2009},
+  note   = {\proglang{R}~package version~0.8-1},
+  url    = {https://CRAN.R-project.org/package=rJava},
+}
 manuscript and TCGA survival analysis Interpretation ##
 head and neck squamous cell carcinoma (HNSC)
 #https://www.biostars.org/p/153013/ Tutorial: Survival analysis of TCGA patients
@@ -272,7 +412,7 @@ P-value notes:
 Significant codes:  0 ???***??? 0.001 ???**??? 0.01 ???*??? 0.05 ???.??? 0.1 ??? ??? 1
 if <0.001 => mark as "***"
 
- The agreement between judgments of the enhancement patterns was assessed by the 2 radiologists and was evaluated using the kappa consistency test. Kappa values ≥0.81, 0.61–0.80, and ≤0.60 were considered to reflect excellent, good, and poor agreement, respectively. Additionally, log-rank analyses of Kaplan–Meier survival curves were performed to compare the PFS and OS of the cohort. Factors that were significant (P < .05) in univariate analysis were entered into multivariate survival analysis based on the Cox proportional hazard ratio (HR) model.
+ The agreement between judgments of the enhancement patterns was assessed by the 2 radiologists and was evaluated using the kappa consistency test. Kappa values ≥0.81, 0.61–0.80, and ≤0.60 were considered to reflect excellent, good, and poor agreement, respectively. Additionally, log-rank analyses of Kaplan–Meier survival curves were performed to compare the PFS and OS of the cohort. Factors that were significant (P < 0.05) in univariate analysis were entered into multivariate survival analysis based on the Cox proportional hazard ratio (HR) model.
       # contingency P-value
 # Kaplan-Meier curve + Log-rank test, + Cox proportional regression
     # textbook: David Kleinbaum???Survival analysis: A self-learning text
@@ -358,6 +498,11 @@ xTCGA_HNSCC_marginS.R
 TCGA_HNSCC_marginSFP.R
 cutofFinder_func_HNSCC.R  
 main_marginSFP_HNSCC.R
+{TCGA datasets
+The TCGA expression data were downloaded from the University of Santa Cruz cancer browser – version 2015. firebrowseR
+The 564 normalized RNA-seq v2 profiles were generated by IlluminaHiSeq. HPV status for 72 HPV+ and 243 HPV− samples was obtained from ref. [60].
+}
+
 analysis_export.R
 and tobacco_exposure.R
 https://jhoonline.biomedcentral.com/articles/10.1186/s13045-016-0372-0
@@ -514,6 +659,8 @@ there is PANTHER PIE CHARTs
 # http://pantherdb.org/genes/gene.do?acc=HUMAN%7CHGNC%3D7593%7CUniProtKB%3DQ9HD67
 # ***TFs pickup from panther (see .txt and figure)
 ***Nicotinic Acetylcholine Receptors are found on striated muscle at the neuromuscular junction and in the brain. They are one of the best understood receptors, often used as the model ion channel/receptor. The understanding of these receptors' actions by Fatt and Katz (1952; J Physiol 117:109-128) led to a basic understanding of neuronal transmission of information. When activated by acetylcholine released from nerves, these receptors depolarize the muscle cell and trigger muscle contraction. The best known agonist for these receptors is nicotine, but nicotinic acetylcholine receptors in the brain (those effected by smoking cigarettes) are still relatively poorly understood compared to nicotinic acetylcholine receptors at the neuromuscular junction.
+
+=We next performed gene set enrichment analysis on the cell surface genes preferentially overexpressed in HPV+ or HPV− or both HNSCC subtypes. Cell surface genes in HPV− tumors were enriched for Nicotine pathway, consistent with the role of tobacco consumption in HPV− HNSCC. 
 => *** nicotine
 tobacco_exposure feature was created on [2019/07/27]
 # 60.65% is in high risk smoking group (HNSCC cohort n=521)
@@ -696,6 +843,8 @@ tobacco and age: HR around 1.4 with 95CI as 1 ~ 2.
 ***=> age is following the time, while tobacco depends on your mind.
 => univariate
 T (HR 1.4), M (4.1), margin (1.6), tobacco (1.4)
+3) Clinical features of the patients with reactive and non-reactive lymphadenopathy were evaluated. We used Fisher’s exact test for categorical variables and the Student’s t-test or Wilcoxon test for continuous variables, as guided by the normality of the data. We calculated odds ratios (OR) for bivariate predictors of etiology. We performed multivariate logistic regression to determine independent predictors of lymphadenopathy etiology and summarized these results with adjusted odds ratios (AOR). CD4 cell count was log-transformed to normalize the distribution. A cutoff criteria of p<0.2 on bivariate analysis was used to select variables for imputation into the multivariate model. We performed Allen-Cady modified, backward selection procedure with age, sex, viral load detectability and CD4 cell count nadir included by default. Bivariate and multivariate analyses were carried out using R (R Foundation for Statistical Computing). \cite{Bogoch2013}
+
 
 
 # ***tobacco article review...Embase or PubMed
