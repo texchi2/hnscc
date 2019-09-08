@@ -445,9 +445,9 @@ install.packages("remotes")
 library(remotes)
 devtools::install_github("jeroen/jsonlite")
 remotes::install_github("Jialab-UCR/GDCRNATools")
-library(GDCRNATools)
+library(GDCRNATools) # Pathview, citation("pathview") within R
 library("BiocParallel")
-iregister(MulticoreParam(2)) # 2 cores
+register(MulticoreParam(2)) # 2 cores
 
 
 # [2019/09/05]
