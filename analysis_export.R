@@ -448,7 +448,7 @@ devtools::install_github("jeroen/jsonlite")
 # https://github.com/Jialab-UCR/Jialab-UCR.github.io/blob/master/GDCRNATools.workflow.R
 remotes::install_github("Jialab-UCR/GDCRNATools")
 library(GDCRNATools) # Pathview, citation("pathview") within R
-# ***lncRNA in TCGA-HNSC? (HNSCC)
+
 
 # KM analysis
 survKM_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 

@@ -28,9 +28,11 @@ getwd()
 #setwd(workingDirectory)
 
 # installation of GDCRNATools from Bioconductor
-source("https://bioconductor.org/biocLite.R")
-biocLite("GDCRNATools")
-
+# source("https://bioconductor.org/biocLite.R")
+# biocLite("GDCRNATools")
+install.packages("remotes")
+library(remotes)
+remotes::install_github("Jialab-UCR/GDCRNATools")
 library(GDCRNATools)
 
 
@@ -78,7 +80,7 @@ mirExpr[1:5,1:5]
 ###########################################################*
 ##          2.2 Parse and filter RNAseq metadata       ####
 
-metaMatrix.RNA <- gdcParseMetadata(project.id = 'TCGA-CHOL',
+metaMatrix.RNA <- gdcParseMetadata(project.id = 'TCGA-HNSC',
                                    data.type  = 'RNAseq', 
                                    write.meta = FALSE)
 metaMatrix.RNA <- gdcFilterDuplicate(metaMatrix.RNA)
@@ -150,7 +152,7 @@ nodes[1:5,]
 
 
 #=========================================================#
-#               3. Case study: TCGA-HNSC               ####
+#               3. START: TCGA-HNSC               ####
 #=========================================================#
 
 
@@ -159,19 +161,23 @@ nodes[1:5,]
 
 
 # set up directories for downloaded data
-project <- 'TCGA-CHOL'
+project <- 'TCGA-HNSC'
 rnadir <- paste(project, 'RNAseq', sep='/')
 mirdir <- paste(project, 'miRNAs', sep='/')
 
+# install gdc-client tool
+# macOS$ curl -O https://gdc.cancer.gov/system/files/authenticated%20user/0/gdc-client_v1.3.0_OSX_x64.zip
+# i4$ wget https://gdc.cancer.gov/system/files/authenticated%20user/0/gdc-client_v1.4.0_Ubuntu_x64.zip --no-check-certificate 
+
 ### Download RNAseq data
-gdcRNADownload(project.id     = 'TCGA-CHOL', 
+gdcRNADownload(project.id     = 'TCGA-HNSC', 
                data.type      = 'RNAseq', 
                write.manifest = FALSE,
                method = 'gdc-client', ## use gdc-client tool to download data
                directory      = rnadir)
 
 ### Download miRNAs data
-gdcRNADownload(project.id     = 'TCGA-CHOL', 
+gdcRNADownload(project.id     = 'TCGA-HNSC', 
                data.type      = 'miRNAs', 
                write.manifest = FALSE,
                method = 'gdc-client', ## use gdc-client tool to download data
@@ -189,7 +195,7 @@ gdcRNADownload(project.id     = 'TCGA-CHOL',
 
 
 ### Parse RNAseq metadata
-metaMatrix.RNA <- gdcParseMetadata(project.id = 'TCGA-CHOL',
+metaMatrix.RNA <- gdcParseMetadata(project.id = 'TCGA-HNSC',
                                    data.type  = 'RNAseq', 
                                    write.meta = FALSE)
 
@@ -201,7 +207,7 @@ metaMatrix.RNA <- gdcFilterSampleType(metaMatrix.RNA)
 
 
 ### Parse miRNAs metadata
-metaMatrix.MIR <- gdcParseMetadata(project.id = 'TCGA-CHOL',
+metaMatrix.MIR <- gdcParseMetadata(project.id = 'TCGA-HNSC',
                                    data.type  = 'miRNAs', 
                                    write.meta = FALSE)
 
@@ -244,6 +250,7 @@ DEGAll <- gdcDEAnalysis(counts     = rnaCounts,
 
 # All DEGs
 deALL <- gdcDEReport(deg = DEGAll, gene.type = 'all')
+
 
 # DE long-noncoding
 deLNC <- gdcDEReport(deg = DEGAll, gene.type = 'long_non_coding')
