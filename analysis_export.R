@@ -444,10 +444,34 @@ library("BiocManager")
 install.packages("remotes")
 library(remotes)
 devtools::install_github("jeroen/jsonlite")
+
+# https://github.com/Jialab-UCR/Jialab-UCR.github.io/blob/master/GDCRNATools.workflow.R
 remotes::install_github("Jialab-UCR/GDCRNATools")
 library(GDCRNATools) # Pathview, citation("pathview") within R
-library("BiocParallel")
-register(MulticoreParam(2)) # 2 cores
+# ***lncRNA in TCGA-HNSC? (HNSCC)
+
+# KM analysis
+survKM_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
+                                  method   = 'KM', 
+                                  rna.expr = rnaExpr, 
+                                  metadata = metaMatrix.RNA, 
+                                  sep      = 'median')
+# which point should be used to separate low-expression and high-expression
+# groups for method='KM'. Possible values are '1stQu', 'mean', 'median', and
+# '3rdQu'. Default is 'median'
+#
+# Cox PH analysis
+survCoxPH_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
+                                  method   = 'coxph', 
+                                  rna.expr = rnaExpr, 
+                                  metadata = metaMatrix.RNA)
+
+# manual: http://bioconductor.org/packages/devel/bioc/vignettes/GDCRNATools/inst/doc/GDCRNATools.html
+#  the nCore argument, if method= "DESeq2" in gdcDEAnalysis()
+# gdcEnrichAnalysis() can perform Gene ontology (GO), Kyoto Encyclopedia of Genes and Genomes (KEGG) and Disease Ontology (DO) functional enrichment analyses 
+# bubble plot  
+#library("BiocParallel")
+#register(MulticoreParam(2)) # 2 cores
 
 
 # [2019/09/05]
@@ -1622,6 +1646,9 @@ getClusterReportFile(david, "hnscc_DAVID_FuncAnnotClust.tsv")
 
 
 #GSEA ####
+shinyPathview() 
+# http://bioconductor.org/packages/devel/bioc/vignettes/GDCRNATools/inst/doc/GDCRNATools.html
+# 
 #Subramanian, Tamayo, et al. (2005, PNAS 102, 15545-15550) and Mootha, Lindgren, et al. (2003, Nat Genet 34, 267-273).
 # gene set enrichment analysis
 # GSEA/MSigDB
