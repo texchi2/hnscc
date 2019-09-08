@@ -159,7 +159,7 @@ nodes[1:5,]
 ###########################################################*
 ##                   3.1 Download data                   ####
 
-
+library(GDCRNATools)
 # set up directories for downloaded data
 project <- 'TCGA-HNSC'
 rnadir <- paste(project, 'RNAseq', sep='/')
@@ -168,7 +168,8 @@ mirdir <- paste(project, 'miRNAs', sep='/')
 # install gdc-client tool
 # macOS$ curl -O https://gdc.cancer.gov/system/files/authenticated%20user/0/gdc-client_v1.3.0_OSX_x64.zip
 # i4$ wget https://gdc.cancer.gov/system/files/authenticated%20user/0/gdc-client_v1.4.0_Ubuntu_x64.zip --no-check-certificate 
-
+# https://docs.gdc.cancer.gov/Data_Transfer_Tool/Users_Guide/Data_Download_and_Upload/
+# 
 ### Download RNAseq data
 gdcRNADownload(project.id     = 'TCGA-HNSC', 
                data.type      = 'RNAseq', 
