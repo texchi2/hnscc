@@ -73,6 +73,7 @@ authors:
 
 keywords:
 - HNSCC
+- GDC
 - TCGA
 - ICGC
 - survival
@@ -107,6 +108,8 @@ About 95% of all oral cancers occur in persons over 40 years of age.[https://doi
 https://www.cancer.gov/types/head-and-neck/hp HNSCC
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
 Currently, there is no global view of the expression profiles of the human cancer genes expression obtained from next-generation sequencing (NGS) technologies such as RNA sequencing (RNA-seq). The expression data is available from a large-scale studies like The Cancer Genome Atlas (TCGA: http://cancergenome.nih.gov/).
+The Genomic Data Commons (GDC) maintains standardized genomic, clinical, and biospecimen data from National Cancer Institute (NCI) programs including The Cancer Genome Atlas (TCGA) and Therapeutically Applicable Research To Generate Effective Treatments (TARGET). We utilized GDCRNATools and firebrowseR, the R/Bioconductor packages, for downloading, organizing, and integrative analyzing RNA expression data (e.x. RNA-seq) and clinicopathological data in the GDC portal.
+
 Clinical validation assesses the strength of association between the assay results and the clinical outcome of interest, whether it is diagnostic, prognostic, or predictive. 
 A large number of measures are used to assess these associations. Although measures of statistical signi cance are important, robust measures of the strength of association, such as receiver operator characteristic (ROC) curves, the area under the curve of ROC analysis, and the sensitivity, speci c- ity, and positive predictive value of assays, are criti- cal to understanding the strength of their clinical association and help bridge analysis to clinical util- ity (discussed later). These analyses address whether one can be sure the clinical state is positive if the test is positive (positive predictive power), and vice versa (negative predictive power).
 https://www.ncbi.nlm.nih.gov/pubmed/29190934 (ROC)
