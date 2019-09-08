@@ -248,6 +248,7 @@ All statistical analyses were performed using SPSS v21.0 (Beijing Stats Data CO.
 Student’s t-test and the χ2 test were used for the comparison to baseline clinical characteristics and dietary information between the derivation data and validation data. In this study, noninvasive risk factors were defined as factors that could be measured without taking a blood sample. The variables included in the model were divided into classic risk factors and dietary predictors. Classic risk factors included age, gender, BMI, waist circumference, regular exercise, labor intensity, alcohol consumption, cigarette smoking, education, hypertension and a family history of diabetes. Dietary predictors included the 14 food groups in the FFQ and total calorie intake. Their adjusted odds ratio (OR) and 95% confidence intervals (95% CI) were estimated using a multivariate backward logistic regression analysis. The diabetes risk score was developed for the two multivariate logistic regression models: a classic noninvasive risk score and a diet-containing risk score, and points were assigned to each variable based on the magnitude of its regression coefficient [22]. In the diabetes risk score system, we transformed the unit of diet consumption from gram per day to liang per day, to facilitate its use in China. The dietary predictors except diary in the risk model were continuous in order to use the full information for dietary predictors. The risk score allows decimal value if the weight is not in round number. For the dairy products, because 24.4% and 29.4% of the total subjects in the derivation data and validation data were never consume milk and its products, we transformed the dairy and its products variable into binary variable in the risk model. A total diabetes risk score for each individual was calculated as the sum of the points for each variable.
 
 The classic noninvasive risk model and the diet-containing risk model were compared with Akaike’s information criterion (AIC), area under curve (AUC), IDI, NRI and the Hosmer-Lemeshow goodness-of-fit test (HL test) for model performance, discrimination and predictive ability, and general calibration in derivation data and validation data separately. An AIC difference between two models of 10 or greater was considered to be significant with a lower AIC value indicating a better model performance [23]. AUC, IDI and NRI were calculated to evaluate the model discrimination and predictive ability [24]. To apply NRI in the logistic regression model, we adopted the approach proposed by Pencina et al [25]. The Hosmer-Lemeshow goodness-of-fit test (HL test) was used to examine how well the predicted prevalence matched the observed prevalence of type 2 diabetes, and P-values of 0.01 or greater from the test were considered to indicate a good calibration.
+(*** P-value < 0.05 or <= 0.05)?
 
 #ROC and crossvalidation
 ROC for survival analysis
@@ -307,6 +308,42 @@ were subsequently evaluated by the proportional Cox
 regression for forward selection. p-values <0.05 were
 considered statistically significant. Statistical analysis was
 done using SPSS (SPSS Inc., Chicago, IL).\cite{Backes2017}
+
+說明
+venn_marginSFP.tiff was generated
+{
+R4> HNSCC_OS_marginS_pvalueBonferroni_sorted$gene_id
+ [1] "ZNF557"    "DKK1"      "ZNF266"    "CAMK2N1"  
+ [5] "IL19"      "MYO1H"     "STC2"      "PGK1"     
+ [9] "SURF4"     "FCGBP"     "LOC148709" "USP10"    
+[13] "EVPLL"     "PNMA5"     "NDFIP1"    "FOXA2"    
+[17] "GRAP"      "KIAA1683"  "ZNF846"    "ZNF20"    
+[21] "CELSR3"    "SLC26A9"   "FAM3D"     "GPR15"    
+[25] "KLRA1"     "NPB"       "TCP11"     "STIP1"
+
+R4> HNSCC_OS_marginFree_pvalueBonferroni_sorted$gene_id
+ [1] "SURF4"     "LOC148709" "DKK1"      "MYO1H"    
+ [5] "NDFIP1"    "IL19"      "ZNF266"    "SET"      
+ [9] "ANO2"      "ZNF557"    "EIF2AK1"   "USP10"    
+[13] "MAGIX"     "LOC440944"
+
+R4> HNSCC_OS_marginPlus_pvalueBonferroni_sorted$gene_id
+[1] "SFT2D1"  "IL17REL" "CTLA4"   "ZFP2"    "ZNF101" 
+[6] "PFN2" 
+
+HNSCC_OS_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda
+}
+***=> 28 vs 14 with intersection of 9 candidate genes; 
+$`margin[-]:margin[+/-]` of intersection
+[1] "SURF4"     "LOC148709" "DKK1"      "MYO1H"    
+[5] "NDFIP1"    "IL19"      "ZNF266"    "ZNF557"   
+[9] "USP10"
+=> 但是只要 cohort 不同，candidate genes 就不會一樣啊
+19 genes exclusively in _marginS_ cohort => GSEA analysis
+14 genes from _marginFree_ cohort =>
+GSEA analysis
+比較 pathway 的差異(so what:-)
+==
 
 **16789 # SLC35E2 RNAseq has two measurement for each participants => there is two genes: SLC35E2A and SLC35E2B
 whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
@@ -405,8 +442,9 @@ Assumption for z-score test:
 #proceed since [2019/06/26] in detail
 post1 process table1 (KM): candidate_sample(KM) 
 楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
-***no need Bonferroni (adjustment) sets the significance cut-off at α/n 
-the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018} it is too restricted.
+***yes, we need Bonferroni (adjustment) sets the significance cut-off at α/n 
+the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018} 
+it is highly confidential. Bonferroni correction 是寶藏 (by 王紋章老師 [2019/09/04]）
 
 
 # subsetting the candidated genes table, according to the P-value <= 0.05 (no Bonferroni_cutoff) and Z-score >= 0.6
@@ -427,14 +465,14 @@ Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff]
 
 # pickup1 n=71 (bad guy genes) from HNSCC_OS_marginS_THREE_pvalue005; 
 # Cox HR (>=1.8) & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
-(Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
+(Bonferroni_cutoff = 5.31011e-06 is veary restricted in this scenario)
 venn diagram for intersection: [Rplot09_venn_HR1.5.tiff]
 Table 2A and 2B and 2C: bad guy candidate genes => KM P-value, Cox P-value and HR (>=1.8) and its venn diagram
 
 Table 3A and 3B and 3C: good guy candidate genes => KM P-value, Cox P-value and HR (<0.5) and its venn diagram
 # pickup2 n=47 (good guy genes) from HNSCC_OS_marginS_THREE_pvalue005
 #* Cox HR <=0.5 (good_FC)  & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
-(Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
+(Bonferroni_cutoff = 5.31011e-06 is very restricted in this scenario)
 venn diagram for intersection: [Rplot09_venn_HR0.5.tiff]
 
 #
@@ -557,6 +595,8 @@ There is n= 785 HNSCC related genes (list in supplementary) pubmed_hnscc_genes.R
 tumor-specific antigen (CD4 CD8)
 
 =Dato 評估一下 lncRNA{\todo}
+gdcSurvivalAnalysis: Univariate survival analysis of multiple genes
+In Jialab-UCR/GDCRNATools: GDCRNATools: an R/Bioconductor package for integrative analysis of lncRNA, mRNA, and miRNA data in GDC
 Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.(The role of long non-coding RNA (lncRNA) expression in human head and neck squamous cell carcinoma (HNSCC) is still poorly understood. In this study, UCSD researchers aimed at establishing the onco-lncRNAome profiling of HNSCC and to identify lncRNAs correlating with prognosis and patient survival.)
 eukaryotic long non-coding RNAs (lncRNAs)
 https://github.com/Jialab-UCR/GDCRNATools

@@ -1641,7 +1641,8 @@ save(whole_genome, file="whole_genome.Rda") # updated since [2019/06/05]
 
 # ***archiving 20500 RNAseq files: 	
 #$ find HNSCC.mRNA.Exp.*.Fire.Rda -print > mRNA_files
-#$ tar -c -v -z --remove-files -T mRNA_files -f HNSCC.mRNA.Exp.20499.Fire.Rda.tgz
+#$ tar -c -v -z --remove-files  -f HNSCC.mRNA.Exp.20499.Fire.Rda.tgz -T mRNA_files
+#$  tar -czf  HNSCC.survival.marginS.20500.tar.gz -T survival.txt --remove-files
 # n= 20238, size 215Mb
 
 

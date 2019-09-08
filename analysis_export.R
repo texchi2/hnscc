@@ -230,7 +230,10 @@ setwd(path_cohort)
 # jsonedit( candidate_cox )
 # # finished (both) processes
 
-# transfer .Rda from GCE i-5, i-6 to i-4 (3 in 1) ####
+# archive .xlsx and transfer .Rda from GCE i-5, i-6 to i-4 (3 in 1) ####
+#$ find HNSCC_survivalAnalysis_marginS_*.* -print > survival.txt
+#$ tar -czf  HNSCC.survival.marginS.20500.tar.gz -T survival.txt --remove-files
+
 # macOS$ scp tex@35.201.224.219:~/R/HNSCC_Tex_survival/hnscc_github/marginFree/HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda ./
 # $ scp /Users/apple/R/HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda   tex@35.201.169.0:~/R/HNSCC_Tex_survival/hnscc_github/marginFree/
 #
