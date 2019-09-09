@@ -170,14 +170,14 @@ mirdir <- paste(project, 'miRNAs', sep='/')
 # i4$ wget https://gdc.cancer.gov/system/files/authenticated%20user/0/gdc-client_v1.4.0_Ubuntu_x64.zip --no-check-certificate 
 # https://docs.gdc.cancer.gov/Data_Transfer_Tool/Users_Guide/Data_Download_and_Upload/
 # 
-### Download RNAseq data
+### Download RNAseq data, n=546
 gdcRNADownload(project.id     = 'TCGA-HNSC', 
                data.type      = 'RNAseq', 
                write.manifest = FALSE,
                method = 'gdc-client', ## use gdc-client tool to download data
                directory      = rnadir)
 
-### Download miRNAs data
+### Download miRNAs data, n=569
 gdcRNADownload(project.id     = 'TCGA-HNSC', 
                data.type      = 'miRNAs', 
                write.manifest = FALSE,
