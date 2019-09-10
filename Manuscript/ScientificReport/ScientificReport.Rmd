@@ -775,11 +775,12 @@ A total of 84 out of 3199 lncRNAs were significantly associated with the surviva
 加分 3D data visiualiztion
 https://datascienceplus.com/tag/data-visualisation/
 
-#*** [重要討論]
+#*** [重要討論] (multiple testing 是發生在 cutoff_finder.R 100切)
 0) cutoff finding #***
 Tex: cut by 人頭[30...70]
 Dato 你的方法跟..之間有和差異嗎? {\todo}
-a.prognoscan\cite{Mizuno2009a}
+a.prognoscan\cite{Mizuno2009a} http://dna00.bio.kyutech.ac.jp/PrognoScan/PrognoScan.html
+拿我的 gene list 放進去比比看
 {Survival analysis in PrognoScan employs the minimum P-value approach [2] to find the cutpoint in continuous gene expression measurement for grouping patients.}
 b.cutoff finder\cite{Budczies2012} (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
 http://molpath.charite.de/cutoff/index.jsp

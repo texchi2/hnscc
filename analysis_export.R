@@ -448,7 +448,10 @@ devtools::install_github("jeroen/jsonlite")
 # https://github.com/Jialab-UCR/Jialab-UCR.github.io/blob/master/GDCRNATools.workflow.R
 remotes::install_github("Jialab-UCR/GDCRNATools")
 library(GDCRNATools) # Pathview, citation("pathview") within R
-
+#
+# https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
+install.packages("fdrtool")
+library("fdrtool") # a simple way
 
 # KM analysis
 survKM_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
