@@ -452,6 +452,17 @@ library(GDCRNATools) # Pathview, citation("pathview") within R
 # https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
 install.packages("fdrtool")
 library("fdrtool") # a simple way
+# estimate fdr and Fdr from p-values
+pvalues <- HNSCC_OS_marginS_pvalue_sorted$p_value
+HNSCC_fdr = fdrtool(pvalues, statistic="pvalue", cutoff.method=c("fndr"))
+#cutoff.method=c("fndr", "pct0", "locfdr")
+# Step 1... determine cutoff point
+# Step 2... estimate parameters of null distribution and eta0
+# Step 3... compute p-values and estimate empirical PDF/CDF
+# Step 4... compute q-values and local fdr
+# Step 5... prepare for plotting
+HNSCC_fdr$qval # estimated Fdr values 
+HNSCC_fdr$lfdr # estimated local fdr 
 
 # KM analysis
 survKM_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
