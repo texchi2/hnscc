@@ -7,7 +7,7 @@
 #marginTag <- "_marginPlus_" #at ./marginPlus
 TCGA_cohort <- "HNSCC"
 raw <- 
-  readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
+ readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
 select_margin <- function(x) {
   switch(x,
          s = "_marginS_",
@@ -28,7 +28,7 @@ rm(raw)
 
 # set path to the source of .Rda from cutoff finding
 path_cohort <- getwd()
-path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "tobacco") # e.x. marginS/tobacco
+path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. marginS/
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
 # 3 hours for 1,000 genes to be scanned under GCP Rstudio server
@@ -230,6 +230,17 @@ setwd(path_cohort)
 # jsonedit( candidate_cox )
 # # finished (both) processes
 
+# archive .xlsx and transfer .Rda from GCE i-5, i-6 to i-4 (3 in 1) ####
+#$ find HNSCC_survivalAnalysis_marginS_*.* -print > survival.txt
+#$ tar -czf  HNSCC.survival.marginS.20500.tar.gz -T survival.txt --remove-files
+
+# macOS$ scp tex@35.201.224.219:~/R/HNSCC_Tex_survival/hnscc_github/marginFree/HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda ./
+# $ scp /Users/apple/R/HNSCC_OS_marginFree_pvalueKM_candidate_cox.Rda   tex@35.201.169.0:~/R/HNSCC_Tex_survival/hnscc_github/marginFree/
+#
+# macOS$ scp tex@35.234.23.175:~/R/HNSCC_Tex_survival/hnscc_github/marginPlus/HNSCC_OS_marginPlus_pvalueKM_candidate_cox.Rda ./
+# $ scp /Users/apple/R/HNSCC_OS_marginPlus_pvalueKM_candidate_cox.Rda   tex@35.201.169.0:~/R/HNSCC_Tex_survival/hnscc_github/marginPlus/ 
+$ la -al *.Rda
+
 
 
 
@@ -257,36 +268,57 @@ select_margin <- function(x) {
   )
  }
 marginTag <- select_margin(raw)
+print(marginTag)
 rm(raw) 
-#
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) 
+# notice: //
+path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. marginS/
+load(file=paste(path_ZSWIM2, TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")) 
 # as candidate_sample with candidate_cox and n_percent_Bonferroni 
 attach(candidate_sample) # n=20500
 HNSCC_OS_marginS_pvalue_sorted <- candidate_sample[order(p_value, -number),] # sorting by order(ascending)
 detach(candidate_sample)
 
 attach(HNSCC_OS_marginS_pvalue_sorted)
-# ***no Bonferroni correction (adjustment) sets the significance cut-off at α/n 
+# ***try Bonferroni correction (adjustment) sets the significance cut-off at α/n 
 # {
 alpha_HNSCC <- 0.05
 Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni)
-# => 4.786521e-06 (LUAD run04); => 5.31011e-06 (2019 run01)
-# if no Bonferroni: 
-#Bonferroni_cutoff <- alpha_HNSCC / 1
+# => 4.786521e-06 (LUAD run04); => 5.31011e-06 (2019 run02)
 # } Bonferroni end
 # 
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
 # higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
 #tiff("Rplot10_Freq_Pvalue.tiff", units="cm", width=5, height=5, res=300)
-plot(p_value, number, type="p", ylab="Frequency", xlab="P-value plot of KM survival analysis", log="x", cex=0.3) # log scale x or y
+plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analysis", log="x", cex=0.3) # log scale x or y
 abline(h=150, lty=2, col="blue")
-abline(v=alpha_HNSCC, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-06
-legend("bottomleft", legend=c(paste("Frequency at 150"), paste("P-value at ", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
+abline(v=Bonferroni_cutoff, lty=2, col="red") # 5.31011e-06
+legend("topright", legend=c(paste("Frequency at 150"), paste("P-value at ", signif(Bonferroni_cutoff, 2))), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
 #dev.off()
+# KM P-value with Bonferroni correction
+# n=28 in _marginS_ of HNSCC_OS_marginS_pvalueBonferroni_sorted
+HNSCC_OS_marginS_pvalueBonferroni_sorted <- HNSCC_OS_marginS_pvalue_sorted[which(p_value<=Bonferroni_cutoff & !is.na(p_value)), 1:3]
+# n=14 in _marginFree_; 
+HNSCC_OS_marginFree_pvalueBonferroni_sorted <- HNSCC_OS_marginS_pvalueBonferroni_sorted
+# n=6 in _marginPlus_; 
+HNSCC_OS_marginPlus_pvalueBonferroni_sorted <- HNSCC_OS_marginS_pvalueBonferroni_sorted
+
+# save 3 SFP
+save(HNSCC_OS_marginS_pvalueBonferroni_sorted, 
+     HNSCC_OS_marginFree_pvalueBonferroni_sorted, 
+     HNSCC_OS_marginPlus_pvalueBonferroni_sorted, 
+     file=paste(path_cohort, "/", TCGA_cohort, "_OS", "_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda", sep="")) 
+
+# 
+### if no Bonferroni: 
+non_Bonferroni_cutoff <- alpha_HNSCC / 1
+plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analysis", log="x", cex=0.3) # log scale x or y
+abline(h=150, lty=2, col="blue")
+abline(v=non_Bonferroni_cutoff, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-06
+legend("bottomleft", legend=c(paste("Frequency at 150"), paste("P-value at ", non_Bonferroni_cutoff)), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
 # KM P-value <= 0.05 (alpha_HNSCC)
-HNSCC_OS_marginS_pvalue005_sorted <- HNSCC_OS_marginS_pvalue_sorted[which(p_value<=alpha_HNSCC & !is.na(p_value)), 1:3]
+HNSCC_OS_marginS_pvalue005_sorted <- HNSCC_OS_marginS_pvalue_sorted[which(p_value<=non_Bonferroni_cutoff & !is.na(p_value)), 1:3]
 detach(HNSCC_OS_marginS_pvalue_sorted)  # keeping drawing
-# no correction: n=6601 in _marginS_; n=? in _marginFree_; and n=? in _marginPlus_
+# no correction: n=6624 in _marginS_; n=? in _marginFree_; and n=? in _marginPlus_
 # of HNSCC_OS_marginS_pvalue005_sorted
 
 
@@ -317,7 +349,7 @@ abline(h=zcut, lty=2, col="blue") # mean=0, Max.: 2.3034
 
 
 #tiff("Rplot10_Zscore_Pvalue.tiff", units="cm", width=5, height=5, res=300)
-plot(p_value, z_score, type="p", ylab="Z-score", xlab="P-value plot of KM survival analysis", log="x") # log scale x or y
+plot(p_value, z_score, type="p", ylab="Z-score", xlab="P-value", main="P-value plot of KM survival analysis", log="x") # log scale x or y
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
 abline(h=zcut, lty=2, col="blue")
 abline(v=alpha_HNSCC, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-06
@@ -338,7 +370,7 @@ abline(v=alpha_HNSCC, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-
 # curve(predict(m, data.frame(p_value = x), type="response", col="green"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
 # #lines(p_value, predict(m), lty=2, col="green", lwd=3)
 
-legend("topright", legend=c(paste("Z-score at ", zcut), paste("P-value at ", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
+legend("bottomleft", legend=c(paste("Z-score at ", zcut), paste("P-value at ", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
 # figure legend: logistic regression, LR, by Generalized linear model, glm
 #detach(HNSCC_OS_marginS_pvalue005_sorted)
 
@@ -349,23 +381,120 @@ legend("topright", legend=c(paste("Z-score at ", zcut), paste("P-value at ", alp
 # ***after Bonferroni correction => n=26 in _marginS_
 # ***after Bonferroni correction => n=33 in _marginFree_
 #attach(HNSCC_OS_marginS_pvalue005_sorted)
-HNSCC_OS_marginS_pvalue1e_6_zscore0_6 <- HNSCC_OS_marginS_pvalue005_sorted[which(p_value <= alpha_HNSCC & z_score >= zcut), -1]
+HNSCC_OS_marginS_pvalue005_zcut <- HNSCC_OS_marginS_pvalue005_sorted[which(p_value <= alpha_HNSCC & z_score >= zcut), -1]
 # discard "number"
-HNSCC_OS_marginS_pvalue1e_6_zscore0_6$p_value <- signif(HNSCC_OS_marginS_pvalue1e_6_zscore0_6$p_value, 3)
-HNSCC_OS_marginS_pvalue1e_6_zscore0_6$z_score <- signif(HNSCC_OS_marginS_pvalue1e_6_zscore0_6$z_score, 3)
+HNSCC_OS_marginS_pvalue005_zcut$p_value <- signif(HNSCC_OS_marginS_pvalue005_zcut$p_value, 3)
+HNSCC_OS_marginS_pvalue005_zcut$z_score <- signif(HNSCC_OS_marginS_pvalue005_zcut$z_score, 3)
 detach(HNSCC_OS_marginS_pvalue005_sorted)
-# > colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
+# > colnames(HNSCC_OS_marginS_pvalue005_zcut)
 # x[1] "gene_id"   "p_value"   "z_score"   "number_01"
 # [1] "gene_id" "p_value" "z_score"
 # _marginS_ (ok) as marginTag
 
-# *** there is two collections:
-# save n=6601, cut by P-value <= alpha_HNSCC
+# *** there is 3 collections:
+# save n=28, cut by P-value <= Bonferroni_cutoff (Bonferroni correction)
+save(HNSCC_OS_marginS_pvalueBonferroni_sorted, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueBonferroni_sorted.Rda", sep="")))
+#
+# #R4> HNSCC_OS_marginS_pvalueBonferroni_sorted$gene_id
+# [1] "ZNF557"    "DKK1"      "ZNF266"    "CAMK2N1"  
+# [5] "IL19"      "MYO1H"     "STC2"      "PGK1"     
+# [9] "SURF4"     "FCGBP"     "LOC148709" "USP10"    
+# [13] "EVPLL"     "PNMA5"     "NDFIP1"    "FOXA2"    
+# [17] "GRAP"      "KIAA1683"  "ZNF846"    "ZNF20"    
+# [21] "CELSR3"    "SLC26A9"   "FAM3D"     "GPR15"    
+# [25] "KLRA1"     "NPB"       "TCP11"     "STIP1" 
+
+# venn of 3
+venn_marginSFP <- list(HNSCC_OS_marginFree_pvalueBonferroni_sorted$gene_id, HNSCC_OS_marginS_pvalueBonferroni_sorted$gene_id, 
+                       HNSCC_OS_marginPlus_pvalueBonferroni_sorted$gene_id)
+names_marginSFP <- c(paste("margin[-]"), paste("margin[+/-]"), paste("margin[+]"))
+library(venn)
+# https://cran.r-project.org/web/packages/venn/venn.pdf
+tiff("venn_marginSFP.tiff", units="cm", width=5, height=5, res=300) 
+# # saving as .tiff (by tiff())
+venn(venn_marginSFP, snames=names_marginSFP,
+     ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, deeppink, pink", opacity = 0.6, size = 15, cexil = 2.0, cexsn = 0.8, borders = FALSE)
+#      predefined colors if "style"
+#http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+# meta-language 1 0 or -
+title <- c(paste(TCGA_cohort, "survival analysis: candidate genes"), paste("(KM P-Value <=", signif(Bonferroni_cutoff, 2), ")")) #, collapse = "\n")
+#coords <- unlist(getCentroid(getZones(venn_HR2p5, snames="uni_CoxHR>=2p5, multi_CoxHR>=2p5")))
+# coords[1], coords[2], 
+text(500,950, labels = title[1], cex = 1.30) # (0,0) on bottom_left corner
+text(500,100, labels = title[2], cex = 1.20) 
+# n=47
+dev.off() # saving instead of showing
+# retrieving the intersection genes by gplots::venn
+library(gplots)
+tmp_cand <- venn(venn_marginSFP, names=names_marginSFP, show.plot=F) #library(gplots); the group count matrix alone
+isect_marginSFP <- attr(tmp_cand, "intersections")
+#isect_marginSFP
+detach(package:gplots)
+
+
+# try FDR cutoff, when no Bonferroni correction ####
+# the possibility of type I error: alpha (single test)
+# multiple testing problem
+# FDR = E[F/S] <= q-value
+install.packages("BiocManager")
+library("BiocManager")
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("GDCRNATools") 
+#biocLite("BiocParallel") 
+install.packages("remotes")
+library(remotes)
+devtools::install_github("jeroen/jsonlite")
+
+# https://github.com/Jialab-UCR/Jialab-UCR.github.io/blob/master/GDCRNATools.workflow.R
+remotes::install_github("Jialab-UCR/GDCRNATools")
+library(GDCRNATools) # Pathview, citation("pathview") within R
+#
+# https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
+install.packages("fdrtool")
+library("fdrtool") # a simple way
+# estimate fdr and Fdr from p-values
+pvalues <- HNSCC_OS_marginS_pvalue_sorted$p_value
+HNSCC_fdr = fdrtool(pvalues, statistic="pvalue", cutoff.method=c("fndr"))
+#cutoff.method=c("fndr", "pct0", "locfdr")
+# Step 1... determine cutoff point
+# Step 2... estimate parameters of null distribution and eta0
+# Step 3... compute p-values and estimate empirical PDF/CDF
+# Step 4... compute q-values and local fdr
+# Step 5... prepare for plotting
+HNSCC_fdr$qval # estimated Fdr values 
+HNSCC_fdr$lfdr # estimated local fdr 
+
+# KM analysis
+survKM_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
+                                  method   = 'KM', 
+                                  rna.expr = rnaExpr, 
+                                  metadata = metaMatrix.RNA, 
+                                  sep      = 'median')
+# which point should be used to separate low-expression and high-expression
+# groups for method='KM'. Possible values are '1stQu', 'mean', 'median', and
+# '3rdQu'. Default is 'median'
+#
+# Cox PH analysis
+survCoxPH_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
+                                  method   = 'coxph', 
+                                  rna.expr = rnaExpr, 
+                                  metadata = metaMatrix.RNA)
+
+# manual: http://bioconductor.org/packages/devel/bioc/vignettes/GDCRNATools/inst/doc/GDCRNATools.html
+#  the nCore argument, if method= "DESeq2" in gdcDEAnalysis()
+# gdcEnrichAnalysis() can perform Gene ontology (GO), Kyoto Encyclopedia of Genes and Genomes (KEGG) and Disease Ontology (DO) functional enrichment analyses 
+# bubble plot  
+#library("BiocParallel")
+#register(MulticoreParam(2)) # 2 cores
+
+
+# [2019/09/05]
+HNSCC_OS_marginS_pvalue005_sorted
+# save n=6624, cut by P-value <= alpha_HNSCC
 save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted.Rda", sep="")))
-# save n=1475, cut by P-value <= alpha_HNSCC AND Z-score >= zcut(e.q. 0.8)
-save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue1e_6_zscore0_6.Rda", sep=""))) 
-
-
+# save n=1437, cut by P-value <= alpha_HNSCC AND Z-score >= zcut(e.q. 0.8)
+save(HNSCC_OS_marginS_pvalue005_zcut, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) 
+# *** rename HNSCC_OS_marginS_pvalue1e_6_zscore0_6 => HNSCC_OS_marginS_pvalue005_zcut
 
 
 ## Post2 KM + candidate_cox ####
@@ -378,9 +507,9 @@ save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, Bonferroni_cutoff, file=file.path(pa
 # 1) HNSCC_OS_marginS_pvalue005_sorted # n=6601;
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, 
                                        "pvalue005_sorted.Rda", sep="")))
-# 2) HNSCC_OS_marginS_pvalue1e_6_zscore0_6, n=1476;
+# 2) HNSCC_OS_marginS_pvalue005_zcut, n=1476;
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, 
-                                       "pvalue1e_6_zscore0_6.Rda", sep="")))
+                                       "pvalue005_zcut.Rda", sep="")))
 # # as candidate_cox
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")))
 # candidate_sample, candidate_cox, n_percent_Bonferroni
@@ -419,25 +548,25 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
 
 
 # [part II] new variable: KM + Cox, n=1475
-HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6
+HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue005_zcut
 # add more columns
-HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
-for (ip in 1:nrow(HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR)) {
-  pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR$gene_id
+HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
+for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR)) {
+  pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR$gene_id
   if (length(candidate_cox[[pos_gene]])==11) {
     # reference: candidate_cox_ip, which listing as candidate_cox
-    HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR[ip, 4:9]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
+    HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[ip, 4:9]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
     # we don't have number0_1 any more:   colnames "gene_id" "p_value" "z_score"
     #   ipp <- ipp+1
-    print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
-    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR[ip, c(1, 4)]), sep=";"))
+    print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
+    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[ip, c(1, 4)]), sep=";"))
   }
 }
 ##
 # save table1 + table2 (ok) [2019/07/01], n= 6601 or 1475
 save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
-save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR.Rda", sep="")))
-#save(list(HNSCC_OS_marginS_pvalue1e_6_zscore0_6, ???))
+save(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcutKM_sorted_pvalueCox_HR.Rda", sep="")))
+#save(list(HNSCC_OS_marginS_pvalue005_zcut, ???))
 # x[i], or might be x[i:j]
 # x[i, j]
 # x[[i]]; x[[expr]]; it can NOT be x[[i:j]]
@@ -449,7 +578,7 @@ save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR, file=file.path
 
 
 # ** Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 ####
-# Z-score > 0.8: HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR, n=1475
+# Z-score > 0.8: HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, n=1475
 # OR
 # HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR
 # _marginS_ on [2019/07/02]
@@ -460,7 +589,7 @@ save(HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR, file=file.path
 # [10] "multi_P_value" "multi_sig"
 HNSCC_OS_marginS_THREE_pvalue005_6601 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, 
                                            select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
-HNSCC_OS_marginS_THREE_pvalue005_1475 <- subset(HNSCC_OS_marginS_pvalue1e_6_zscore0_6KM_sorted_pvalueCox_HR, 
+HNSCC_OS_marginS_THREE_pvalue005_1475 <- subset(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, 
                                            select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
 #... <- subset(..., (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
 save(HNSCC_OS_marginS_THREE_pvalue005_6601, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep=""))) 
@@ -471,7 +600,7 @@ save(HNSCC_OS_marginS_THREE_pvalue005_1475, file=file.path(path_ZSWIM2, paste(TC
 # >pubmed.mineR ####
 # no zcut: HNSCC_OS_marginS_THREE_pvalue005_6601 <- HNSCC_OS_marginS_THREE_pvalue005, n=6601
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep="")))
-# zcut, Z-score > 0.8: HNSCC_OS_marginS_THREE_pvalue005_1475 <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6, n=1475
+# zcut, Z-score > 0.8: HNSCC_OS_marginS_THREE_pvalue005_1475 <- HNSCC_OS_marginS_pvalue005_zcut, n=1475
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep="")))
 
 # start to working...# *** choice one
@@ -625,6 +754,10 @@ for (pubtator_i in 1: length(em_hnscc_PMID_list)) {
     return()
   }) # END tryCatch
 }
+# [HNSCC gene signature]
+#Cancer GeneticsWeb: check it out
+#  http://www.cancerindex.org/geneweb/HRPT2.htm
+
 # find published HNSCC genes from Embase
 # pubmed_hnscc_df data cleaning: sorting by "Disease", manual curation
 pubmed_hnscc_df_sorted <- pubmed_hnscc_df[order(pubmed_hnscc_df$Diseases, na.last=NA), ] # NA removal, n=259
@@ -906,7 +1039,7 @@ save(isect_HR2p5, isect_HR0p5,
 # sink() for .xlsx export as well :-) https://stackoverflow.com/questions/34038041/how-to-merge-multiple-data-frame-into-one-table-and-export-to-excel
 # HNSCC_OS_marginS_candidates_Venn.xlsx: show up Bonferroni_cutoff and 5e-6 (expression style).
 # 
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue1e_6_zscore0_6.Rda", sep=""))) # in HNSCC_OS_marginS_pvalue1e_6_zscore0_6, Z-score >= zcut (e.x. 0.8)
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) # in HNSCC_OS_marginS_pvalue005_zcut, Z-score >= zcut (e.x. 0.8)
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # in candidate_cox (a list), candidate_samplie, candidate_cox, n_percent_Bonferroni
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep=""))) # isect_HR2p5, isect_HR0p5
 
@@ -943,7 +1076,7 @@ xlsx.addLineBreak(sheet, 3)
 # Z-score:a normalized number (frequency) of OS P-values, which KM P-value < 0.05, in each gene
 xlsx.addHeader(wb, sheet, value=paste("Table 1. The top 30 candiate genes expressed in ", TCGA_cohort,
                                       " (ranking by KM P-value, selected by Z-score >= ", signif(zcut, 2), ") ", "\n" , sep=""),
-               level=5, color="black", underline=0) # nrow(HNSCC_OS_marginS_pvalue1e_6_zscore0_6), n=6601
+               level=5, color="black", underline=0) # nrow(HNSCC_OS_marginS_pvalue005_zcut), n=6601
 #xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
 #               level=5, color="red", underline=0) # total n is taken from surv_OS1$n
 
@@ -953,13 +1086,13 @@ xlsx.addLineBreak(sheet, 1) # add one blank line
 #              fontColor="darkblue", row.names = F, col.names = F) #, colSpan=1, rowSpan=1)
 
 # a candidate genes table
-# > colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
+# > colnames(HNSCC_OS_marginS_pvalue005_zcut)
 # [1] "gene_id" "p_value" "z_score" to "Gene_id", "P_value", "Z_score"
-colnames(HNSCC_OS_marginS_pvalue1e_6_zscore0_6) <- c("Gene_id", "P_value", "Z_score") # Z_score
+colnames(HNSCC_OS_marginS_pvalue005_zcut) <- c("Gene_id", "P_value", "Z_score") # Z_score
 # # no more Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
-attach(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
-candidates_alpha_pvalue <- HNSCC_OS_marginS_pvalue1e_6_zscore0_6[which(P_value<=alpha_HNSCC), ]
-detach(HNSCC_OS_marginS_pvalue1e_6_zscore0_6)
+attach(HNSCC_OS_marginS_pvalue005_zcut)
+candidates_alpha_pvalue <- HNSCC_OS_marginS_pvalue005_zcut[which(P_value<=alpha_HNSCC), ]
+detach(HNSCC_OS_marginS_pvalue005_zcut)
 
 attach(candidates_alpha_pvalue) # removal of as.factor (P_value)
 # in scientific notation: formatC of [, c(2)]
@@ -1106,7 +1239,7 @@ load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_
 
 # x load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
 #load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep="")))
-# Z-score > zcut e.x. 0.8: HNSCC_OS_marginS_pvalue1e_6_zscore0_6.Rda, n=1475
+# Z-score > zcut e.x. 0.8: HNSCC_OS_marginS_pvalue005_zcut.Rda, n=1475
 #HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_1475 # *** try it
 # as as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff
 
@@ -1526,6 +1659,22 @@ FuncAnnotClust <- getClusterReport(david)
 getClusterReportFile(david, "hnscc_DAVID_FuncAnnotClust.tsv")
 
 
+#GSEA ####
+shinyPathview() 
+# http://bioconductor.org/packages/devel/bioc/vignettes/GDCRNATools/inst/doc/GDCRNATools.html
+# 
+#Subramanian, Tamayo, et al. (2005, PNAS 102, 15545-15550) and Mootha, Lindgren, et al. (2003, Nat Genet 34, 267-273).
+# gene set enrichment analysis
+# GSEA/MSigDB
+# The criteria for significant enrichment gene sets in 
+#GSEA were: P<0.05 and false discovery rate (FDR) <0.25.
+# msigdbr, GSEABase, RGSEA, GAGE
+# https://bioconductor.org/help/course-materials/2009/SeattleJan09/GSEA/Category.R
+# http://bioconductor.org/packages/release/bioc/vignettes/gage/inst/doc/RNA-seqWorkflow.pdf
+# Pathview works with all types and species of KEGG pathways. We plan to support pathways from Reactome (Croft et al., 2011), NCI Pathway Interaction and other databases based on needs in the future install.packages("Pathview")
+# http://bioconductor.org/packages/release/bioc/vignettes/pathview/inst/doc/pathview.pdf
+biocLite("pathview")
+library(pathview)
 # x The BACA package
 
 #> PANTHER.db ####
@@ -1790,6 +1939,24 @@ library(igraph)
 # (HR when P-value <= 0.05)
 
 
+## margin issue ####
+## a new comparison table for impact genes ####
+paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda")
+# a new comparison for margin issue
+paste("HNSCC_survivalAnalysis_marginFree_", geneName, ".Rda")
+
+##
+oby <- read.table(header=TRUE, text='
+                  Var1 Var2 Freq
+                  0      1    36
+                  1      1   91
+                  0     2    41
+                  1       2   88
+                  ')
+# x oby <- read.table(stdin(), header=TRUE) 
+# 
+# 
+# 
 
 
 # >Analysis finish; tar until here (refinement ok) ####

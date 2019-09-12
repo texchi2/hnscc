@@ -73,6 +73,7 @@ authors:
 
 keywords:
 - HNSCC
+- GDC
 - TCGA
 - ICGC
 - survival
@@ -90,7 +91,7 @@ MSC:
 
 abstract: {#abstract}
   A gene expression–based prognostic markers for HNSCC, 442 samples were collected from 6 institutions and processed at 1 of 4 laboratories using a single, reproducible protocol, and data were organized by TCGA and were analyzed using a validation step by Tex.
-  protein-coding DNA genes (20500, 2%) of Human genomes.
+  protein-coding DNA genes (20500, 2%) of Human genomes (Number of genes: 60483).
   Gene or protein expression data are usually represented by metric or at least ordinal variables. In order to translate a continuous variable into a clinical decision, it is necessary to determine a cutoff point and to stratify patients into two groups each requiring a different kind of treatment.
 	Currently, there is no standard method or standard software for biomarker cutoff determination. Therefore, we developed the Cutoff Finder, a bundle of optimization and visualization methods for cutoff determination that is accessible online. 
 	This protocol describes using R Markdown and RStudio, user-friendly tools for statistical analysis and reproducible research in bioinformatics, to analyze and document analysis of an RNA-Seq data set of TCGA cohort, which were suffered from HNSCC\cite{Loraine2015}, as well as ICGC cohort (https://dcc.icgc.org).
@@ -107,6 +108,8 @@ About 95% of all oral cancers occur in persons over 40 years of age.[https://doi
 https://www.cancer.gov/types/head-and-neck/hp HNSCC
 Types of Molecular Markers: Diagnostic Markers, Prognostic Markers or Predictive Markers.\cite{JNCCN2001} Prognostic markers have an association with some clinical outcomes, such as overall survival or recurrence-free survival, independent of the treatment rendered.
 Currently, there is no global view of the expression profiles of the human cancer genes expression obtained from next-generation sequencing (NGS) technologies such as RNA sequencing (RNA-seq). The expression data is available from a large-scale studies like The Cancer Genome Atlas (TCGA: http://cancergenome.nih.gov/).
+The Genomic Data Commons (GDC) maintains standardized genomic, clinical, and biospecimen data from National Cancer Institute (NCI) programs including The Cancer Genome Atlas (TCGA) and Therapeutically Applicable Research To Generate Effective Treatments (TARGET). We utilized GDCRNATools and firebrowseR, the R/Bioconductor packages, for downloading, organizing, and integrative analyzing RNA expression data (e.x. RNA-seq) and clinicopathological data in the GDC portal.
+We retrieved RNA sequencing (RNA-seq) data together with clinical metadata corresponding to the 33 different human cancers that are available in TCGA (table S1). As a result, data were collected from 9666 individuals out of the 11,000 cancer patients included in the TCGA project from the Genomic Data Commons (GDC) Data Portal (https://gdc-portal.nci.nih.gov/).
 Clinical validation assesses the strength of association between the assay results and the clinical outcome of interest, whether it is diagnostic, prognostic, or predictive. 
 A large number of measures are used to assess these associations. Although measures of statistical signi cance are important, robust measures of the strength of association, such as receiver operator characteristic (ROC) curves, the area under the curve of ROC analysis, and the sensitivity, speci c- ity, and positive predictive value of assays, are criti- cal to understanding the strength of their clinical association and help bridge analysis to clinical util- ity (discussed later). These analyses address whether one can be sure the clinical state is positive if the test is positive (positive predictive power), and vice versa (negative predictive power).
 https://www.ncbi.nlm.nih.gov/pubmed/29190934 (ROC)
@@ -119,8 +122,12 @@ TCGA survival analysis in global genome scanning manner. with margin free tissue
 *** significant! https://www.ebsco.com/e/zh-tw/blog/whats-so-significant-about-statistical-significance1?utm_medium=email&utm_source=med_cp_tw&utm_campaign=med_insights-health-2019-jun_20190629&mkt_tok=eyJpIjoiWmpRek9ETmxZekkwTnpSbSIsInQiOiJtc3VnRGVsOE85MGxtbk5PN256cXJXT2p2aXdITHgrOWhhbXFmMGxNdzFOOEtzdG45eUt1UVViZVRMcWVlNlhFQTVjUThDZnF0a2laS3FRUFwvY1BnMkdwZlh2NFhCdEFZQXRzTXFGWVhHRUZwNCtDMzJsY29LNHlTRWhXRllCWFoifQ%3D%3D
 
 Optimzed cutoff finding (reproducible survival analysis: more than clicking, coping and pasting, which crossing 20500 whole genomes. We might get the same result in each run of R script)
+ R packages http://www.r-project.org are used
+Survival analysis in our cutoffinder_func engine employs the minimum P-value approach [2] to find the cutoff in continuous gene expression measurement for grouping patients. First, patients are ordered by expression value of a given gene. Next, patients are divided into two (high and low) expression groups at all potential cutoff (counted by person in 30% to 70% of a cohort), and the risk differences of the two groups are estimated by log-rank test. Then, optimal cutoff that gives the most pronounced P-value (P min) is selected programmatically in terms of yielding KM plot and Cox PH table for each gene.\cite{Mizuno2009a}\cite{Miller1982}Formula
+type I error was conducted by multiple correlated testing [36–38]. Thus, P-value correction by Bonferroni/FDR is applied to control the error rate.
+ε, 1 - ε] denote the range of the quantile considered to be cutpoints. PrognoScan uses ε = 0.3 to avoid small groupings from cutpoints of < 0.3 or > 0.7 quantile.
 The aim of Reproducible Bioinformatics project is the creation of easy to use Bioinformatics workflows that fullfill the following roles (Sandve et al. PLoS Comp Biol. 2013): to provide Public Access to Scripts, Runs, and Results.
-Rules: creating a portable project (.Rproj in Rstudio environment), using code/script (R) to automate data manipulation steps and analyses, connecting the results to dynamic text (R Markdown, knitr and LaTex), with version control (git) al scripts, figures and documents.
+Rules: creating a portable project (.Rproj in Rstudio environment), using code/script (R\cite{TheRDevelopmentCoreTeam2003}) to automate data manipulation steps and analyses, connecting the results to dynamic text (R Markdown, knitr and LaTex), with version control (git) al scripts, figures and documents.
 - RNAseq workflow
 - miRNAseq workflow
 - ChIPseq workflow
@@ -135,6 +142,9 @@ HOTTIP Functions as a Key Candidate Biomarker in Head and Neck Squamous Cell Car
 
 2) Deep Learning–Based Multi-Omics Integration Robustly Predicts Survival in Liver Cancer\cite{Chaudhary2018}
 http://clincancerres.aacrjournals.org/content/24/6/1248
+3) A pathology atlas of the human cancer transcriptome. Uhlen et al., Science 357, 660 (2017)
+\cite{Uhlen2017} (human protein atlas, from https://www.proteinatlas.org/about/licence)
+
 
 #set up a data science environment on Google Cloud Platform (GCP) {#sec:1}
 it is also fine:
@@ -317,8 +327,8 @@ https://github.com/IARCbioinfo/awesome-TCGA # list of all usefull TCGA tools
 # library("devtools")
 # devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "tobacco_exposure"
 Data analysis
-
-https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3372940/#!po=2.54237 (FDR)?
+Normalization, testing, and false discovery rate estimation for RNA-sequencing data (FDR)\cite{Li2012}
+\cite{Storey2003}
 https://gdc.cancer.gov/about-data/data-harmonization-and-generation/genomic-data-harmonization-0#Overview
 https://docs.gdc.cancer.gov/Data/Bioinformatics_Pipelines/Expression_mRNA_Pipeline/
 RNA sequencing (RNA-seq) data from head and neck squamous cell carcinoma (HNSCC) in The Cancer Genome Atlas (TCGA) datasets were obtained from the UCSC Cancer Genomics Browser (https://genome-cancer.ucsc.edu).
@@ -388,6 +398,7 @@ All statistical analyses were performed using SPSS v21.0 (Beijing Stats Data CO.
 Student’s t-test and the χ2 test were used for the comparison to baseline clinical characteristics and dietary information between the derivation data and validation data. In this study, noninvasive risk factors were defined as factors that could be measured without taking a blood sample. The variables included in the model were divided into classic risk factors and dietary predictors. Classic risk factors included age, gender, BMI, waist circumference, regular exercise, labor intensity, alcohol consumption, cigarette smoking, education, hypertension and a family history of diabetes. Dietary predictors included the 14 food groups in the FFQ and total calorie intake. Their adjusted odds ratio (OR) and 95% confidence intervals (95% CI) were estimated using a multivariate backward logistic regression analysis. The diabetes risk score was developed for the two multivariate logistic regression models: a classic noninvasive risk score and a diet-containing risk score, and points were assigned to each variable based on the magnitude of its regression coefficient [22]. In the diabetes risk score system, we transformed the unit of diet consumption from gram per day to liang per day, to facilitate its use in China. The dietary predictors except diary in the risk model were continuous in order to use the full information for dietary predictors. The risk score allows decimal value if the weight is not in round number. For the dairy products, because 24.4% and 29.4% of the total subjects in the derivation data and validation data were never consume milk and its products, we transformed the dairy and its products variable into binary variable in the risk model. A total diabetes risk score for each individual was calculated as the sum of the points for each variable.
 
 The classic noninvasive risk model and the diet-containing risk model were compared with Akaike’s information criterion (AIC), area under curve (AUC), IDI, NRI and the Hosmer-Lemeshow goodness-of-fit test (HL test) for model performance, discrimination and predictive ability, and general calibration in derivation data and validation data separately. An AIC difference between two models of 10 or greater was considered to be significant with a lower AIC value indicating a better model performance [23]. AUC, IDI and NRI were calculated to evaluate the model discrimination and predictive ability [24]. To apply NRI in the logistic regression model, we adopted the approach proposed by Pencina et al [25]. The Hosmer-Lemeshow goodness-of-fit test (HL test) was used to examine how well the predicted prevalence matched the observed prevalence of type 2 diabetes, and P-values of 0.01 or greater from the test were considered to indicate a good calibration.
+(*** P-value < 0.05 or <= 0.05)?
 
 #ROC and crossvalidation
 ROC for survival analysis
@@ -434,6 +445,8 @@ LUAD_n <- length(whole_genome) #last one 20499: "ZZZ3", keep it LUAD_n as gene n
 **margin issue
 Insufficient surgical margins and extracapsular extension are main
 risks for a reduced overall and recurrence free survival.\cite{Backes2017}
+\cite{Sailer2017}
+
 [Statistical analysis]
 Differences between the groups were analyzed using
 the Chi square test and Fisher exact test for categorical,
@@ -447,6 +460,42 @@ were subsequently evaluated by the proportional Cox
 regression for forward selection. p-values <0.05 were
 considered statistically significant. Statistical analysis was
 done using SPSS (SPSS Inc., Chicago, IL).\cite{Backes2017}
+
+說明
+venn_marginSFP.tiff was generated
+{
+R4> HNSCC_OS_marginS_pvalueBonferroni_sorted$gene_id
+ [1] "ZNF557"    "DKK1"      "ZNF266"    "CAMK2N1"  
+ [5] "IL19"      "MYO1H"     "STC2"      "PGK1"     
+ [9] "SURF4"     "FCGBP"     "LOC148709" "USP10"    
+[13] "EVPLL"     "PNMA5"     "NDFIP1"    "FOXA2"    
+[17] "GRAP"      "KIAA1683"  "ZNF846"    "ZNF20"    
+[21] "CELSR3"    "SLC26A9"   "FAM3D"     "GPR15"    
+[25] "KLRA1"     "NPB"       "TCP11"     "STIP1"
+
+R4> HNSCC_OS_marginFree_pvalueBonferroni_sorted$gene_id
+ [1] "SURF4"     "LOC148709" "DKK1"      "MYO1H"    
+ [5] "NDFIP1"    "IL19"      "ZNF266"    "SET"      
+ [9] "ANO2"      "ZNF557"    "EIF2AK1"   "USP10"    
+[13] "MAGIX"     "LOC440944"
+
+R4> HNSCC_OS_marginPlus_pvalueBonferroni_sorted$gene_id
+[1] "SFT2D1"  "IL17REL" "CTLA4"   "ZFP2"    "ZNF101" 
+[6] "PFN2" 
+
+HNSCC_OS_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda
+}
+***=> 28 vs 14 with intersection of 9 candidate genes; 
+$`margin[-]:margin[+/-]` of intersection
+[1] "SURF4"     "LOC148709" "DKK1"      "MYO1H"    
+[5] "NDFIP1"    "IL19"      "ZNF266"    "ZNF557"   
+[9] "USP10"
+=> 但是只要 cohort 不同，candidate genes 就不會一樣啊
+19 genes exclusively in _marginS_ cohort => GSEA analysis
+14 genes from _marginFree_ cohort =>
+GSEA analysis
+比較 pathway 的差異(so what:-)
+==
 
 **16789 # SLC35E2 RNAseq has two measurement for each participants => there is two genes: SLC35E2A and SLC35E2B
 whole_genome: updated as 20500 genes (SLC35E2 split as SLC35E2A and SLC35E2B)
@@ -544,14 +593,15 @@ Assumption for z-score test:
 # => a kind of local minimal or global minimal of curve fitting x(Levenberg-Marquardt Optimization)? to be classified by neural networks. Learning or training stage is done by applied The Levenberg-Marquardt back propagation algorithm „trainlm‟ is a network learning function that updates weight and bias values according to Levenberg-Marquardt optimization.
 }
 
-***how about false discovery rate (FDR)? (not for RNAseq)
+***how about false discovery rate (FDR)? (\cite{Storey2003})
 
 
 #proceed since [2019/06/26] in detail
 post1 process table1 (KM): candidate_sample(KM) 
 楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
-***no need Bonferroni (adjustment) sets the significance cut-off at α/n 
-the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018} it is too restricted.
+***yes, we need Bonferroni (adjustment) sets the significance cut-off at α/n 
+the cutoff for significance is an adjusted P-value < 0.05/n (Bonferroni’s Approach, where n is the total number of expressed mRNAs in HNSCC).\cite{Dingerdissen2018} 
+it is highly confidential. Bonferroni correction 是寶藏 (by 王紋章老師 [2019/09/04]）
 
 
 # subsetting the candidated genes table, according to the P-value <= 0.05 (no Bonferroni_cutoff) and Z-score >= 0.6
@@ -572,14 +622,14 @@ Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff]
 
 # pickup1 n=71 (bad guy genes) from HNSCC_OS_marginS_THREE_pvalue005; 
 # Cox HR (>=1.8) & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
-(Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
+(Bonferroni_cutoff = 5.31011e-06 is veary restricted in this scenario)
 venn diagram for intersection: [Rplot09_venn_HR1.5.tiff]
 Table 2A and 2B and 2C: bad guy candidate genes => KM P-value, Cox P-value and HR (>=1.8) and its venn diagram
 
 Table 3A and 3B and 3C: good guy candidate genes => KM P-value, Cox P-value and HR (<0.5) and its venn diagram
 # pickup2 n=47 (good guy genes) from HNSCC_OS_marginS_THREE_pvalue005
 #* Cox HR <=0.5 (good_FC)  & (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
-(Bonferroni_cutoff = 5.31011e-06 is too restricted in this scenario)
+(Bonferroni_cutoff = 5.31011e-06 is very restricted in this scenario)
 venn diagram for intersection: [Rplot09_venn_HR0.5.tiff]
 
 #
@@ -599,7 +649,7 @@ since [2019/06/26]
 [as required. Don't forget to give each section
 and subsection a unique label (see Sect. \ref{sec:1}).]
 
-Pathway analysis by DAVID
+Pathway analysis by DAVID\cite{Huang2009a}
 *** 8 candidate genes has Previous HGNC Symbol -> Current Gene Symbol -> convert all 47 genes to ENTREZID
 # Previous HGNC Symbol -> Current Gene Symbol -> ENTREZID
 updated_geneNameX <- c(
@@ -624,6 +674,7 @@ there is PANTHER PIE CHARTs
 
 =We next performed gene set enrichment analysis on the cell surface genes preferentially overexpressed in HPV+ or HPV− or both HNSCC subtypes. Cell surface genes in HPV− tumors were enriched for Nicotine pathway, consistent with the role of tobacco consumption in HPV− HNSCC. 
 => *** nicotine
+\cite{Sivarajah2019}
 tobacco_exposure feature was created on [2019/07/27]
 # 60.65% is in high risk smoking group (HNSCC cohort n=521)
 # 'Lifelong Non-Smoker', 1
@@ -648,7 +699,7 @@ Protein involved in the regulation of the transcription process.
 we conducted KEGG pathway analysis to pinpoint the pathways enriched in the two subtypes. As we have used EASE score in DAVID as the enrichment method, these results should be interpretive only.
 Gene functional classification
 The tool classified the example gene list (∼400 genes) into ten functional groups in an easily readable tabular format. An example output is illustrated in Figure 2 as well as in slide 5 of Supplementary Data 5. Gene groups (with significant enrichment scores ≥1), such as cytokines/chemokines (group 1: 3.39), kinases (group 2: 2.21), clathrin membrane fusion genes (group 3: 1.86), transcription factors (group 6: 1.39) and so on, can easily be identified. All of these gene groups are highly relevant to an HIV study and are therefore expected biological results16. Organizing the large gene list into gene groups allows investigators to quickly focus on the overall major common biology associated with a gene group rather than one gene at a time, thereby avoiding dilution of focus during the analysis due to too many single genes. Furthermore, the '2D View' function associated with each group is able to display all related terms and genes in detail in one picture, to examine their interrelationships. For example, for the kinase group (group 2), a user who is not familiar with kinases may explore the terms of kinase activity, transferase activity, ATP-binding, nucleotide binding, protein metabolism, tyrosine specificity, serine/threonine specificity, regulation of G protein signaling, signal transduction and so on in one view at the same time (slide 6 of Supplementary Data 5). Therefore, we can quickly learn the biology for the kinase group, with the above-mentioned related terms in a single view and also identify the fine differences among them. For example, there are two G-protein-coupled receptor kinases, three protein tyrosine kinases and six kinases involved in cell surface receptor-linked signal transduction among the 23 kinases within the group. The fine details may be very important for pinpointing the key biology associated with a study.\cite{HuangNP2009} Nature Protocols: https://www.nature.com/articles/nprot.2008.211
-use the total genes in the genome as a global reference background. They tend to give more significant P-values, as compared to the tools (e.g. Onto-Express) using a narrowed-down set of genes (e.g. genes only existing on a microarray) as a gene reference background. In addition, DAVID (61) tends to be more conservative by using genes existing on the array and found to be associated with terms in the corresponding annotation categories, as the gene reference background. Many tools further allow users to upload a customized gene list as a gene reference background (Supplementary Data 1).\cist{HuangNuc2009}
+use the total genes in the genome as a global reference background. They tend to give more significant P-values, as compared to the tools (e.g. Onto-Express) using a narrowed-down set of genes (e.g. genes only existing on a microarray) as a gene reference background. In addition, DAVID (\cite{Huang2009a}) tends to be more conservative by using genes existing on the array and found to be associated with terms in the corresponding annotation categories, as the gene reference background. Many tools further allow users to upload a customized gene list as a gene reference background (Supplementary Data 1).\cist{HuangNuc2009}
 
 # Discussion
 ranking tables by Z-score
@@ -704,6 +755,8 @@ There is n= 785 HNSCC related genes (list in supplementary) pubmed_hnscc_genes.R
 tumor-specific antigen (CD4 CD8)
 
 =Dato 評估一下 lncRNA{\todo}
+gdcSurvivalAnalysis: Univariate survival analysis of multiple genes
+In Jialab-UCR/GDCRNATools: GDCRNATools: an R/Bioconductor package for integrative analysis of lncRNA, mRNA, and miRNA data in GDC
 Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.(The role of long non-coding RNA (lncRNA) expression in human head and neck squamous cell carcinoma (HNSCC) is still poorly understood. In this study, UCSD researchers aimed at establishing the onco-lncRNAome profiling of HNSCC and to identify lncRNAs correlating with prognosis and patient survival.)
 eukaryotic long non-coding RNAs (lncRNAs)
 https://github.com/Jialab-UCR/GDCRNATools
@@ -726,18 +779,42 @@ A total of 84 out of 3199 lncRNAs were significantly associated with the surviva
 加分 3D data visiualiztion
 https://datascienceplus.com/tag/data-visualisation/
 
-#*** [重要討論]
-0)
+#*** [重要討論] 
+***(multiple testing 是發生在 cutoff_finder.R 100切)
+0) cutoff finding #***
+Tex: cut by 人頭[30...70]
 Dato 你的方法跟..之間有和差異嗎? {\todo}
-a.prognoscan, 
-b.cutoff finder (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
+***還有很多方法: https://github.com/RRafiee/Omics
+a.prognoscan\cite{Mizuno2009a} http://dna00.bio.kyutech.ac.jp/PrognoScan/PrognoScan.html
+拿我的 gene list 放進去比比看
+{Survival analysis in PrognoScan employs the minimum P-value approach [2] to find the cutpoint in continuous gene expression measurement for grouping patients.}
+b.cutoff finder\cite{Budczies2012} (http://molpath.charite.de/cutoff/docs/CutoffFinder_PLoSONE_2012.pdf
 http://molpath.charite.de/cutoff/index.jsp
-utility by
-https://www.nature.com/articles/s41598-017-09333-8, DAVID
+utility and cited by
+https://www.nature.com/articles/s41598-017-09333-8 \cite{Chen2017b}, and DAVID\cite{Huang2009a}
+Text S1.
+R code of the functions that are used for cutoff optimization and the generation of plots.
+https://doi.org/10.1371/journal.pone.0051862.s001
+
 c.Findcut\cite{Chang2017a}
-d.Human protein atlas: https://www.proteinatlas.org/humanpathology, protein atlas 有 TCGA最適跟中切
+d.Human protein atlas: Human Pathology Atlas available from https://www.proteinatlas.org/humanpathology
+A pathology atlas of the human cancer transcriptome. Uhlen et al., Science 357, 660 (2017)
+\cite{Uhlen2017}
+{
+有 TCGA最適跟中切 (P values less than 0.001 in maximally separated, and median cut)
+(unprognostic: Genes with a median expression less than FPKM 1 were lowly expressed) 會被排除
+TCGA survival
+https://www.proteinatlas.org/about/assays+annotation#tcga_survival
+Based on the FPKM value of each gene, patients were classified into two expression groups and the correlation between expression level and patient survival was examined. The prognosis of each group of patients was examined by Kaplan-Meier survival estimators, and the survival outcomes of the two groups were compared by log-rank tests. Both median and maximally separated Kaplan-Meier plots are presented in the Human Protein Atlas, and genes with log rank P values less than 0.001 in maximally separated Kaplan-Meier analysis were defined as prognostic genes. If the group of patients with high expression of a selected prognostic gene has a higher observed event than expected event, it is an unfavourable prognostic gene; otherwise, it is a favourable prognostic gene. Genes with a median expression less than FPKM 1 were lowly expressed, and classified as unprognostic in the database even if they exhibited significant prognostic effect in survival analysis.
+
+CORRELATION ANALYSIS AND PROGNOSTIC GENES (HNSCC)
+=> favorable 450 genes
+https://www.proteinatlas.org/api/search_download.php?search=prognostic%3Ahead%20and%20neck%20cancer%20favourable%20AND%20sort_by%3Aprognostic%20head%20and%20neck%20cancer&columns=g,gs,eg,gd,pe,rnacas,rnacad,rnacass,rnacasm,abrr,prognostic_head_and_neck_cancer&format=tsv
+=> unfavorable 340 genes https://www.proteinatlas.org/api/search_download.php?search=prognostic%3Ahead%20and%20neck%20cancer%20unfavourable%20AND%20sort_by%3Aprognostic%20head%20and%20neck%20cancer&columns=g,gs,eg,gd,pe,rnacass,rnacasm,prognostic_head_and_neck_cancer&format=tsv
+}
+
 跟FireBrowse: http://firebrowse.org/# => TCGA 有預後跟臨床關係的相關性 其中有顯著意義的probe
-你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA{\todo}
+你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA{\todo} => GDCRNAtools may do it.
 
 ***Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
 1) Implementation under Rstudio server! run .R code
@@ -748,17 +825,26 @@ workflow: data access GDC portal, data cleaning, clinicopathologic features dete
 https://github.com/WinVector/vtreat
 
 2) manuscript in kniR.rmd r markdown or sweav to generate reproducible research article{\todo}
-##*** RR>reproducible research resume: ####
+##*** RR>reproducible research resume:
 #load(file=file.path(path_ZSWIM2, paste("HNSCC_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
 ## <<<
 e.x. cox proportional hazard ratio in AACSL 
 {
 ??
 }
-3) ***surgical margin issue in survival analysis (even it is not a biological feature, which somehow is an artificial result, there is the most important effect on patient's prognosis){\todo}
+
+3) ***surgical margin issue in survival analysis (even it is not a biological feature, which somehow is an artificial result, it is one of the most important impact on patient's prognosis){\todo}
+A Proposal to Redefine Close Surgical Margins in Squamous Cell Carcinoma of the Oral Tongue.\cite{Zanoni2017}
 =professor 陳志榮
 biological meanings (surgical margin is an artificial factor)
-=> margin (-) vs margin (+) 比較才公平? (run it since [2019/06/28]) # i4-marginPlus
+=> margin (-) vs margin (+) 比較才公平? (run it since [2019/06/28] done) # i6-marginPlus (genes 太少，因為 n=1xx)
+=> unfavorable genes of HNSCC 的確有差別 (so what?:-)
+HNSCC_OS_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda
+$`margin[-]:margin[±]` of intersection
+[1] "SURF4"     "LOC148709" "DKK1"      "MYO1H"    
+[5] "NDFIP1"    "IL19"      "ZNF266"    "ZNF557"   
+[9] "USP10"
+
 
 4) Peter (a list with ranking) of mRNA (RNAseq) or LncRNA
 cTNM alone (in KM analysis);
