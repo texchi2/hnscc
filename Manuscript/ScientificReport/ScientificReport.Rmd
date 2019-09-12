@@ -779,10 +779,12 @@ A total of 84 out of 3199 lncRNAs were significantly associated with the surviva
 加分 3D data visiualiztion
 https://datascienceplus.com/tag/data-visualisation/
 
-#*** [重要討論] (multiple testing 是發生在 cutoff_finder.R 100切)
+#*** [重要討論] 
+***(multiple testing 是發生在 cutoff_finder.R 100切)
 0) cutoff finding #***
 Tex: cut by 人頭[30...70]
 Dato 你的方法跟..之間有和差異嗎? {\todo}
+***還有很多方法: https://github.com/RRafiee/Omics
 a.prognoscan\cite{Mizuno2009a} http://dna00.bio.kyutech.ac.jp/PrognoScan/PrognoScan.html
 拿我的 gene list 放進去比比看
 {Survival analysis in PrognoScan employs the minimum P-value approach [2] to find the cutpoint in continuous gene expression measurement for grouping patients.}
@@ -790,6 +792,10 @@ b.cutoff finder\cite{Budczies2012} (http://molpath.charite.de/cutoff/docs/Cutoff
 http://molpath.charite.de/cutoff/index.jsp
 utility and cited by
 https://www.nature.com/articles/s41598-017-09333-8 \cite{Chen2017b}, and DAVID\cite{Huang2009a}
+Text S1.
+R code of the functions that are used for cutoff optimization and the generation of plots.
+https://doi.org/10.1371/journal.pone.0051862.s001
+
 c.Findcut\cite{Chang2017a}
 d.Human protein atlas: Human Pathology Atlas available from https://www.proteinatlas.org/humanpathology
 A pathology atlas of the human cancer transcriptome. Uhlen et al., Science 357, 660 (2017)
