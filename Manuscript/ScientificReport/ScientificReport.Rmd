@@ -793,7 +793,7 @@ http://molpath.charite.de/cutoff/index.jsp
 utility and cited by
 https://www.nature.com/articles/s41598-017-09333-8 \cite{Chen2017b}, and DAVID\cite{Huang2009a}
 Text S1.
-R code of the functions that are used for cutoff optimization and the generation of plots.
+R code of the functions that are used for cutoff optimization and the generation of plots:
 https://doi.org/10.1371/journal.pone.0051862.s001
 
 c.Findcut\cite{Chang2017a}
