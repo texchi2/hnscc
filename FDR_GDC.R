@@ -31,5 +31,6 @@ rownames(rnaExpr) <- genes
 colnames(rnaExpr) <- samples
 survOutput <- gdcSurvivalAnalysis(gene=genes,
                                   rna.expr=rnaExpr, metadata=metaMatrix)
-# hazard ratio, 95% confidence interval, p value, and FDR
+# hazard ratio, 95% confidence interval, P-value, and FDR
+# # => where is FDR?
 
