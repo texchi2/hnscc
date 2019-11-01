@@ -196,6 +196,7 @@ gdcRNADownload(project.id     = 'TCGA-HNSC',
 
 
 ### Parse RNAseq metadata
+### there is part of clinicopathological data: tumor stage and survival
 metaMatrix.RNA <- gdcParseMetadata(project.id = 'TCGA-HNSC',
                                    data.type  = 'RNAseq', 
                                    write.meta = FALSE)
@@ -226,6 +227,9 @@ rnaCounts <- gdcRNAMerge(metadata  = metaMatrix.RNA,
                          path      = rnadir, 
                          organized = FALSE, ## if target data are in folders
                          data.type = 'RNAseq')
+#Number of samples: 544
+#Number of genes: 60483
+
 
 # Merge miRNAs data
 mirCounts <- gdcRNAMerge(metadata  = metaMatrix.MIR,
@@ -234,15 +238,21 @@ mirCounts <- gdcRNAMerge(metadata  = metaMatrix.MIR,
                          data.type = 'miRNAs')
 
 
+# doc http://bioconductor.org/packages/release/bioc/manuals/GDCRNATools/man/GDCRNATools.pdf
 ### TMM normalization and voom transformation
-# Normalization of RNAseq data
+# Normalization of RNAseq data (rnaCounts)
 rnaExpr <- gdcVoomNormalization(counts = rnaCounts, filter = FALSE)
 
-# Normalization of miRNAs data
+# Normalization of miRNAs data (mirCounts)
 mirExpr <- gdcVoomNormalization(counts = mirCounts, filter = FALSE)
 
 
 ### Differential gene expression analysis
+# R4> colnames(DEGAll)
+#[1] "symbol"  "group"   "logFC"   "AveExpr" "t"       "PValue" 
+#[7] "FDR"     "B" 
+# https://www.statisticshowto.datasciencecentral.com/false-discovery-rate/
+# #The FDR approach is used as an alternative to the Bonferroni correction and controls for a low proportion of false positives
 DEGAll <- gdcDEAnalysis(counts     = rnaCounts, 
                         group      = metaMatrix.RNA$sample_type, 
                         comparison = 'PrimaryTumor-SolidTissueNormal', 
@@ -251,15 +261,22 @@ DEGAll <- gdcDEAnalysis(counts     = rnaCounts,
 
 # All DEGs
 deALL <- gdcDEReport(deg = DEGAll, gene.type = 'all')
-
+# n=2194
 
 # DE long-noncoding
 deLNC <- gdcDEReport(deg = DEGAll, gene.type = 'long_non_coding')
+# n=108
 
 # DE protein coding genes
 dePC <- gdcDEReport(deg = DEGAll, gene.type = 'protein_coding')
+# n=2043
 
+# table(deALL$group)
 
+# IG long_non_coding           ncRNA  protein_coding 
+# 4             108               2            2043 
+# pseudogene             TEC              TR 
+# 34               3               0 
 ###########################################################*
 
 
@@ -290,7 +307,8 @@ ceOutput <- gdcCEAnalysis(lnc         = rownames(deLNC),
                           pc.targets  = 'starBase', 
                           rna.expr    = rnaExpr, 
                           mir.expr    = mirExpr)
-
+# Error in cor.test.default(pcDa, lncDa, alternative = "greater") : 
+# not enough finite observations
 
 
 ### ceRNAs network analysis using user-provided datasets
@@ -339,7 +357,7 @@ shinyCorPlot(gene1    = rownames(deLNC),
 
 ###########################################################*
 
-# an example
+# an short example
 # https://rdrr.io/github/Jialab-UCR/GDCRNATools/man/gdcSurvivalAnalysis.html
 # In Jialab-UCR/GDCRNATools: GDCRNATools: an R/Bioconductor package for integrative analysis of lncRNA, mRNA, and miRNA data in GDC
 # https://rdrr.io/github/Jialab-UCR/GDCRNATools/man/
@@ -374,7 +392,8 @@ colnames(rnaExpr) <- samples
 survOutput <- gdcSurvivalAnalysis(gene=genes,
                                   rna.expr=rnaExpr, metadata=metaMatrix)
 # hazard ratio, 95% confidence interval, P-value, and FDR
-# # => where is FDR?
+# # => where is FDR? 
+# gdcDEAnalysis -> DEGAll has FDR.
 
 # 
 
@@ -385,22 +404,42 @@ survOutput <- gdcSurvivalAnalysis(gene=genes,
 
 
 ############### Univariate survival analysis          ####
-
+# # how about: grouping by expression high/low with a optimized cutoff point?
 # CoxPH analysis
-survOutput <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
+survOutput_cox <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
                                   method   = 'coxph', 
                                   rna.expr = rnaExpr, 
                                   metadata = metaMatrix.RNA)
 
 
 # KM analysis
-survOutput <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
+# # hazard ratio, 95% confidence interval, P-value.
+survOutput_km <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
                                   method   = 'KM', 
                                   rna.expr = rnaExpr, 
                                   metadata = metaMatrix.RNA, 
                                   sep      = 'median')
+# P-value < 0.05
+alpha_HNSCC <- 0.05; zcut <- 1.5
+attach(survOutput_km)
+# removal of as.factor
+#survOutput_km$pValue <- formatC(as.numeric(as.character(pValue)), format = "e", digits = 2)
+survOutput_km$pValue <- signif(as.numeric(as.character(pValue)), digits = 3)
+survOutput_km$HR <- signif(as.numeric(as.character(HR)), digits=3)
+survOutput_km$lower95 <- signif(as.numeric(as.character(lower95)), digits=3)
+survOutput_km$upper95 <- signif(as.numeric(as.character(upper95)), digits=3)
+survOutput_km <- survOutput_km[order(pValue, -HR), ] #sorting by order(ascending)
+detach(survOutput_km)
+#  & HR>=zcut
+survOutput_km005 <- survOutput_km[which(survOutput_km$pValue<=alpha_HNSCC), 1:5]
+# n=317; badguy 153, goodguy 5
+survOutput_km005_bad <- survOutput_km[which(survOutput_km$pValue<=alpha_HNSCC & survOutput_km$HR>=zcut), 1:5]
+survOutput_km005_good <- survOutput_km[which(survOutput_km$pValue<=alpha_HNSCC & survOutput_km$HR<(0.8)), 1:5]
+# 
 
-# KM plot on a local webpage by shinyKMPlot
+# KM plot on a local webpage by shinyKMPlot, a dynamic plot
+# shiny => Listening on http://127.0.0.1:3118
+
 shinyKMPlot(gene = rownames(deALL), rna.expr = rnaExpr, 
             metadata = metaMatrix.RNA)
 

@@ -135,7 +135,8 @@ https://github.com/texchi2/docker4seq
 
 # Material and method
 <!-- # since the date [2019/05/13] after -->
-*** [template of my manuscript] 範例 
+*** [template of my manuscript] 範例
+0) https://journals.sagepub.com/doi/epub/10.1177/1533033818767455 Identification of Significant Gene Signatures and Prognostic Biomarkers for Patients With Cervical Cancer by Integrated Bioinformatic Methods (Rstudio, TCGA, edgeR)
 1) https://www.hindawi.com/journals/bmri/2019/ 5450617/
 Construction of the ceRNA Network 
 HOTTIP Functions as a Key Candidate Biomarker in Head and Neck Squamous Cell Carcinoma by Integrated Bioinformatic Analysis
