@@ -761,7 +761,8 @@ In Jialab-UCR/GDCRNATools: GDCRNATools: an R/Bioconductor package for integrativ
 Peter (a list with ranking) of mRNA (RNAseq) or Peter本來應該是希望你算 lncRNA 這應該就有獨特性.(The role of long non-coding RNA (lncRNA) expression in human head and neck squamous cell carcinoma (HNSCC) is still poorly understood. In this study, UCSD researchers aimed at establishing the onco-lncRNAome profiling of HNSCC and to identify lncRNAs correlating with prognosis and patient survival.)
 eukaryotic long non-coding RNAs (lncRNAs)
 https://github.com/Jialab-UCR/GDCRNATools
-#TANRIC database: https://www.tanric.org; https://ibl.mdanderson.org/tanric/_design/basic/download.html; The Atlas of Noncoding RNAs in Cancer: It characterizes the expression profiles of lncRNAs in large patient cohorts of 20 cancer types including TCGA, CCLE and other independent datasets. (Reference: http://cancerres.aacrjournals.org/content/75/18/3728)
+#TANRIC database: https://www.tanric.org; The Atlas of Noncoding RNAs in Cancer (TANRIC) database
+https://ibl.mdanderson.org/tanric/_design/basic/download.html; The Atlas of Noncoding RNAs in Cancer: It characterizes the expression profiles of lncRNAs in large patient cohorts of 20 cancer types including TCGA, CCLE and other independent datasets. (Reference: http://cancerres.aacrjournals.org/content/75/18/3728)
 http://biophy.dzu.edu.cn/EVLncRNAs
 http://www.bio-bigdata.com/lnc2cancer/(2.0, lncRNAs regulated by microRNA (miRNA), Transcription factor (TF), variant and methylation): HOTAIR, lnc-JPH1-7 in HNSCC. (experimentally validated)
 www.oncolnc.org, OncoLnc lets you see survival correlations for 21 cancers at a time for mRNAs, miRNAs, and lncRNAs.

@@ -394,7 +394,8 @@ survOutput <- gdcSurvivalAnalysis(gene=genes,
 # hazard ratio, 95% confidence interval, P-value, and FDR
 # # => where is FDR? 
 # gdcDEAnalysis -> DEGAll has FDR.
-
+# to screen out the differentially expressed genes (DEGs) with a fold change >2, and P value was defined as .05 to be statistically significant. 
+# Volcano plot was drafted in RStudio and genes whose fold-change >2 along with false discovery rate (FDR) <0.1 were marked with red (upregulated) and green (downregulated). 
 # 
 
 
@@ -429,13 +430,18 @@ survOutput_km$HR <- signif(as.numeric(as.character(HR)), digits=3)
 survOutput_km$lower95 <- signif(as.numeric(as.character(lower95)), digits=3)
 survOutput_km$upper95 <- signif(as.numeric(as.character(upper95)), digits=3)
 survOutput_km <- survOutput_km[order(pValue, -HR), ] #sorting by order(ascending)
+# FDR calculation: BH, Benjamini and Hochberg; http://www.omicshare.com/forum/thread-173-1-1.html
+# p.adjust.methods # c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none")
+pValue_adj <- p.adjust(survOutput_km$pValue, method="fdr", n = nrow(survOutput_km))
+survOutput_km <- cbind(survOutput_km, pValue_adj)
 detach(survOutput_km)
-#  & HR>=zcut
-survOutput_km005 <- survOutput_km[which(survOutput_km$pValue<=alpha_HNSCC), 1:5]
-# n=317; badguy 153, goodguy 5
+#  & HR>=zcut, FDR <0.05
+survOutput_km005 <- survOutput_km[which(survOutput_km$pValue_adj<=alpha_HNSCC), 1:6]
+#x n=317; badguy 153, goodguy 5
+# FDR <0.05 adjustment n=只有7個
 survOutput_km005_bad <- survOutput_km[which(survOutput_km$pValue<=alpha_HNSCC & survOutput_km$HR>=zcut), 1:5]
 survOutput_km005_good <- survOutput_km[which(survOutput_km$pValue<=alpha_HNSCC & survOutput_km$HR<(0.8)), 1:5]
-# 
+# badguy 3(HR>2.2), goodguy 4(HR<0.77) => FDR 很棒
 
 # KM plot on a local webpage by shinyKMPlot, a dynamic plot
 # shiny => Listening on http://127.0.0.1:3118

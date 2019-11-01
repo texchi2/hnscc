@@ -433,28 +433,35 @@ detach(package:gplots)
 
 
 # try FDR cutoff, when no Bonferroni correction ####
+# [2019/11/07] pValue_adj <- p.adjust(survOutput_km$pValue, method="fdr", n = nrow(survOutput_km))
 # the possibility of type I error: alpha (single test)
 # multiple testing problem
-# FDR = E[F/S] <= q-value
+# FDR = E[F/S] <= q-value; http://www.omicshare.com/forum/thread-173-1-1.html
 install.packages("BiocManager")
 library("BiocManager")
-#source("https://bioconductor.org/biocLite.R")
-#biocLite("GDCRNATools") 
-#biocLite("BiocParallel") 
-install.packages("remotes")
-library(remotes)
-devtools::install_github("jeroen/jsonlite")
-
-# https://github.com/Jialab-UCR/Jialab-UCR.github.io/blob/master/GDCRNATools.workflow.R
-remotes::install_github("Jialab-UCR/GDCRNATools")
-library(GDCRNATools) # Pathview, citation("pathview") within R
-#
+# #source("https://bioconductor.org/biocLite.R")
+# #biocLite("GDCRNATools") 
+# #biocLite("BiocParallel") 
+# install.packages("remotes")
+# library(remotes)
+# devtools::install_github("jeroen/jsonlite")
+# 
+# # https://github.com/Jialab-UCR/Jialab-UCR.github.io/blob/master/GDCRNATools.workflow.R
+# remotes::install_github("Jialab-UCR/GDCRNATools")
+# library(GDCRNATools) # Pathview, citation("pathview") within R
+# #
 # https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
 install.packages("fdrtool")
 library("fdrtool") # a simple way
-# estimate fdr and Fdr from p-values
-pvalues <- HNSCC_OS_marginS_pvalue_sorted$p_value
-HNSCC_fdr = fdrtool(pvalues, statistic="pvalue", cutoff.method=c("fndr"))
+
+# estimate Fdr from p-values
+# na.omit -> n=6624
+HNSCC_OS_marginS_pvalue_sorted_noNA <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ]
+# by p.adjust(); n=6615 <0.05
+p_value_adj <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="fdr", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
+#
+# by fdrtool() with chart; n=6615 <0.05
+HNSCC_fdr = fdrtool(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, statistic="pvalue", cutoff.method=c("fndr"))
 #cutoff.method=c("fndr", "pct0", "locfdr")
 # Step 1... determine cutoff point
 # Step 2... estimate parameters of null distribution and eta0
@@ -464,26 +471,9 @@ HNSCC_fdr = fdrtool(pvalues, statistic="pvalue", cutoff.method=c("fndr"))
 HNSCC_fdr$qval # estimated Fdr values 
 HNSCC_fdr$lfdr # estimated local fdr 
 
-# KM analysis
-survKM_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
-                                  method   = 'KM', 
-                                  rna.expr = rnaExpr, 
-                                  metadata = metaMatrix.RNA, 
-                                  sep      = 'median')
-# which point should be used to separate low-expression and high-expression
-# groups for method='KM'. Possible values are '1stQu', 'mean', 'median', and
-# '3rdQu'. Default is 'median'
-#
-# Cox PH analysis
-survCoxPH_Output <- gdcSurvivalAnalysis(gene     = rownames(deALL), 
-                                  method   = 'coxph', 
-                                  rna.expr = rnaExpr, 
-                                  metadata = metaMatrix.RNA)
 
-# manual: http://bioconductor.org/packages/devel/bioc/vignettes/GDCRNATools/inst/doc/GDCRNATools.html
-#  the nCore argument, if method= "DESeq2" in gdcDEAnalysis()
-# gdcEnrichAnalysis() can perform Gene ontology (GO), Kyoto Encyclopedia of Genes and Genomes (KEGG) and Disease Ontology (DO) functional enrichment analyses 
-# bubble plot  
+
+ 
 #library("BiocParallel")
 #register(MulticoreParam(2)) # 2 cores
 
