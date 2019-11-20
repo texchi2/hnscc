@@ -10,8 +10,9 @@ Follow the checklist below to ensure that your LaTeX files will properly convert
   Verify your images are in single, flattened layer.
   The commands to include your images in the LaTeX (.tex) main document do not begin with dots or slashes before the image name. For example, the correct command would be "\includegraphics[xxx]{fig1.eps}" instead of "\includegraphics[xxx]{./fig1.eps}". It is recommended that all of your LaTeX- related files are created and saved in a single folder.
 
-
-#*** sharlatex and overleaf, sync with Github (vim): https://www.overleaf.com/project/5d1f4419460443357489e46f
+#sharlatex {#start}
+#*** sharlatex and overleaf, sync with Github (vim) ---
+##https://www.overleaf.com/project/5d1f4419460443357489e46f
 #Overleaf:
 #https://www.overleaf.com/project/5bfff217eedfa811462b1ad5
 #https://www.overleaf.com/project/5bfff383eedfa811462b1bef (template of Scientific Reports)
@@ -51,6 +52,7 @@ Supplementary Material
 # }
 title: Interrogating Biomarkers in HNSCC Survival Assessment
 A Global Genome-wide Scan with Cutoff Mining for Emerging Biomarkers in Head and Neck Squamous Cell Carcinoma
+
 A Global Genome-wide Scan by Data-driven approach to Identify the Prognostic Markers for Head and Neck Squamous Cell Carcinoma
 Chi, L.-H. et al., Sci. Rep. 7, 9031 (2019, in submission). 
 subtitle: A Optimizated Cutoff Finder for Biomarker Discovery for Head and Neck Squamous Cell Carcinoma
