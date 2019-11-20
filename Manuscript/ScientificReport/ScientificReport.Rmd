@@ -822,7 +822,7 @@ https://www.proteinatlas.org/api/search_download.php?search=prognostic%3Ahead%20
 => unfavorable 340 genes https://www.proteinatlas.org/api/search_download.php?search=prognostic%3Ahead%20and%20neck%20cancer%20unfavourable%20AND%20sort_by%3Aprognostic%20head%20and%20neck%20cancer&columns=g,gs,eg,gd,pe,rnacass,rnacasm,prognostic_head_and_neck_cancer&format=tsv
 }
 
-跟FireBrowse: http://firebrowse.org/# => TCGA 有預後跟臨床關係的相關性 其中有顯著意義的probe
+===跟FireBrowse: http://firebrowse.org/# => TCGA 有預後跟臨床關係的相關性 其中有顯著意義的probe
 你應該要評估一下 你在TCGA mRNA的部分是否有利基? Or LncRNA{\todo} => GDCRNAtools may do it.
 
 ***Text with citations by @Galyardt14mmm, [@Mislevy06Cog].
