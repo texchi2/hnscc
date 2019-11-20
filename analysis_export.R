@@ -450,17 +450,23 @@ library("BiocManager")
 # remotes::install_github("Jialab-UCR/GDCRNATools")
 # library(GDCRNATools) # Pathview, citation("pathview") within R
 # #
-# https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
-install.packages("fdrtool")
-library("fdrtool") # a simple way
-
-# estimate Fdr from p-values
-# na.omit -> n=6624
+# a simple way
+#1) estimate FDR from p-values by p.adjust()
+# na.omit -> only n=6624 genes have P-value available
 HNSCC_OS_marginS_pvalue_sorted_noNA <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ]
-# by p.adjust(); n=6615 <0.05
+# by p.adjust(); n=6615 of FDR<0.05; n=9 FDR=0.05
 p_value_adj <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="fdr", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
-#
-# by fdrtool() with chart; n=6615 <0.05
+# trying FDR<0.01, n=1085
+# p_value_adj[p_value_adj<=0.01]
+# p_value_adj[p_value_adj<=0.001]; n=12
+HNSCC_OS_marginS_pvalue_sorted_noNA <- cbind(HNSCC_OS_marginS_pvalue_sorted_noNA, p_value_adj)
+save(HNSCC_OS_marginS_pvalue_sorted_noNA, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted_FDRnoNA.Rda", sep="")))
+
+# 
+# or
+#x 2) by fdrtool() with chart; n=6615 FDR<0.05
+## https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
+install.packages("fdrtool")
 HNSCC_fdr = fdrtool(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, statistic="pvalue", cutoff.method=c("fndr"))
 #cutoff.method=c("fndr", "pct0", "locfdr")
 # Step 1... determine cutoff point
@@ -468,9 +474,9 @@ HNSCC_fdr = fdrtool(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, statistic="pval
 # Step 3... compute p-values and estimate empirical PDF/CDF
 # Step 4... compute q-values and local fdr
 # Step 5... prepare for plotting
-HNSCC_fdr$qval # estimated Fdr values 
-HNSCC_fdr$lfdr # estimated local fdr 
-
+HNSCC_fdr$qval # estimated Fdr values => all are zero
+HNSCC_fdr$lfdr # estimated local fdr => all are zero
+#---
 
 
  
