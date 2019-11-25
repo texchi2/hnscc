@@ -136,6 +136,10 @@ Rules: creating a portable project (.Rproj in Rstudio environment), using code/s
 - ChIPseq workflow
 https://github.com/texchi2/docker4seq
 
+Those differentially expressed proteins in HNSCC was never reported in previous articles.
+Taking all together, through global genome scanning we elucidated that OOO might be  new candidates for HNSCC therapy.
+
+
 # Material and method
 <!-- # since the date [2019/05/13] after -->
 *** [template of my manuscript] 範例
