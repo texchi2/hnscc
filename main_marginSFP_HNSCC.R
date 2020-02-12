@@ -37,6 +37,7 @@
 # or https://gdc.cancer.gov/access-data/gdc-community-tools, such as GDCtools
 # FirebrowseR - Paper describing the R FirebrowseR package.
 # GenomicDataCommons - Paper describing the R GenomicDataCommons package.
+# or install.packages('cgdsr') # http://www.cbioportal.org/rmatlab
 # "FirebrowseR: an R client to the Broad Institute’s Firehose Pipeline"
 # Mario Deng, Database 2017
 ## [1.Directly] start from beginning  get Broad Institute GDAC: TCGA/Firhose data into R (Retrieve TCGA CDEs verbatim) #
@@ -725,7 +726,7 @@ f <- e + 100
 # 
 # # ** margin issue: 0 or 1 or NaN ###
 # # with r1 or r2 (residual tumor) => person_neoplasm_cancer_status (with tumor) is NOT recurrence
-# # while clincal "tumor free" cases with r1 or r2 => Amazing ! selflimited :-)
+# # while clinical "tumor free" cases with r1 or r2 => Amazing ! self-limited :-) (spontaneous regression\cite{Schlabe2018})
 # # residual_tumor in HNSCC: The status of a tissue margin following surgical resection:
 # #=> r0, 無殘留，tumor free from margin (就是有 「開乾淨」的意思)
 # #=> r1 (micro) r2 (macro) 有殘留，
