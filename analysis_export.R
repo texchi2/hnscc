@@ -289,10 +289,10 @@ Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni)
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
 # higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
 #tiff("Rplot10_Freq_Pvalue.tiff", units="cm", width=5, height=5, res=300)
-plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analysis", log="x", cex=0.3) # log scale x or y
+plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analyses", log="x", cex=0.3) # log scale x or y
 abline(h=150, lty=2, col="blue")
 abline(v=Bonferroni_cutoff, lty=2, col="red") # 5.31011e-06
-legend("topright", legend=c(paste("Frequency at 150"), paste("P-value at ", signif(Bonferroni_cutoff, 2))), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
+legend("topright", legend=c(paste("Frequency at 150"), paste("Bonferroni ", signif(Bonferroni_cutoff, 2))), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
 #dev.off()
 # KM P-value with Bonferroni correction
 # n=28 in _marginS_ of HNSCC_OS_marginS_pvalueBonferroni_sorted
@@ -307,11 +307,11 @@ save(HNSCC_OS_marginS_pvalueBonferroni_sorted,
      HNSCC_OS_marginFree_pvalueBonferroni_sorted, 
      HNSCC_OS_marginPlus_pvalueBonferroni_sorted, 
      file=paste(path_cohort, "/", TCGA_cohort, "_OS", "_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda", sep="")) 
-
+# a.k.a. HNSCC_OS_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda
 # 
 ### if no Bonferroni: 
 non_Bonferroni_cutoff <- alpha_HNSCC / 1
-plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analysis", log="x", cex=0.3) # log scale x or y
+plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analyses", log="x", cex=0.3) # log scale x or y
 abline(h=150, lty=2, col="blue")
 abline(v=non_Bonferroni_cutoff, lty=2, col="red") # ***as alpha_HNSCC instead of 5.31011e-06
 legend("bottomleft", legend=c(paste("Frequency at 150"), paste("P-value at ", non_Bonferroni_cutoff)), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
@@ -410,20 +410,22 @@ venn_marginSFP <- list(HNSCC_OS_marginFree_pvalueBonferroni_sorted$gene_id, HNSC
 names_marginSFP <- c(paste("margin[-]"), paste("margin[+/-]"), paste("margin[+]"))
 library(venn)
 # https://cran.r-project.org/web/packages/venn/venn.pdf
-tiff("venn_marginSFP.tiff", units="cm", width=5, height=5, res=300) 
+#tiff("venn_marginSFP.tiff", units="cm", width=5, height=5, res=300) 
 # # saving as .tiff (by tiff())
 venn(venn_marginSFP, snames=names_marginSFP,
      ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, deeppink, pink", opacity = 0.6, size = 15, cexil = 2.0, cexsn = 0.8, borders = FALSE)
 #      predefined colors if "style"
 #http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
 # meta-language 1 0 or -
-title <- c(paste(TCGA_cohort, "survival analysis: candidate genes"), paste("(KM P-Value <=", signif(Bonferroni_cutoff, 2), ")")) #, collapse = "\n")
+title <- c(paste(TCGA_cohort, "survival analyses: candidate genes"), paste("(KM P-Value <=", signif(Bonferroni_cutoff, 2), ")")) #, collapse = "\n")
 #coords <- unlist(getCentroid(getZones(venn_HR2p5, snames="uni_CoxHR>=2p5, multi_CoxHR>=2p5")))
 # coords[1], coords[2], 
 text(500,950, labels = title[1], cex = 1.30) # (0,0) on bottom_left corner
 text(500,100, labels = title[2], cex = 1.20) 
 # n=47
-dev.off() # saving instead of showing
+#dev.off() # saving instead of showing
+
+
 # retrieving the intersection genes by gplots::venn
 library(gplots)
 tmp_cand <- venn(venn_marginSFP, names=names_marginSFP, show.plot=F) #library(gplots); the group count matrix alone

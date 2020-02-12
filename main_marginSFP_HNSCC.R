@@ -1816,9 +1816,9 @@ load(file="whole_genome.Rda") # the name list of protein coding genome
 LUAD_n <- length(whole_genome) # n=20499 -> now is 20500, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
 # keep it LUAD_n as gene number
 # >*** [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
-#marginTag <- "_marginS_" #at ./marginS
-#marginTag <- "_marginFree_" #at ./marginFree
-#marginTag <- "_marginPlus_" #at ./marginPlus
+#marginTag <- "_marginS_" #at ./marginS (negative + close + positive margin)
+#marginTag <- "_marginFree_" #at ./marginFree (negative margin)
+#marginTag <- "_marginPlus_" #at ./marginPlus (close + positive margin)
 raw <- 
   readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
 select_margin <- function(x) {
