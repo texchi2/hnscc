@@ -248,6 +248,7 @@ $ la -al *.Rda
 ##  table1 (KM): candidate_sample(KM) ##
 # #sort by p_value (ascending) and cyl (descending)
 # 楊老師: Bonferroni correction (adjustment) sets the significance cut-off at α/n. of KM P-value; Cox P-value <=0.05 as well.
+# 王老師: 珍貴的結果 strong evidence
 # https://www.stat.berkeley.edu/~mgoldman/Section0402.pdf
 # newdata <- mtcars[order(mpg, -cyl),]
 # >*** [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
@@ -274,18 +275,25 @@ rm(raw)
 path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. marginS/
 load(file=paste(path_ZSWIM2, TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")) 
 # as candidate_sample with candidate_cox and n_percent_Bonferroni 
+
+
+# marginS, marginPlue or marginFree: using a "common" HNSCC_OS_marginS_pvalue_sorted
 attach(candidate_sample) # n=20500
 HNSCC_OS_marginS_pvalue_sorted <- candidate_sample[order(p_value, -number),] # sorting by order(ascending)
 detach(candidate_sample)
 
-attach(HNSCC_OS_marginS_pvalue_sorted)
-# ***try Bonferroni correction (adjustment) sets the significance cut-off at α/n 
+
+# try 人工 Bonferroni correction (adjustment)
+# -> sets the significance cut-off at α/n 
+# -> p.adjust(p, method = p.adjust.methods="bonferroni", n = length(p))
 # {
+attach(HNSCC_OS_marginS_pvalue_sorted)
 alpha_HNSCC <- 0.05
 Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni)
 # => 4.786521e-06 (LUAD run04); => 5.31011e-06 (2019 run02)
-# } Bonferroni end
+# } 人工 Bonferroni end
 # 
+# 以下只是 plotting; calculation go 463 ####
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
 # higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
 #tiff("Rplot10_Freq_Pvalue.tiff", units="cm", width=5, height=5, res=300)
@@ -295,21 +303,22 @@ abline(v=Bonferroni_cutoff, lty=2, col="red") # 5.31011e-06
 legend("topright", legend=c(paste("Frequency at 150"), paste("Bonferroni ", signif(Bonferroni_cutoff, 2))), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
 #dev.off()
 # KM P-value with Bonferroni correction
-# n=28 in _marginS_ of HNSCC_OS_marginS_pvalueBonferroni_sorted
+# ok n=28 in _marginS_ of HNSCC_OS_marginS_pvalueBonferroni_sorted
 HNSCC_OS_marginS_pvalueBonferroni_sorted <- HNSCC_OS_marginS_pvalue_sorted[which(p_value<=Bonferroni_cutoff & !is.na(p_value)), 1:3]
-# n=14 in _marginFree_; 
+# ok n=14 in _marginFree_; (2/3) 
 HNSCC_OS_marginFree_pvalueBonferroni_sorted <- HNSCC_OS_marginS_pvalueBonferroni_sorted
-# n=6 in _marginPlus_; 
+# ok n=6 in _marginPlus_; (3/3); return to 258
 HNSCC_OS_marginPlus_pvalueBonferroni_sorted <- HNSCC_OS_marginS_pvalueBonferroni_sorted
 
-# save 3 SFP
+# afer 3/3 then save 3 SFP
 save(HNSCC_OS_marginS_pvalueBonferroni_sorted, 
      HNSCC_OS_marginFree_pvalueBonferroni_sorted, 
      HNSCC_OS_marginPlus_pvalueBonferroni_sorted, 
      file=paste(path_cohort, "/", TCGA_cohort, "_OS", "_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda", sep="")) 
 # a.k.a. HNSCC_OS_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda
+# go to 413 then try FDR 442
 # 
-### if no Bonferroni: 
+### if no Bonferroni: try z-cut (Tex發明的)
 non_Bonferroni_cutoff <- alpha_HNSCC / 1
 plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analyses", log="x", cex=0.3) # log scale x or y
 abline(h=150, lty=2, col="blue")
@@ -404,7 +413,7 @@ save(HNSCC_OS_marginS_pvalueBonferroni_sorted, file=file.path(path_ZSWIM2, paste
 # [21] "CELSR3"    "SLC26A9"   "FAM3D"     "GPR15"    
 # [25] "KLRA1"     "NPB"       "TCP11"     "STIP1" 
 
-# venn of 3
+# venn of 3: marginS, marginFree and marginPlus:
 venn_marginSFP <- list(HNSCC_OS_marginFree_pvalueBonferroni_sorted$gene_id, HNSCC_OS_marginS_pvalueBonferroni_sorted$gene_id, 
                        HNSCC_OS_marginPlus_pvalueBonferroni_sorted$gene_id)
 names_marginSFP <- c(paste("margin[-]"), paste("margin[+/-]"), paste("margin[+]"))
@@ -434,12 +443,12 @@ isect_marginSFP <- attr(tmp_cand, "intersections")
 detach(package:gplots)
 
 
-# try FDR cutoff, when no Bonferroni correction ####
+# try FDR or Bonferroni correction ####
 # [2019/11/07] pValue_adj <- p.adjust(survOutput_km$pValue, method="fdr", n = nrow(survOutput_km))
 # the possibility of type I error: alpha (single test)
 # multiple testing problem
 # FDR = E[F/S] <= q-value; http://www.omicshare.com/forum/thread-173-1-1.html
-install.packages("BiocManager")
+#install.packages("BiocManager")
 library("BiocManager")
 # #source("https://bioconductor.org/biocLite.R")
 # #biocLite("GDCRNATools") 
@@ -453,37 +462,26 @@ library("BiocManager")
 # library(GDCRNATools) # Pathview, citation("pathview") within R
 # #
 # a simple way
-#1) estimate FDR from p-values by p.adjust()
 # na.omit -> only n=6624 genes have P-value available
 HNSCC_OS_marginS_pvalue_sorted_noNA <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ]
+
+# 1) try bonferroni by p.adjust()
+p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="bonferroni", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
+
+# 2) estimate FDR from p-values by p.adjust()
+# https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust
 # by p.adjust(); n=6615 of FDR<0.05; n=9 FDR=0.05
-p_value_adj <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="fdr", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
+p_value_adj_FDR <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="fdr", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
 # trying FDR<0.01, n=1085
 # p_value_adj[p_value_adj<=0.01]
 # p_value_adj[p_value_adj<=0.001]; n=12
-HNSCC_OS_marginS_pvalue_sorted_noNA <- cbind(HNSCC_OS_marginS_pvalue_sorted_noNA, p_value_adj)
-save(HNSCC_OS_marginS_pvalue_sorted_noNA, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted_FDRnoNA.Rda", sep="")))
 
-# 
-# or
-#x 2) by fdrtool() with chart; n=6615 FDR<0.05
-## https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
-install.packages("fdrtool")
-HNSCC_fdr = fdrtool(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, statistic="pvalue", cutoff.method=c("fndr"))
-#cutoff.method=c("fndr", "pct0", "locfdr")
-# Step 1... determine cutoff point
-# Step 2... estimate parameters of null distribution and eta0
-# Step 3... compute p-values and estimate empirical PDF/CDF
-# Step 4... compute q-values and local fdr
-# Step 5... prepare for plotting
-HNSCC_fdr$qval # estimated Fdr values => all are zero
-HNSCC_fdr$lfdr # estimated local fdr => all are zero
-#---
+HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjusts <- cbind(HNSCC_OS_marginS_pvalue_sorted_noNA, p_value_adj_bonferroni, p_value_adj_FDR)
+# HNSCC_OS_marginS_pvalue_sorted_noNA <- cbind(HNSCC_OS_marginS_pvalue_sorted_noNA, p_value_adj)
+#HNSCC_OS_marginS_pvalue_sorted_noNA_FDR <- HNSCC_OS_marginS_pvalue_sorted_noNA
+save(HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjusts, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_p_adjusts.Rda", sep="")))
+# [2020/02/15] p_value_adj is FDR and bonferroni
 
-
- 
-#library("BiocParallel")
-#register(MulticoreParam(2)) # 2 cores
 
 
 # [2019/09/05]
@@ -494,8 +492,32 @@ save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste(TCGA_c
 save(HNSCC_OS_marginS_pvalue005_zcut, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) 
 # *** rename HNSCC_OS_marginS_pvalue1e_6_zscore0_6 => HNSCC_OS_marginS_pvalue005_zcut
 
+# 
+#x or
+#x x) by fdrtool() with chart; n=6615 FDR<0.05
+## https://www.rdocumentation.org/packages/fdrtool/versions/1.2.15/topics/fdrtool
+#xinstall.packages("fdrtool")
+#xHNSCC_fdr = fdrtool(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, statistic="pvalue", cutoff.method=c("fndr"))
+#cutoff.method=c("fndr", "pct0", "locfdr")
+# Step 1... determine cutoff point
+# Step 2... estimate parameters of null distribution and eta0
+# Step 3... compute p-values and estimate empirical PDF/CDF
+# Step 4... compute q-values and local fdr
+# Step 5... prepare for plotting
+#HNSCC_fdr$qval # estimated Fdr values => all are zero
+#HNSCC_fdr$lfdr # estimated local fdr => all are zero
+#---
+
+
+ 
+#library("BiocParallel")
+#register(MulticoreParam(2)) # 2 cores
+
+
+
 
 ## Post2 KM + candidate_cox ####
+## it has [part I][part II][part III]
 # "sig" marking for significant P-value (<=0.05)
 # [uni_cox_pvalue, uni_HR, uni_sig]
 # [multi_cox_pvalue, multi_HR, multi_sig]
@@ -508,6 +530,9 @@ load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag,
 # 2) HNSCC_OS_marginS_pvalue005_zcut, n=1476;
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, 
                                        "pvalue005_zcut.Rda", sep="")))
+# or 3) # *** try using FDR: HNSCC_OS_marginS_pvalue_sorted_noNA_FDR.Rda
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDR.Rda", sep="")))
+
 # # as candidate_cox
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")))
 # candidate_sample, candidate_cox, n_percent_Bonferroni
@@ -545,7 +570,7 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
 # add colname as HRs, "uni_cox"/"multi_cox", sig ... for HRs, P-values, sig of RNAseq(z-score)
 
 
-# [part II] new variable: KM + Cox, n=1475
+# [part II] new variable: KM + Cox, n=1475; under zcut
 HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue005_zcut
 # add more columns
 HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
@@ -572,10 +597,30 @@ save(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, file=file.path(path_
 # x$a
 # x$"a"
 
-
+# [part III] under FDR q-value
+# # HNSCC_OS_marginS_pvalue_sorted_noNA_FDR.Rda
+HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue_sorted_noNA_FDR
+# add more columns
+HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
+for (ip in 1:nrow(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR)) {
+  pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR$gene_id
+  if (length(candidate_cox[[pos_gene]])==11) {
+    # reference: candidate_cox_ip, which listing as candidate_cox
+    HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[ip, 5:10]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
+    # we don't have number0_1 any more:   colnames "gene_id" "p_value" "z_score"
+    #   ipp <- ipp+1
+    print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
+    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[ip, c(1, 5)]), sep=";"))
+  }
+}
+#
+save(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR.Rda", sep="")))
+## =6624
 
 
 # ** Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 ####
+# FDR < 0.05; HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, n=6624
+# OR
 # Z-score > 0.8: HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, n=1475
 # OR
 # HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR
@@ -585,11 +630,16 @@ save(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, file=file.path(path_
 # [4] "z_score"       "number_01"     "uni_HR"       
 # [7] "uni_P_value"   "uni_sig"       "multi_HR"     
 # [10] "multi_P_value" "multi_sig"
+HNSCC_OS_marginS_THREE_pvalue005_FDR <- subset(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, 
+                                                select=c(gene_id, p_value, p_value_adj, uni_HR, uni_P_value, multi_HR, multi_P_value))
+                                                # p_value_adj is FDR
 HNSCC_OS_marginS_THREE_pvalue005_6601 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, 
                                            select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
 HNSCC_OS_marginS_THREE_pvalue005_1475 <- subset(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, 
                                            select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
 #... <- subset(..., (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
+save(HNSCC_OS_marginS_THREE_pvalue005_FDR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_FDR.Rda", sep=""))) 
+
 save(HNSCC_OS_marginS_THREE_pvalue005_6601, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep=""))) 
 save(HNSCC_OS_marginS_THREE_pvalue005_1475, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep=""))) 
 # as HNSCC_OS_marginS_THREE_pvalue005 (6601 or 1475)
@@ -600,6 +650,9 @@ save(HNSCC_OS_marginS_THREE_pvalue005_1475, file=file.path(path_ZSWIM2, paste(TC
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep="")))
 # zcut, Z-score > 0.8: HNSCC_OS_marginS_THREE_pvalue005_1475 <- HNSCC_OS_marginS_pvalue005_zcut, n=1475
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep="")))
+# if FDR < 0.05
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_FDR.Rda", sep="")))
+
 
 # start to working...# *** choice one
 HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_6601 
