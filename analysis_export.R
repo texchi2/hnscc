@@ -462,7 +462,7 @@ library("BiocManager")
 # library(GDCRNATools) # Pathview, citation("pathview") within R
 # #
 # a simple way
-# na.omit -> only n=6624 genes have P-value available
+# na.omit -> only n=6624 genes have P-value available; removal of NA
 HNSCC_OS_marginS_pvalue_sorted_noNA <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ]
 
 # 1) try bonferroni by p.adjust()
@@ -476,20 +476,21 @@ p_value_adj_FDR <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method=
 # p_value_adj[p_value_adj<=0.01]
 # p_value_adj[p_value_adj<=0.001]; n=12
 
-HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjusts <- cbind(HNSCC_OS_marginS_pvalue_sorted_noNA, p_value_adj_bonferroni, p_value_adj_FDR)
+HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS <- cbind(HNSCC_OS_marginS_pvalue_sorted_noNA, p_value_adj_bonferroni, p_value_adj_FDR)
 # HNSCC_OS_marginS_pvalue_sorted_noNA <- cbind(HNSCC_OS_marginS_pvalue_sorted_noNA, p_value_adj)
 #HNSCC_OS_marginS_pvalue_sorted_noNA_FDR <- HNSCC_OS_marginS_pvalue_sorted_noNA
-save(HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjusts, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_p_adjusts.Rda", sep="")))
-# [2020/02/15] p_value_adj is FDR and bonferroni
+save(HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_p_adjustS.Rda", sep="")))
+# [2020/02/16] p_value_adj is FDR and bonferroni;
+# "HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS.Rda" saved at "/home/tex/R/HNSCC_Tex_survival/hnscc_github/marginS/"
 
 
 
 # [2019/09/05]
-HNSCC_OS_marginS_pvalue005_sorted
+#HNSCC_OS_marginS_pvalue005_sorted
 # save n=6624, cut by P-value <= alpha_HNSCC
 save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted.Rda", sep="")))
 # save n=1437, cut by P-value <= alpha_HNSCC AND Z-score >= zcut(e.q. 0.8)
-save(HNSCC_OS_marginS_pvalue005_zcut, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) 
+#x save(HNSCC_OS_marginS_pvalue005_zcut, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) 
 # *** rename HNSCC_OS_marginS_pvalue1e_6_zscore0_6 => HNSCC_OS_marginS_pvalue005_zcut
 
 # 
