@@ -283,7 +283,8 @@ HNSCC_OS_marginS_pvalue_sorted <- candidate_sample[order(p_value, -number),] # s
 detach(candidate_sample)
 
 
-# try 人工 Bonferroni correction (adjustment)
+# ***其實直接 jump to p.adjust() run 447
+# x try 人工 Bonferroni correction (adjustment)
 # -> sets the significance cut-off at α/n 
 # -> p.adjust(p, method = p.adjust.methods="bonferroni", n = length(p))
 # {
@@ -292,7 +293,9 @@ alpha_HNSCC <- 0.05
 Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni)
 # => 4.786521e-06 (LUAD run04); => 5.31011e-06 (2019 run02)
 # } 人工 Bonferroni end
-# 
+ 
+ 
+
 # 以下只是 plotting; calculation go 463 ####
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
 # higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
@@ -318,7 +321,7 @@ save(HNSCC_OS_marginS_pvalueBonferroni_sorted,
 # a.k.a. HNSCC_OS_marginSFP_pvalueBonferroni_KM_candidate_cox.Rda
 # go to 413 then try FDR 442
 # 
-### if no Bonferroni: try z-cut (Tex發明的)
+### if no Bonferroni: try z-cut, z_score (Tex發明的)
 non_Bonferroni_cutoff <- alpha_HNSCC / 1
 plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analyses", log="x", cex=0.3) # log scale x or y
 abline(h=150, lty=2, col="blue")
@@ -464,7 +467,8 @@ library("BiocManager")
 # a simple way
 # na.omit -> only n=6624 genes have P-value available; removal of NA
 HNSCC_OS_marginS_pvalue_sorted_noNA <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ]
-
+# keeping z_score
+HNSCC_OS_marginS_pvalue_sorted_noNA$z_score <- scale(HNSCC_OS_marginS_pvalue_sorted_noNA$number, center=T, scale = T)
 # 1) try bonferroni by p.adjust()
 p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="bonferroni", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
 
@@ -485,10 +489,10 @@ save(HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS, file=file.path(path_ZSWIM2, 
 
 
 
-# [2019/09/05]
+# x[2019/09/05]
 #HNSCC_OS_marginS_pvalue005_sorted
 # save n=6624, cut by P-value <= alpha_HNSCC
-save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted.Rda", sep="")))
+#x save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted.Rda", sep="")))
 # save n=1437, cut by P-value <= alpha_HNSCC AND Z-score >= zcut(e.q. 0.8)
 #x save(HNSCC_OS_marginS_pvalue005_zcut, Bonferroni_cutoff, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) 
 # *** rename HNSCC_OS_marginS_pvalue1e_6_zscore0_6 => HNSCC_OS_marginS_pvalue005_zcut
@@ -517,29 +521,34 @@ save(HNSCC_OS_marginS_pvalue005_sorted, file=file.path(path_ZSWIM2, paste(TCGA_c
 
 
 
-## Post2 KM + candidate_cox ####
-## it has [part I][part II][part III]
+## Post2 KM adding candidate_cox ####
+## # 重新改寫 [Bonferroni] and [FDR] P-value correction
+##xx it has [part I][part II][part III]
 # "sig" marking for significant P-value (<=0.05)
 # [uni_cox_pvalue, uni_HR, uni_sig]
 # [multi_cox_pvalue, multi_HR, multi_sig]
 # [exp_pvalue]
 # to generate HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR.Rda; n=6601 or 1476
 # from 
-# 1) HNSCC_OS_marginS_pvalue005_sorted # n=6601;
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, 
-                                       "pvalue005_sorted.Rda", sep="")))
-# 2) HNSCC_OS_marginS_pvalue005_zcut, n=1476;
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, 
-                                       "pvalue005_zcut.Rda", sep="")))
-# or 3) # *** try using FDR: HNSCC_OS_marginS_pvalue_sorted_noNA_FDR.Rda
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDR.Rda", sep="")))
+# x# 1) HNSCC_OS_marginS_pvalue005_sorted # n=6601; P-value < 0.05 (without correction)
+# load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, 
+#                                        "pvalue005_sorted.Rda", sep="")))
+# x# 2) HNSCC_OS_marginS_pvalue005_zcut, n=1476;
+# load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, 
+#                                        "pvalue005_zcut.Rda", sep="")))
+# x# or 3) # *** try using FDR: HNSCC_OS_marginS_pvalue_sorted_noNA_FDR.Rda; FDR
+# load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDR.Rda", sep="")))
 
+
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_p_adjustS.Rda", sep="")))
+# as HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS
 # # as candidate_cox
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")))
-# candidate_sample, candidate_cox, n_percent_Bonferroni
+# as candidate_sample, candidate_cox, n_percent_Bonferroni
 
-# [part I] new variable: KM + Cox, n=6601
-HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue005_sorted
+# [Bonferroni][FDR] new variable: KM + Cox, n=6624; P-value < 0.05 (Bonferroni correction)
+# # KM P-value <= 0.05 (alpha_HNSCC): HNSCC_OS_marginS_pvalue005_sorted
+HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS
 #dataframe[,"newName"] <- NA # add more named columns (NA)
 HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
 #HNSCC_OS_marginS_pvalue005_sorted[,c(colnames(candidate_cox[[1]][8, c(2:4, 6:8)]))] <- NA
@@ -553,11 +562,11 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
   # by geneid ?
   if (length(candidate_cox[[pos_gene]])==11) {
     # reference: candidate_cox_ip, which listing as candidate_cox
-    HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, 5:10]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
+    HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, 7:12]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
     # we don't have number0_1 any more:  colnames "number"  "gene_id" "p_value" "z_score"
     #   ipp <- ipp+1
     print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
-    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, c(2, 5)]), sep=";"))
+    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, c(2, 7, 10)]), sep=";"))
   }
   # on : [2018-05-18 07:26:42] [error] handle_read_frame error: websocketpp.transport:7 (End of File)
   #"exp_pvalue" is a correlation of gene expression vs features (TNM....): 
@@ -565,32 +574,65 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
   # colnames <-  c("KM_Features", "KM_P_value",  "KM_sig")
   
 }
-#detach(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)
-# c( "uni_Features", "uni_HR",       "uni_P_value",  "uni_sig",      "multi_Features", "multi_HR",
-#"multi_P_value",  "multi_sig",      "KM_Features", "KM_P_value",  "KM_sig")
-# add colname as HRs, "uni_cox"/"multi_cox", sig ... for HRs, P-values, sig of RNAseq(z-score)
-
-
-# [part II] new variable: KM + Cox, n=1475; under zcut
-HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue005_zcut
-# add more columns
-HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
-for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR)) {
-  pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR$gene_id
-  if (length(candidate_cox[[pos_gene]])==11) {
-    # reference: candidate_cox_ip, which listing as candidate_cox
-    HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[ip, 4:9]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
-    # we don't have number0_1 any more:   colnames "gene_id" "p_value" "z_score"
-    #   ipp <- ipp+1
-    print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
-    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[ip, c(1, 4)]), sep=";"))
-  }
-}
-##
-# save table1 + table2 (ok) [2019/07/01], n= 6601 or 1475
+# HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS with [Bonferroni][FDR] and variable: KM + Cox
 save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
-save(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcutKM_sorted_pvalueCox_HR.Rda", sep="")))
-#save(list(HNSCC_OS_marginS_pvalue005_zcut, ???))
+# 2020/02/24 ok; go 663
+
+
+# # xx
+# #x [part I] new variable: KM + Cox, n=6601; P-value < 0.05 (without correction)
+# #xHNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue005_sorted
+# #dataframe[,"newName"] <- NA # add more named columns (NA)
+# #xHNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
+# #HNSCC_OS_marginS_pvalue005_sorted[,c(colnames(candidate_cox[[1]][8, c(2:4, 6:8)]))] <- NA
+# #colnames(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR) <- c(...."uni_HR", "uni_P_value", "uni_sig",
+# #                                                "multi_HR", "multi_P_value", "multi_sig")
+# 
+# #attach(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)
+# #ipp <- 0
+# for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
+#   pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR$gene_id
+#   # by geneid ?
+#   if (length(candidate_cox[[pos_gene]])==11) {
+#     # reference: candidate_cox_ip, which listing as candidate_cox
+#     HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, 5:10]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
+#     # we don't have number0_1 any more:  colnames "number"  "gene_id" "p_value" "z_score"
+#     #   ipp <- ipp+1
+#     print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
+#     print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, c(2, 5)]), sep=";"))
+#   }
+#   # on : [2018-05-18 07:26:42] [error] handle_read_frame error: websocketpp.transport:7 (End of File)
+#   #"exp_pvalue" is a correlation of gene expression vs features (TNM....): 
+#   # <- candidate_cox[which(gene_id[ip]==whole_genome)][1:7, c(11)] # correlation
+#   # colnames <-  c("KM_Features", "KM_P_value",  "KM_sig")
+#   
+# }
+# #detach(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)
+# # c( "uni_Features", "uni_HR",       "uni_P_value",  "uni_sig",      "multi_Features", "multi_HR",
+# #"multi_P_value",  "multi_sig",      "KM_Features", "KM_P_value",  "KM_sig")
+# # add colname as HRs, "uni_cox"/"multi_cox", sig ... for HRs, P-values, sig of RNAseq(z-score)
+# 
+# 
+# # [part II] new variable: KM + Cox, n=1475; under zcut
+# HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue005_zcut
+# # add more columns
+# HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
+# for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR)) {
+#   pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR$gene_id
+#   if (length(candidate_cox[[pos_gene]])==11) {
+#     # reference: candidate_cox_ip, which listing as candidate_cox
+#     HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[ip, 4:9]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
+#     # we don't have number0_1 any more:   colnames "gene_id" "p_value" "z_score"
+#     #   ipp <- ipp+1
+#     print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
+#     print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR[ip, c(1, 4)]), sep=";"))
+#   }
+# }
+# ##
+# # save table1 + table2 (ok) [2019/07/01], n= 6601 or 1475
+# save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
+# save(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcutKM_sorted_pvalueCox_HR.Rda", sep="")))
+# #save(list(HNSCC_OS_marginS_pvalue005_zcut, ???))
 # x[i], or might be x[i:j]
 # x[i, j]
 # x[[i]]; x[[expr]]; it can NOT be x[[i:j]]
@@ -598,51 +640,59 @@ save(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, file=file.path(path_
 # x$a
 # x$"a"
 
-# [part III] under FDR q-value
-# # HNSCC_OS_marginS_pvalue_sorted_noNA_FDR.Rda
-HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue_sorted_noNA_FDR
-# add more columns
-HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
-for (ip in 1:nrow(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR)) {
-  pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR$gene_id
-  if (length(candidate_cox[[pos_gene]])==11) {
-    # reference: candidate_cox_ip, which listing as candidate_cox
-    HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[ip, 5:10]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
-    # we don't have number0_1 any more:   colnames "gene_id" "p_value" "z_score"
-    #   ipp <- ipp+1
-    print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
-    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[ip, c(1, 5)]), sep=";"))
-  }
-}
-#
-save(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR.Rda", sep="")))
-## =6624
-
+# # [part III] under FDR q-value
+# # # HNSCC_OS_marginS_pvalue_sorted_noNA_FDR.Rda
+# HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR <- HNSCC_OS_marginS_pvalue_sorted_noNA_FDR
+# # add more columns
+# HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "uni_sig","multi_HR", "multi_P_value", "multi_sig")] <- NA
+# for (ip in 1:nrow(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR)) {
+#   pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR$gene_id
+#   if (length(candidate_cox[[pos_gene]])==11) {
+#     # reference: candidate_cox_ip, which listing as candidate_cox
+#     HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[ip, 5:10]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
+#     # we don't have number0_1 any more:   colnames "gene_id" "p_value" "z_score"
+#     #   ipp <- ipp+1
+#     print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
+#     print(paste(c("..adding...", HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR[ip, c(1, 5)]), sep=";"))
+#   }
+# }
+# #
+# save(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR.Rda", sep="")))
+# ## =6624
 
 # ** Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 ####
 # FDR < 0.05; HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, n=6624
-# OR
 # Z-score > 0.8: HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, n=1475
-# OR
-# HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR
-# _marginS_ on [2019/07/02]
-# > colnames(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)
-# [1] "number"        "gene_id"       "p_value"      
-# [4] "z_score"       "number_01"     "uni_HR"       
-# [7] "uni_P_value"   "uni_sig"       "multi_HR"     
-# [10] "multi_P_value" "multi_sig"
-HNSCC_OS_marginS_THREE_pvalue005_FDR <- subset(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, 
-                                                select=c(gene_id, p_value, p_value_adj, uni_HR, uni_P_value, multi_HR, multi_P_value))
-                                                # p_value_adj is FDR
-HNSCC_OS_marginS_THREE_pvalue005_6601 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, 
-                                           select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
-HNSCC_OS_marginS_THREE_pvalue005_1475 <- subset(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, 
-                                           select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
-#... <- subset(..., (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
-save(HNSCC_OS_marginS_THREE_pvalue005_FDR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_FDR.Rda", sep=""))) 
 
-save(HNSCC_OS_marginS_THREE_pvalue005_6601, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep=""))) 
-save(HNSCC_OS_marginS_THREE_pvalue005_1475, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep=""))) 
+### => HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS with [Bonferroni][FDR] and variable: KM + Cox HR
+# is HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR
+# _marginS_ on [2019/07/02]
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
+
+# # > colnames(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)
+# [Bonferroni] and [FDR] P-value corrected
+# [1] "number"                 "gene_id"               
+# [3] "p_value"                "z_score"               
+# [5] "p_value_adj_bonferroni" "p_value_adj_FDR"       
+# [7] "uni_HR"                 "uni_P_value"           
+# [9] "uni_sig"                "multi_HR"              
+# [11] "multi_P_value"          "multi_sig"             
+# R4> 
+#xHNSCC_OS_marginS_THREE_pvalue005_FDR <- subset(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, 
+#                                                select=c(gene_id, p_value, p_value_adj, uni_HR, uni_P_value, multi_HR, multi_P_value))
+                                                # p_value_adj is FDR
+# n=6624
+HNSCC_OS_marginS_THREE_pvalue005 <- subset(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, 
+                                           select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+save(HNSCC_OS_marginS_THREE_pvalue005, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005.Rda", sep=""))) 
+
+#xHNSCC_OS_marginS_THREE_pvalue005_1475 <- subset(HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, 
+#                                           select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
+#... <- subset(..., (uni_P_value <= 0.05) & (multi_P_value <= 0.05), 
+#save(HNSCC_OS_marginS_THREE_pvalue005_FDR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_FDR.Rda", sep=""))) 
+
+#save(HNSCC_OS_marginS_THREE_pvalue005_6601, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep=""))) 
+#save(HNSCC_OS_marginS_THREE_pvalue005_1475, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep=""))) 
 # as HNSCC_OS_marginS_THREE_pvalue005 (6601 or 1475)
 
 
