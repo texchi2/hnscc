@@ -697,29 +697,35 @@ save(HNSCC_OS_marginS_THREE_pvalue005, file=file.path(path_ZSWIM2, paste(TCGA_co
 
 
 # >pubmed.mineR ####
-# no zcut: HNSCC_OS_marginS_THREE_pvalue005_6601 <- HNSCC_OS_marginS_THREE_pvalue005, n=6601
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep="")))
-# zcut, Z-score > 0.8: HNSCC_OS_marginS_THREE_pvalue005_1475 <- HNSCC_OS_marginS_pvalue005_zcut, n=1475
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep="")))
-# if FDR < 0.05
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_FDR.Rda", sep="")))
+# # no zcut: HNSCC_OS_marginS_THREE_pvalue005_6601 <- HNSCC_OS_marginS_THREE_pvalue005, n=6601
+# load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_6601.Rda", sep="")))
+# # zcut, Z-score > 0.8: HNSCC_OS_marginS_THREE_pvalue005_1475 <- HNSCC_OS_marginS_pvalue005_zcut, n=1475
+# load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep="")))
+# # if FDR < 0.05
+# load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_FDR.Rda", sep="")))
 
 
-# start to working...# *** choice one
-HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_6601 
+# start to working...# *** 
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
+# as HNSCC_OS_marginS_THREE_pvalue005
 # [GDC data portal]
 # https://www.rdocumentation.org/packages/pubmed.mineR/versions/1.0.1
-# Excluding Cancer Gene Census (such as TRIM24, ...) from GDC data portal: d/l Cancer Gene Census (575 genes)
-# [2019/07/17] downloaded, n=575
+# https://docs.gdc.cancer.gov/Data_Portal/Users_Guide/Exploration/
+# Excluding COSMIC Cancer Gene Census (CGC, such as TRIM24, ...) from GDC data portal: d/l Cancer Gene Census (575 genes)
+# [2019/07/17] downloaded, n=575; https://cancer.sanger.ac.uk/census/? 再也找不到了
+# [2020/02/27] Census_allThu Feb 27 09_29_04 2020.tsv: total n=723; n=7+12=19 in tumour types: head and neck cancer, HNSCC, oral SCC, oral squamous cell carcinoma]
 # load genes.2019-07-17.json
 #install.packages("jsonlite")
 library(jsonlite)
-cc_gene575 <- fromJSON("~/R/genes.2019-07-17.json", simplifyDataFrame=TRUE)
+#x cgc_gene575 <- fromJSON("~/R/genes.2019-07-17.json", simplifyDataFrame=TRUE)
+cgc_gene723 <- read.table(file = "~/R/Census_allThu Feb 27 09_29_04 2020.tsv", sep = '\t', header = TRUE)
 # subsetting by omitting row
-cc_Index <- which(HNSCC_OS_marginS_THREE_pvalue005$gene_id %in% cc_gene575$symbol)
-View(HNSCC_OS_marginS_THREE_pvalue005$gene_id[cc_Index]) # n=213 or 52
-HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005[-cc_Index, ] # removal
-# now n=6388 or 1423
+# xcc_Index2019 <- which(HNSCC_OS_marginS_THREE_pvalue005$gene_id %in% cgc_gene575$symbol)
+cgc_Index2020 <- which(HNSCC_OS_marginS_THREE_pvalue005$gene_id %in% cgc_gene723$Gene.Symbol)
+#venn(list(cgc_gene575$symbol[cc_Index2019], cgc_gene723$Gene.Symbol[cc_Index2020]), snames=c("CGC_2019", "CGC_2020"), ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, deeppink, pink", opacity = 0.6, size = 15, cexil = 2.0, cexsn = 0.8, borders = FALSE)
+View(HNSCC_OS_marginS_THREE_pvalue005$gene_id[cgc_Index2020]) # n=213 or 52
+HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005[-cgc_Index2020, ] # removal
+# now n=6368 [2020/02/29]
 
 # There is updated HNSCC related gene from publication ####
 # *** go to embase
@@ -832,8 +838,9 @@ library(pubmed.mineR) # http://ramuigib.blogspot.com
 #                                    "pubmed_id", "medline"), http_end = NULL, ...)
 # Type of search. See https://dev.elsevier.com/api_docs.html
 # [2019/07/20] my elsevier api_key = "9925b63f77af6f11b74b38a3d6a80f41" from web site
-# search in embase: (prognosis:ti OR prognostic:ti OR 'tumor marker') AND cancer:ti AND 'head and neck squamous cell carcinoma'
-# download records-503.csv
+# [2020/02/29] manual Quick search in embase: 
+# (prognosis:ti OR prognostic:ti OR 'tumor marker') AND cancer:ti AND 'head and neck squamous cell carcinoma' OR ('SLC2A4' AND hnscc) OR ('thymosin beta 4' AND hnscc) OR (hnscc AND 'hsiao m.':au AND 'chang w.-m':au)
+# download records-503.csv -> records-432.csv
 res_df <- read.csv(file=file.choose(), header=T) # with abstract, PUI as embase
 em_hnscc_PMID_list <- lapply(res_df$Medline.PMID, pubtator_function) # list of Gene, Chemical, Disease and PMID
 # => n=371 => 134; 503
@@ -864,7 +871,14 @@ for (pubtator_i in 1: length(em_hnscc_PMID_list)) {
 # pubmed_hnscc_df data cleaning: sorting by "Disease", manual curation
 pubmed_hnscc_df_sorted <- pubmed_hnscc_df[order(pubmed_hnscc_df$Diseases, na.last=NA), ] # NA removal, n=259
 pubmed_hnscc_df_sorted <- pubmed_hnscc_df_sorted[complete.cases(pubmed_hnscc_df_sorted$Genes), ] # n=169 => 64
-# n=244
+# n=203; including DDX58; GLUT4; HNSCC; Metastasis; TRIM24, PMID: 28061796 
+# manually add GLUT4>6517 and DDX58>23586 from 28061796
+pubmed_hnscc_df_sorted <- rbind(pubmed_hnscc_df_sorted, pubmed_hnscc_df_sorted[pubmed_hnscc_df_sorted$PMID==28061796, ]) # n=204
+pubmed_hnscc_df_sorted <- rbind(pubmed_hnscc_df_sorted, pubmed_hnscc_df_sorted[pubmed_hnscc_df_sorted$PMID==28061796, ]) # n=206
+pubmed_hnscc_df_sorted <- pubmed_hnscc_df_sorted[-(nrow(pubmed_hnscc_df_sorted)), ] # n=205
+pubmed_hnscc_df_sorted[(nrow(pubmed_hnscc_df_sorted)), 3] <- "GLUT4>6517"
+pubmed_hnscc_df_sorted[(nrow(pubmed_hnscc_df_sorted)-1), 3] <- "DDX58>23586"
+
 # loading all genes mentioned in each article
 pubmed_hnscc_genes <- as.data.frame(matrix(NA, nrow=nrow(pubmed_hnscc_df_sorted)*4, ncol=5))
 colnames(pubmed_hnscc_genes) <- c("No", "PMID", "Diseases", "GeneSymbol", "EntrezGene")
@@ -885,28 +899,49 @@ for (curation_i in 1: nrow(pubmed_hnscc_df_sorted)) {
 # Cancer Biomark. 2012-2013;12(3):141-8. doi: 10.3233/CBM-130302.
 #  [Overexpression of TEX101, a potential novel cancer marker, in head and neck squamous cell carcinoma.]
 } # from 1 to 976 entries in [pubmed_hnscc_genes]
-# there is NO GLUT4 nor TMSB4X => repeat searching including
-#  ('glucose transporter 4' OR 'thymosin beta 4') AND 'hsiao m.':au (yes)
+# there is GLUT4, RUNX2 and TMSB4X => repeat searching including 手工加入(ok)
+#  ('glucose transporter 4' OR 'thymosin beta 4') AND ('hsiao m.' or 'Chang W.-M'):au (yes)
 #  'mRNA expression level'
 #  if 'Chang W.-M' AND 'hsiao m.':au => 
 # resulting pubmed_hnscc_genes, 256 entries
 # \Sci Rep. 2017[Parathyroid Hormone-Like Hormone is a
-# Poor Prognosis Marker of Head and Neck Cancer and Promotes Cell Growth via RUNX2Regulation.]
+# Poor Prognosis Marker of Head and Neck Cancer and Promotes Cell Growth via RUNX2 Regulation.]
+# n=820
 pubmed_hnscc_genes <- pubmed_hnscc_genes[complete.cases(pubmed_hnscc_genes$GeneSymbol), ]
-
-# *** There is n= 785 HNSCC related genes
+# n=660
+# removal non-HNSCC article: PMID 23582651, 26293675, 25487446, 26745068, 16092551, 30125310; and TNM SCC (it is not gene name)
+pubmed_hnscc_genes <- pubmed_hnscc_genes[!(pubmed_hnscc_genes$PMID %in% c(23582651, 26293675, 25487446, 26745068, 16092551, 30125310, 23672832, 11329776, 25639759, 30636185, 20629076, 25608735, 23818362, 24405882, 24190760)), ]
+# removal one item HNSCC-ALDH1; and rest of TNM
+pubmed_hnscc_genes <- pubmed_hnscc_genes[!(pubmed_hnscc_genes$GeneSymbol %in% c("HNSCC-ALDH1", "TNM")), ]
+# n=635
 save(pubmed_hnscc_genes, file=file.path(path_cohort, "pubmed_hnscc_genes.Rda"))
-load(file=file.path(path_cohort, "pubmed_hnscc_genes.Rda")) # as pubmed_hnscc_genes
+
+# then checking duplicated by EntrezGene; distinct() [dplyr package] 
+library(tidyverse)
+pubmed_hnscc_genes371 <- pubmed_hnscc_genes %>% dplyr::distinct(EntrezGene, .keep_all = TRUE)
+# *** There is n= 371 unique HNSCC related genes, Tex curated.
+save(pubmed_hnscc_genes371, file=file.path(path_cohort, "pubmed_hnscc_genes371.Rda"))
+load(file=file.path(path_cohort, "pubmed_hnscc_genes371.Rda")) # as pubmed_hnscc_genes371
+# TEX101: https://www.ncbi.nlm.nih.gov/pubmed/?term=23481573%5Buid%5D
  
-# pubmed_hnscc_genes [2019/08/13 <- <- <- ]
-write.csv(pubmed_hnscc_genes[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes.csv"), quote = F,  row.names = F)
-pubmed_articles <- table(pubmed_hnscc_genes$GeneSymbol) # TP53 == p53 :-)
-pubmed_articles_5 <- pubmed_articles[pubmed_articles>=5]
-pubmed_articles_5[[4]] <- pubmed_articles_5[[4]] + pubmed_articles_5[[9]]
-pubmed_articles_5[[8]] <- pubmed_articles_5[[8]] + pubmed_articles_5[[11]]
-#pubmed_articles_5 <- data.frame(cbind(pubmed_articles_5))[c(1:8, 10), ]
-pubmed_articles_5 <- as.data.frame(pubmed_articles_5)[c(1:8, 10), ]
-colnames(pubmed_articles_5) <- c("GeneSymbol", "Freq")
+# pubmed_hnscc_genes [2020/02/29 <- <- <- ] x自此更名?(n=371)
+#X pubmed_hnscc_genes <- pubmed_hnscc_genes371 # for supplementary .csv file
+write.csv(pubmed_hnscc_genes371[, -1], file=file.path(path_cohort, "pubmed_hnscc_genes371.csv"), quote = F,  row.names = F)
+
+# n=635, with article frequency
+pubmed_articles <- table(pubmed_hnscc_genes$EntrezGene) # EGFR, TP53 == p53 :-), EntrezGene 7157
+pubmed_articles_5 <- pubmed_articles[pubmed_articles>5]
+##pubmed_articles_5[[4]] <- pubmed_articles_5[[4]] + pubmed_articles_5[[9]]
+##pubmed_articles_5[[8]] <- pubmed_articles_5[[8]] + pubmed_articles_5[[11]]
+#x pubmed_articles_5 <- data.frame(cbind(pubmed_articles_5))[c(1:8, 10), ]
+##pubmed_articles_5 <- as.data.frame(pubmed_articles_5)[c(1:8, 10), ]
+pubmed_articles_5 <- as.data.frame(pubmed_articles_5)
+colnames(pubmed_articles_5) <- c("EntrezGene", "Freq")
+
+Entrez_Symbol <- subset(pubmed_hnscc_genes371, select=c(GeneSymbol, EntrezGene), (pubmed_hnscc_genes371$EntrezGene %in% pubmed_articles_5$EntrezGene))
+  # pubmed_hnscc_genes371$GeneSymbol[pubmed_hnscc_genes371$EntrezGene %in% pubmed_articles_5$EntrezGene])
+pubmed_articles_5 <- merge(pubmed_articles_5, Entrez_Symbol, by = "EntrezGene")
+pubmed_articles_5 <- pubmed_articles_5[order(-pubmed_articles_5$Freq), ] #sorting by order (descending)
 #pubmed_articles_5vector <- as.vector(unlist(pubmed_articles_5$Freq))
 pubmed_articles_5vector <- pubmed_articles_5[["Freq"]]
 # barplot needs a vector or table (freq)
@@ -918,7 +953,7 @@ barplot(pubmed_articles_5vector, col="grey50",
         ylim=c(0, 5+max(pubmed_articles_5vector)))
 # ***barplot has bug (vector checking is not well)
 # name of bar label: names.arg (taken from colname of vector)
-title(main=paste(TCGA_cohort, "genes published until [", Sys.Date(), "]"), 
+title(main=paste(TCGA_cohort, "genes published articles, until ", Sys.Date(), ""), 
       ylab="Frequence", )
 #rotate 60 degrees, srt=60
 #bar_label_index <- which(pubmed_hnscc_genes$EntrezGene==rownames(pubmed_articles_5))
@@ -927,20 +962,19 @@ text(seq(1.5, end_point, by=2), par("usr")[3]-0.25,
      labels = paste(pubmed_articles_5$GeneSymbol), cex=0.8)
 
 #dev.off()
-# R4> em_Index # n=75
-em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes$GeneSymbol)
+# R4> em_Index # n=75, removal those published genes
+em_Index <- which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% pubmed_hnscc_genes371$GeneSymbol)
 # [1]   26   67  206  284  427  484  530  609  809  971 1020 1067 1137 1178 1193
 # [16] 1365 1404 1423 1501 1518 1523 1698 1819 1881 2036 2104 2197 2212 2360 2380
 # [31] 2490 2696 2706 2759 2808 2926 2953 2992 3287 3392 3550 3700 3796 3848 3854
 # [46] 3938 3985 4076 4095 4125 4213 4246 4352 4360 4604 4667 4671 4677 4731 4742
 # [61] 4849 4900 4948 5034 5095 5550 5582 5657 5659 5699 5708 6018 6094 6153 6263
 HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[-em_Index, ] # removal
-# 6388 -> n=6313 genes
-# 1475 -> 1423 -> n=1402
-# Excluding the HNSCC cancer driver genes list: done from Embase
+# n=6293 genes
+# (ok) Excluded the HNSCC cancer driver genes, list retrieved from Embase
 # ?BioXpress*.csv # data from https://hive.biochemistry.gwu.edu/cgi-bin/prd/bioxpress/servlet.cgi
 # <done> [2019/07/20] anniversary for discovery of GLUT4 in HNSCC cell line [2014/07/20]
-
+save(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, file=file.path(path_cohort, "HNSCC_OS_marginS_THREE_pvalue005_noCancerGene.Rda"))
 
 
 
@@ -948,7 +982,7 @@ HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue00
 
 # uni/multi_HR plot, n=6313 ####
 # there is no "filtering", plot is just for demo
-#HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
+#x HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
 
 bad_FC <- 1.8
 attach(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
