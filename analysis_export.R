@@ -287,7 +287,8 @@ detach(candidate_sample)
 # ***其實直接 jump to p.adjust() run 447
 # x try 人工 Bonferroni correction (adjustment)
 # -> sets the significance cut-off at α/n 
-# -> p.adjust(p, method = p.adjust.methods="bonferroni", n = length(p))
+# -> p.adjust(p, method = p.adjust.methods="bonferroni", n = length(p)) # bonferroni, or fdr
+# n= number of comparisons, must be at least length(p); only set this (to non-default) when you know what you are doing!
 # {
 attach(HNSCC_OS_marginS_pvalue_sorted)
 alpha_HNSCC <- 0.05
@@ -345,7 +346,7 @@ attach(HNSCC_OS_marginS_pvalue005_sorted)
 # reg <- lm(number ~ p_value, data = HNSCC_OS_marginS_pvalue005_sorted)
 # abline(reg, col="blue")
 # n=6601 in HNSCC_OS_marginS_pvalue005_sorted
-HNSCC_OS_marginS_pvalue005_sorted$z_score <- scale(number, center=T, scale = T) 
+HNSCC_OS_marginS_pvalue005_sorted$z_score <- scale(number, center=T, scale = T) # z_score z_cut were born
 # "number" frequency is standardized as z-score (-1.04 to +2.30)
 # ("Z" because the normal distribution is also known as the "Z distribution").
 # => scale(): scale=TRUE, center=TRUE then scaling is done by dividing the (centered) columns of x by their standard deviations
@@ -447,13 +448,46 @@ isect_marginSFP <- attr(tmp_cand, "intersections")
 detach(package:gplots)
 
 
-## Post2 KM adding candidate_cox ####
+## *** Post2 KM adding candidate_cox ####
 ## # 重新改寫 [Bonferroni] and [FDR] P-value correction
 # with FDR or Bonferroni correction ##
-# [2019/11/07] pValue_adj <- p.adjust(survOutput_km$pValue, method="fdr", n = nrow(survOutput_km))
+# *** best [2019/11/07] pValue_adj <- p.adjust(survOutput_km$pValue, method="fdr") #, n = nrow(survOutput_km))
 # the possibility of type I error: alpha (single test)
 # multiple testing problem
 # FDR = E[F/S] <= q-value; http://www.omicshare.com/forum/thread-173-1-1.html
+# >*** [choice ONE]: _marginFree_ or _marginS_ loading from .Rda
+#marginTag <- "_marginS_" #at ./marginS
+#marginTag <- "_marginFree_" #at ./marginFree
+#marginTag <- "_marginPlus_" #at ./marginPlus 
+raw <- 
+  readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
+select_margin <- function(x) {
+  switch(x,
+         s = "_marginS_",
+         f = "_marginFree_",
+         p = "_marginPlus_",
+         S = "_marginS_",
+         #         F = "_marginFree_",
+         P = "_marginPlus_",
+         stop("Unknown input")
+  )
+}
+marginTag <- select_margin(raw)
+print(marginTag)
+rm(raw) 
+# notice: //
+path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. marginS/
+load(file=paste(path_ZSWIM2, TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")) 
+# as candidate_sample with candidate_cox and n_percent_Bonferroni 
+
+
+# marginS, marginPlue or marginFree: using a "common" HNSCC_OS_marginS_pvalue_sorted
+# run 3 times, 就有三組 marginS, marginPlus and marginFree;
+attach(candidate_sample) # n=20500
+HNSCC_OS_marginS_pvalue_sorted <- candidate_sample[order(p_value, -number),] # sorting by order(ascending)
+detach(candidate_sample)
+
+
 #install.packages("BiocManager")
 library("BiocManager")
 # #source("https://bioconductor.org/biocLite.R")
@@ -473,7 +507,8 @@ HNSCC_OS_marginS_pvalue_sorted_noNA <- HNSCC_OS_marginS_pvalue_sorted[complete.c
 # keeping z_score
 HNSCC_OS_marginS_pvalue_sorted_noNA$z_score <- scale(HNSCC_OS_marginS_pvalue_sorted_noNA$number, center=T, scale = T)
 # 1) try bonferroni by p.adjust()
-p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="bonferroni", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
+#p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="bonferroni", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
+p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="bonferroni") # n=default 不必寫
 
 # 2) estimate FDR from p-values by p.adjust()
 # https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust
@@ -544,7 +579,7 @@ save(HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS, file=file.path(path_ZSWIM2, 
 
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_p_adjustS.Rda", sep="")))
 # as HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS
-# # as candidate_cox
+#
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")))
 # as candidate_sample, candidate_cox, n_percent_Bonferroni
 
@@ -662,7 +697,7 @@ save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM
 # save(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR.Rda", sep="")))
 # ## =6624
 
-# ** Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 ####
+# Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 ####
 # FDR < 0.05; HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, n=6624
 # Z-score > 0.8: HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, n=1475
 
@@ -1110,6 +1145,12 @@ HNSCC_OS_marginS_multi_CoxHR2p5_FDR <- subset(HNSCC_OS_marginS_THREE_pvalue005_n
 # Mode    TRUE 
 # logical    1106 
 
+# ***take genes by Bonferroni P-value correction: HNSCC_OS_marginS_multi_CoxHR2p5_Bonf
+save(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_noCancerGene.Rda", sep=""))) # in HNSCC_OS_marginS_THREE_pvalue005_noCancerGene (final results)
+#isect_HR2p5 <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf
+save(HNSCC_OS_marginS_multi_CoxHR2p5_Bonf, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
+# go to Export r2excel
+
 
 
 #x venn1 diagram of HR>=1 of Uni & Multi ###
@@ -1217,26 +1258,44 @@ dev.off() # saving instead of showing
 # lapply(isect_HR0p5, head)
 #}
 
-# Embase HNSCC genes was removed; saved genes in left, right and intersection
-save(isect_HR2p5, isect_HR0p5, 
-     file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep="")))
+# # Embase HNSCC genes was removed; saved genes in left, right and intersection
+# save(isect_HR2p5, isect_HR0p5, 
+#      file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep="")))
 #} venn the end
 
 
 
-
-## Export r2excel and .Rda ####
-# _marginS_ [2020/03/04]
+# from 1150
+## Export r2excel and .Rda 2019 ####
+# _marginS_ [2020/03/04] z_cut 要刪去
+# Embase HNSCC genes was removed; no venn is necessary
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
+# as HNSCC_OS_marginS_multi_CoxHR2p5_Bonf
+isect_HR2p5 <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf # n=9
+save(isect_HR2p5, 
+     file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep="")))
 # sink() for .xlsx export as well :-) https://stackoverflow.com/questions/34038041/how-to-merge-multiple-data-frame-into-one-table-and-export-to-excel
 # HNSCC_OS_marginS_candidates_Venn.xlsx: show up Bonferroni_cutoff and 5e-6 (expression style).
-# 
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) # in HNSCC_OS_marginS_pvalue005_zcut, Z-score >= zcut (e.x. 0.8)
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # in candidate_cox (a list), candidate_samplie, candidate_cox, n_percent_Bonferroni
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep=""))) # isect_HR2p5, isect_HR0p5
+# *** loading 素材們 
+#load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_zcut.Rda", sep=""))) # in HNSCC_OS_marginS_pvalue005_zcut, Z-score >= zcut (e.x. 0.8)
+#load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # in candidate_cox (a list), candidate_samplie, candidate_cox, n_percent_Bonferroni
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep=""))) # isect_HR2p5 <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf; [x isect_HR0p5]
 
-library("xlsx")
+library("xlsx") # as well as rJava: ok
+# # installing curl directly then r2excel
+# install.packages("devtools")
+# library(devtools)
+# install_github("kassambara/r2excel", force=T) # the both ways are OK; reinstall it
+# # or
+# install.packages(c("cli", "gh", "usethis", "githubinstall"))
+# library("githubinstall")
+# githubinstall("r2excel")
 library("r2excel")
-# Create an Excel workbook. Both .xls and .xlsx file formats can be used.
+# ***going to R2Excel (2020) 
+
+
+
+#xxx Create an Excel workbook. Both .xls and .xlsx file formats can be used.
 filenamex <- paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn", ".xlsx", sep = "") 
 # "HNSCC_OS_marginS_candidates_Venn.xlsx"
 wb <- createWorkbook(type="xlsx")
@@ -1277,74 +1336,79 @@ xlsx.addLineBreak(sheet, 1) # add one blank line
 #              fontColor="darkblue", row.names = F, col.names = F) #, colSpan=1, rowSpan=1)
 
 # a candidate genes table
+# 要修
+candidates_alpha_pvalue <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf # after Bonferroni correcion
 # > colnames(HNSCC_OS_marginS_pvalue005_zcut)
-# [1] "gene_id" "p_value" "z_score" to "Gene_id", "P_value", "Z_score"
-colnames(HNSCC_OS_marginS_pvalue005_zcut) <- c("Gene_id", "P_value", "Z_score") # Z_score
-# # no more Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
-attach(HNSCC_OS_marginS_pvalue005_zcut)
-candidates_alpha_pvalue <- HNSCC_OS_marginS_pvalue005_zcut[which(P_value<=alpha_HNSCC), ]
-detach(HNSCC_OS_marginS_pvalue005_zcut)
+# [1] "gene_id" "p_value" "z_score" rename to "Gene_id", "P_value", "Z_score" (why?)
+colnames(candidates_alpha_pvalue)[1:3] <- c("Gene_id", "P_value", "Bonferroni P_value")
+
+# # # no more Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
+# attach(HNSCC_OS_marginS_pvalue005_zcut)
+# candidates_alpha_pvalue <- HNSCC_OS_marginS_pvalue005_zcut[which(P_value<=alpha_HNSCC), ]
+# detach(HNSCC_OS_marginS_pvalue005_zcut)
 
 attach(candidates_alpha_pvalue) # removal of as.factor (P_value)
 # in scientific notation: formatC of [, c(2)]
 candidates_alpha_pvalue$P_value <- formatC(as.numeric(as.character(P_value)), format = "e", digits = 2)
-candidates_alpha_pvalue$Z_score <- signif(Z_score, digits=4)
-candidates_alpha_pvalue <- candidates_alpha_pvalue[order(P_value, -Z_score), ] #sorting by order(ascending)
+candidates_alpha_pvalue$`Bonferroni P_value` <- formatC(as.numeric(as.character(`Bonferroni P_value`)), format = "e", digits = 2)
+#candidates_alpha_pvalue$Z_score <- signif(Z_score, digits=4)
+candidates_alpha_pvalue <- candidates_alpha_pvalue[order(`Bonferroni P_value`), ] #sorting by order(ascending)
 detach(candidates_alpha_pvalue)
 
-# export top 30 genes, out of 1702 genes
-xlsx.addTable(wb, sheet, data = candidates_alpha_pvalue[1:30, ], startCol=2,
+# export top 30 genes [1:30,], out of 1702 genes
+xlsx.addTable(wb, sheet, data = candidates_alpha_pvalue[, ], startCol=2,
               fontColor="darkblue", fontSize=12,
               rowFill=c("white", "white"), row.names = TRUE)
 
 xlsx.addLineBreak(sheet, 5)  # add two blank lines
 
-# Export Z-score/P-Value plot by plotFunction() ####
+# Export (no Z-score)/P-Value plot by plotFunction() ####
 xlsx.addLineBreak(sheet, 1)
-# Define function
-xlsx.addPlot.candidates<-function( wb, sheet, startRow=NULL,startCol=2,
-                                   width=480, height=480,... )
-{ # plot of Z-score vs P-value digram from "the summary"
-  
-  # png(filename = "plot.png", width = width, height = height,...)
-  # #{
-  # # plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
-  # # legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
-  # load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted.Rda", sep=""))) 
-  # # is HNSCC_OS_marginS_pvalue005_sorted
-  # # "swap data" for following code running
-  # 
-  # attach(HNSCC_OS_marginS_pvalue005_sorted) # Z-score
-  # plot(p_value, z_score, type="p", ylab="Z-score", xlab="P-value (KM survival analysis)", log="x") # log scale x or y
-  # #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
-  # abline(h=0.6, lty=2, col="blue")
-  # abline(v=alpha_HNSCC, lty=2, col="red") #
-  # # run a logistic regression model (categorical 0 vs 1)
-  # #g <- glm(number_01 ~ p_value, family=poisson, data=HNSCC_OS_marginS_pvalue005_sorted)
-  # # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
-  # #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-  # legend("bottomleft", legend=c(paste("Z-score at 0.6"), paste("P-value at", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.9) # box and font size
-  # # figure legend: logistic regression, LR, by Generalized linear model, glm
-  # detach(HNSCC_OS_marginS_pvalue005_sorted)
-  # #}
-  # dev.off()
-  # 
-  #Append plot to the sheet
-  if(is.null(startRow)){
-    rows<- getRows(sheet) #list of row object
-    startRow=length(rows)+1
-  } 
-  # append to the file created previously
-  addPicture("Rplot10_Zscore_Pvalue.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
-  xlsx.addLineBreak(sheet, round(width/20)+1)
-  #res<-file.remove("plot.png") # Z-score vs P-value plot
-  #file.rename("plot.png", "Zscore_Pvalue_scatter.png")
-} # Define function
 
-# calling and convert tiff to png
-system("convert Rplot10_Zscore_Pvalue.tiff Rplot10_Zscore_Pvalue.png")
-currentRow <- xlsx.addPlot.candidates(wb, sheet) # startRow + a plot
-#print(paste("The z-score summary plot:", filenamex,"was exported successfully."))
+#x Define function
+# xlsx.addPlot.candidates<-function( wb, sheet, startRow=NULL,startCol=2,
+#                                    width=480, height=480,... )
+# { # plot of Z-score vs P-value digram from "the summary"
+#   
+#   # png(filename = "plot.png", width = width, height = height,...)
+#   # #{
+#   # # plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("P-value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+#   # # legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:2, col=c("blue","red"))
+#   # load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_sorted.Rda", sep=""))) 
+#   # # is HNSCC_OS_marginS_pvalue005_sorted
+#   # # "swap data" for following code running
+#   # 
+#   # attach(HNSCC_OS_marginS_pvalue005_sorted) # Z-score
+#   # plot(p_value, z_score, type="p", ylab="Z-score", xlab="P-value (KM survival analysis)", log="x") # log scale x or y
+#   # #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
+#   # abline(h=0.6, lty=2, col="blue")
+#   # abline(v=alpha_HNSCC, lty=2, col="red") #
+#   # # run a logistic regression model (categorical 0 vs 1)
+#   # #g <- glm(number_01 ~ p_value, family=poisson, data=HNSCC_OS_marginS_pvalue005_sorted)
+#   # # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
+#   # #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
+#   # legend("bottomleft", legend=c(paste("Z-score at 0.6"), paste("P-value at", alpha_HNSCC)), lty=2:2, col=c("blue","red"), cex=0.9) # box and font size
+#   # # figure legend: logistic regression, LR, by Generalized linear model, glm
+#   # detach(HNSCC_OS_marginS_pvalue005_sorted)
+#   # #}
+#   # dev.off()
+#   # 
+#   #Append plot to the sheet
+#   if(is.null(startRow)){
+#     rows<- getRows(sheet) #list of row object
+#     startRow=length(rows)+1
+#   } 
+#   # append to the file created previously
+#   addPicture("Rplot10_Zscore_Pvalue.png", sheet=sheet,  startRow = startRow, startColumn = startCol) 
+#   xlsx.addLineBreak(sheet, round(width/20)+1)
+#   #res<-file.remove("plot.png") # Z-score vs P-value plot
+#   #file.rename("plot.png", "Zscore_Pvalue_scatter.png")
+# } # Define function
+# 
+# # calling and convert tiff to png
+# system("convert Rplot10_Zscore_Pvalue.tiff Rplot10_Zscore_Pvalue.png")
+# currentRow <- xlsx.addPlot.candidates(wb, sheet) # startRow + a plot
+# #print(paste("The z-score summary plot:", filenamex,"was exported successfully."))
 
 
 # # Export Cox uni/multi HR vs P-value plot ####
@@ -1368,17 +1432,18 @@ xlsx.addPlot.candidates<-function( wb, sheet, file="plot.png", startRow=NULL,sta
 
 # calling
 # converting .tiff to .png for export (from Version: ImageMagick 6.9.7-4)
-system("convert Rplot07_cox_uniHR.tiff Rplot07_cox_uniHR.png", intern = FALSE)
+#system("convert Rplot07_cox_uniHR.tiff Rplot07_cox_uniHR.png", intern = FALSE)
 # Cox's Harzard Ratios (univariate) plot [Rplot07_cox_uniHR.tiff]
-currentRow <- xlsx.addPlot.candidates(wb, sheet, file="Rplot07_cox_uniHR.png") # startRow + a plot
-# Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff]
-system("convert Rplot07_cox_multiHR.tiff Rplot07_cox_multiHR.png", intern = FALSE)
-currentRow <- xlsx.addPlot.candidates(wb, sheet, file="Rplot07_cox_multiHR.png") # startRow + a plot
+#currentRow <- xlsx.addPlot.candidates(wb, sheet, file="Rplot07_cox_uniHR.png") # startRow + a plot
+# Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff] => cox_multi_Bonf_KMPvalue.tiff
+# cox_multi_Bonf_KMPvalue.tiff is Bonferroni KM P-value plot in multivariate analysis
+system("convert cox_multi_Bonf_KMPvalue.tiff cox_multi_Bonf_KMPvalue.png", intern = FALSE) # convert is a duplicate
+currentRow <- xlsx.addPlot.candidates(wb, sheet, file="cox_multi_Bonf_KMPvalue.png") # startRow + a plot
 
 
 
-#..
-# Export Venn1 (bad guy genes) by plotFunction() ####
+
+#x Export Venn1 (bad guy genes) by plotFunction() ####
 xlsx.addLineBreak(sheet, 1)
 
 # Define function
@@ -1427,22 +1492,24 @@ xlsx.addPlot.venn(wb, sheet)
 # store KM_sig remrark as a Byte; converted as base10 in list_KM_sigBin
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # as candidate_cox (a list), since 2019/07/03; with KM_sig, Remark
 # candidate_sample, candidate_cox, n_percent_Bonferroni
+# isect_HR2p5 <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf # n=9
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidates_Venn.Rda", sep=""))) # as isect_HR2p5
 
-# x load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
-#load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep="")))
-# Z-score > zcut e.x. 0.8: HNSCC_OS_marginS_pvalue005_zcut.Rda, n=1475
-#HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_1475 # *** try it
-# as as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff
-
-#.. bad guy gene candidate
-# => see "remark=1"; "which" or NOT "which", the order is wrong.
-# isect_HR2p5 is a list, which comes from line 2909
-#x geneid_bad_uni_HR2p5 <- c(isect_HR2p5$`A:B`, isect_HR2p5$`A`) # from venn_HR2p5: A + A:B = group uni_
-# R4> isect_HR2p5
-# $`uni_Cox HR >=1:multi_Cox HR >=1`
-# [1] "CAMK2N1" "USP10"   "PGK1"    "SURF4"   "EFNB2"   "EIF2AK1" "STC2"   
+# # x load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005.Rda", sep="")))
+# #load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "THREE_pvalue005_1475.Rda", sep="")))
+# # Z-score > zcut e.x. 0.8: HNSCC_OS_marginS_pvalue005_zcut.Rda, n=1475
+# #HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_1475 # *** try it
+# # as as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff
 # 
-# R4> isect_HR2p5
+# #.. bad guy gene candidate
+# # => see "remark=1"; "which" or NOT "which", the order is wrong.
+# # isect_HR2p5 is a list, which comes from line 2909
+# #x geneid_bad_uni_HR2p5 <- c(isect_HR2p5$`A:B`, isect_HR2p5$`A`) # from venn_HR2p5: A + A:B = group uni_
+# # R4> isect_HR2p5
+# # $`uni_Cox HR >=1:multi_Cox HR >=1`
+# # [1] "CAMK2N1" "USP10"   "PGK1"    "SURF4"   "EFNB2"   "EIF2AK1" "STC2"   
+
+# R4> isect_HR2p5 (no more from venn)
 # $`uni_Cox HR >=1:multi_Cox HR >=1`
 # [1] "CAMK2N1" "USP10"   "PGK1"    "SURF4"   "EFNB2"   "EIF2AK1" "STC2"   
 geneid_bad_uni_HR2p5 <- c(isect_HR2p5[[3]], isect_HR2p5[[1]])
@@ -1486,10 +1553,10 @@ geneid_bad_unimulti_HR2p5 <- isect_HR2p5[[3]] #$`A:B`
 candidate_bad_unimulti_HR2p5 <- cbind(data.frame(gene_id=geneid_bad_unimulti_HR2p5), HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% geneid_bad_unimulti_HR2p5), 2:7])
 
 
-# export tables
+# export 3 tables
 xlsx.addLineBreak(sheet, 10) # 
 # header of candidate_bad_unimulti_HR2p5
-xlsx.addHeader(wb, sheet, value=paste("Table 2A. The ", nrow(candidate_bad_unimulti_HR2p5), " consensus candiate genes (uni_ & multi_CoxHR > ", bad_FC,") in ", TCGA_cohort, " (bad guy)", sep=""),
+xlsx.addHeader(wb, sheet, value=paste("Table 2A. The ", nrow(candidate_bad_unimulti_HR2p5), " candiate genes (uni_ & multi_CoxHR > ", bad_FC,") in ", TCGA_cohort, " (bad guy)", sep=""),
                level=5, color="black", underline=0)
 xlsx.addLineBreak(sheet, 1) # add one blank line
 candidate_bad_unimulti_HR2p5[,2] <- formatC(candidate_bad_unimulti_HR2p5[,2], format = "e", digits = 2) #as.numeric(as.character)
@@ -1524,7 +1591,10 @@ xlsx.addTable(wb, sheet, data = candidate_bad_multi_HR2p5[, c(1:7, 9:13)], start
 xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 
-# Export Venn2 by plotFunction() ####
+
+
+
+#x Export Venn2 by plotFunction() ####
 xlsx.addLineBreak(sheet, 1)
 
 # Define function
@@ -1563,7 +1633,7 @@ xlsx.addPlot.venn(wb, sheet)
 #print(paste("The Venn diagram2 and the candidate genes (good guy): ", filenamex, " were exported successfully."))
 
 
-#(good guy table) prognostic features of those genes on lists in TCGA HNSCC cohort ####
+#x (good guy table) prognostic features of those genes on lists in TCGA HNSCC cohort ####
 # => see "remark=1" 
 geneid_good_uni_HR0p5 <- c(isect_HR0p5[[3]], isect_HR0p5[[1]]) #$`A:B`
 candidate_good_uni_HR0p5 <- cbind(data.frame(gene_id=geneid_good_uni_HR0p5), HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% geneid_good_uni_HR0p5), 2:7])
@@ -1644,16 +1714,123 @@ xlsx.addTable(wb, sheet, data = candidate_good_multi_HR0p5[, c(1:7, 9:13)], star
 xlsx.addLineBreak(sheet, 2)  # add two blank lines
 
 
+
+#-------------#
+# Write wb to disk ####
 ##..[2019/07/22] _marginS_ done
 # Finalize the workbook to an Excel file and write the file to disk.
-# Write wb to disk ####
 #setwd(path_ZSWIM2) # at /marginS/
 xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 #setwd(path_cohort)
 #xlsx.openFile(filenamex) # open file to review
 
-# the END of R2Excel ###
+# the END of R2Excel (with z-cut) ###
+
+
+
+
+
+#{*** R2Excel (2020) ####
+#2020/03/04 Create an Excel workbook. Both .xls and .xlsx file formats can be used.
+## export to HNSCC_OS_marginS_candidates_Bonferroni.xlsx
+filenamex <- paste(TCGA_cohort, "_OS", marginTag, "candidates_Bonferroni", ".xlsx", sep = "") 
+# no more "HNSCC_OS_marginS_candidates_Venn.xlsx"
+wb <- createWorkbook(type="xlsx")
+
+# Create a sheet in that workbook
+sheet <- xlsx::createSheet(wb, sheetName = paste("Survival_candidates"))
+# [add data row by row, start from column 2]
+#+++++++++++++++++++++++++++++++
+## Add paragraph : Author
+library("tis") # by Brian Salzer
+# today(), arg must be ti, tis, ts, tif, or tifName
+select_title <- function(x) {
+  switch(x,
+         "_marginS_" = "Cohort with surgical margins status (0 or 1)",
+         "_marginFree_" = "Cohort with surgical margins free from tumor (0)",
+         "_marginPlus_" = "Cohort with surgical margins involving tumor (1)",
+         stop("Unknown input")
+  )
+}
+title_candidates_Venn_xlsx <- select_title(marginTag)
+author <- paste("Reported by Tex Li-Hsing Chi. \n",
+                "tex@gate.sinica.edu.tw \n", title_candidates_Venn_xlsx, "\n", Sys.Date(), sep="")
+cat(author)
+xlsx.addParagraph(wb, sheet, value=author, isItalic=TRUE, colSpan=5, 
+                  rowSpan=4, fontColor="darkgray", fontSize=24)
+xlsx.addLineBreak(sheet, 3)
+
+
+# # Export Cox uni/multi HR vs P-value plot ###
+# Define function
+xlsx.addPlot.candidates<-function( wb, sheet, file="plot.png", startRow=NULL,startCol=2,
+                                   width=480, height=480,... )
+{ # plot of Cox uni/multi HR vs P-value plot
+  #Append plot to the sheet
+  if(is.null(startRow)){
+    rows<- getRows(sheet) #list of row object
+    startRow=length(rows)+1
+  } 
+  # append to the file created previously, add 
+  # {
+  # Cox's Harzard Ratios (univariate) plot [Rplot07_cox_uniHR.tiff]
+  # Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff]
+  # }
+  addPicture(file, sheet=sheet,  startRow = startRow, startColumn = startCol) 
+  xlsx.addLineBreak(sheet, round(width/20)+1)
+} # Define function
+# calling
+# converting .tiff to .png for export (from Version: ImageMagick 6.9.7-4)
+# Cox's Harzard Ratios (multivariate) plot [Rplot07_cox_multiHR.tiff] => cox_multi_Bonf_KMPvalue.tiff
+# cox_multi_Bonf_KMPvalue.tiff is Bonferroni KM P-value plot in multivariate analysis
+system("convert cox_multi_Bonf_KMPvalue.tiff cox_multi_Bonf_KMPvalue.png", intern = FALSE) # convert is a duplicate
+currentRow <- xlsx.addPlot.candidates(wb, sheet, file="cox_multi_Bonf_KMPvalue.png") # startRow + a plot
+
+
+# header
+# a candidate genes table
+candidates_alpha_pvalue <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf # after Bonferroni correcion
+# no more Z-score:a normalized number (frequency) of OS P-values, which KM P-value < 0.05, in each gene
+xlsx.addHeader(wb, sheet, value=paste("Table 1. The ", nrow(candidates_alpha_pvalue), " candiate genes overexpressed in ", TCGA_cohort,
+                                      " (ranked by Bonferroni corrected Kaplan Meier P-value, and Cox's uni/multivariate model) ", "\n" , sep=""),
+               level=5, color="black", underline=0) # nrow(HNSCC_OS_marginS_pvalue005_zcut), n=6601
+#xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
+#               level=5, color="red", underline=0) # total n is taken from surv_OS1$n
+
+#xlsx.addLineBreak(sheet, 1) # add one blank line
+
+# > colnames(HNSCC_OS_marginS_pvalue005_zcut)
+# [1] "gene_id" "p_value" "z_score" rename to "Gene_id", "P_value", "Z_score" (why?)
+colnames(candidates_alpha_pvalue)[1:4] <- c("Gene_id", "P_value", "Bonferroni P_value", "FDR P_value")
+# # # Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
+attach(candidates_alpha_pvalue) # removal of as.factor (P_value)
+# in scientific notation: formatC of [, c(2)]
+candidates_alpha_pvalue$P_value <- formatC(as.numeric(as.character(P_value)), format = "e", digits = 2)
+candidates_alpha_pvalue$`Bonferroni P_value` <- formatC(as.numeric(as.character(`Bonferroni P_value`)), format = "f", digits = 3)
+candidates_alpha_pvalue$`FDR P_value` <- formatC(as.numeric(as.character(`FDR P_value`)), format = "f", digits = 4)
+#candidates_alpha_pvalue$Z_score <- signif(Z_score, digits=4)
+candidates_alpha_pvalue <- candidates_alpha_pvalue[order(`Bonferroni P_value`), ] #sorting by order(ascending)
+detach(candidates_alpha_pvalue)
+# export up to top 30 genes [1:30,], out of 1702 genes
+xlsx.addTable(wb, sheet, data = candidates_alpha_pvalue[, ], startCol=2,
+              fontColor="darkblue", fontSize=12,
+              rowFill=c("white", "white"), row.names = TRUE)
+
+xlsx.addLineBreak(sheet, 1)
+xlsx.addParagraph(wb, sheet, value=paste("Selection criteria:", "\n", "Bonferroni KM P-value < 0.05", "\n", "Cox's multivariate HR >", bad_FC), isItalic=FALSE, colSpan=3, 
+                  rowSpan=4, fontColor="darkblue", fontSize=14)
+xlsx.addLineBreak(sheet, 5)  # add two blank lines
+
+## Write wb to disk ###
+##..[2019/07/22] _marginS_ done
+# Finalize the workbook to an Excel file and write the file to disk.
+xlsx::saveWorkbook(wb, filenamex) # file name only, no path
+#xlsx.openFile(filenamex) # open file to review
+#system(paste("xdg-open ", filenamex), intern=FALSE) # not in non-graphic Ubuntu console
+# the END of R2Excel (2020)###
 #}
+
+
 
 
 # human curation ####
