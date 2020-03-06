@@ -295,10 +295,8 @@ alpha_HNSCC <- 0.05
 Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni)
 # => 4.786521e-06 (LUAD run04); => 5.31011e-06 (2019 run02)
 # } 人工 Bonferroni end
- 
- 
 
-# 以下只是 plotting; calculation go 463 ####
+# 以下是 plotting 非常重要; calculation go 463 ####
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
 # higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
 #tiff("Rplot10_Freq_Pvalue.tiff", units="cm", width=5, height=5, res=300)
@@ -1724,7 +1722,7 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 #setwd(path_cohort)
 #xlsx.openFile(filenamex) # open file to review
 
-# the END of R2Excel (with z-cut) ###
+# x the END of R2Excel (with z-cut) ###
 
 
 
@@ -1820,6 +1818,40 @@ xlsx.addLineBreak(sheet, 1)
 xlsx.addParagraph(wb, sheet, value=paste("Selection criteria:", "\n", "Bonferroni KM P-value < 0.05", "\n", "Cox's multivariate HR >", bad_FC), isItalic=FALSE, colSpan=3, 
                   rowSpan=4, fontColor="darkblue", fontSize=14)
 xlsx.addLineBreak(sheet, 5)  # add two blank lines
+
+
+### P-value plot of KM survival analyses (PvalueplotKM.tiff 600*500 ** with Bonferroni correction 決定) 這張圖最棒
+#要標出 9 gene list on this P-value plot
+#{
+#Put labels above the points: points() on plot()
+#https://bookdown.org/ndphillips/YaRrr/low-level-plotting-functions.html
+#}
+# #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
+# higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
+attach(HNSCC_OS_marginS_pvalue_sorted) # n=20500, uncorrected P-value
+plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analyses", log="x", cex=0.3) # log scale x or y
+abline(h=150, lty=2, col="blue")
+abline(v=Bonferroni_cutoff, lty=2, col="red") # 5.31011e-06
+legend("topright", legend=c(paste("Frequency at 150"), paste("Bonferroni ", signif(Bonferroni_cutoff, 2))), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
+
+# points 9 candidate genes on this P-value plot
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # as HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
+load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep=""))) # as HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, with "number"
+points_x <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$p_value # uncorrected P-value
+points_y <- HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[
+  HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR$gene_id %in% HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id, 1] # number 
+points(x = points_x, y = points_y,
+       pch = 16,
+       col = "red" ) # transparent("coral2", trans.val = .8)
+text(x = points_x[c(1,3,5,7,9)], y = points_y[c(1,3,5,7,9)],
+     labels = HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id[c(1,3,5,7,9)],
+     cex = 0.5, adj = 0,
+     pos = 1)            # Put labels below the points
+text(x = points_x[c(2, 4, 6, 8)], y = points_y[c(2, 4, 6, 8)],
+     labels = HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id[c(2, 4, 6, 8)],
+     cex = 0.5, adj = 0,
+     pos = 3)            # Put labels below the points
+detach(HNSCC_OS_marginS_pvalue_sorted)
 
 ## Write wb to disk ###
 ##..[2019/07/22] _marginS_ done
