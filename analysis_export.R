@@ -5,7 +5,7 @@
 #marginTag <- "_marginS_" #at ./marginS
 #marginTag <- "_marginFree_" #at ./marginFree
 #marginTag <- "_marginPlus_" #at ./marginPlus
-TCGA_cohort <- "HNSCC"
+TCGA_cohort <- "HNSCC" # start-over again [2020/03/08]
 raw <- 
  readline("_margin(S)_, _marginFree(F)_ or _margin(P)lus_ -- process run: ")
 select_margin <- function(x) {
@@ -20,6 +20,7 @@ select_margin <- function(x) {
   )
 }
 marginTag <- select_margin(raw)
+print(marginTag)
 rm(raw)
 # [2019/07/03-2019/07/22] they are stored at ./xlsx => moved to ./marginS
 # [2019/07/03-2019/07/22] they are stored at ./xlsx => moved to ./marginFree
@@ -27,7 +28,7 @@ rm(raw)
 # [2019/07/30-2019/08/09] they are stored at ./xlsx => moved to ./marginS/tobacco
 
 # set path to the source of .Rda from cutoff finding
-path_cohort <- getwd()
+path_cohort <- getwd() #  "/home/tex/R/HNSCC_Tex_survival/hnscc_github"
 path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. marginS/
 
 # ZSWIM2_archive1000_20180408_0042_0933.Rda; 9 hours for 1,000 genes to be scanned
@@ -72,7 +73,7 @@ plot((ZSWIM2_2))
 sum(ZSWIM2_2$Freq)
 #[1] 20500  # scan completely
 
-# reture(0): ok for analysis
+# Only reture(0) is ok for subsequent analyses
 text_pie <- paste("Workable genes \n in ", round(ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq)*100), " %") # _marginS_ about 45.9% usable RNAseq data
 pie(ZSWIM2_2$Freq, labels=ZSWIM2_2$Var1, main=text_pie)
 
@@ -82,6 +83,7 @@ n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.4593171
 error01_sample <- which(ZSWIM2$X3==1) #  32.2% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
 error02_sample <- which(ZSWIM2$X3==2) # 14.2% error02: There has only one group in survdiff.
 error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group in survdiff.
+error05_sample <- which(ZSWIM2$X3==5) # 0.78%(159 genes) error05: for why?
 # done #
 
 
@@ -90,6 +92,8 @@ error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group 
 
 # #debug {CoxPH table 3, univariate 全部是同一個值 from gender to tobacco} only RNAseq 是正確的 [2019/08/14]
 # >A summary table of P-value, Z-score standardization from all HNSCC_survival*.Rda ####
+# 不必每次重 run (saved at HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda)
+# go ahead post2, a simple way for p.adjut() =>
 # _marginFree_ or _marginS_ or _marginPlus_ from .Rda
 # number of OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in each gene;
 
@@ -116,7 +120,7 @@ aa <- LUAD_n; bb<- 1
 #{ declare empty data.frame and list
 #*
 candidate_sample <- data.frame(matrix(data = NA, nrow = aa, ncol = 3)) # for num, gene ID and it's P-value
-colnames(candidate_sample) <- c("number", "gene_id", "p_value") # KM OS P-value only (in HNSCC); 
+colnames(candidate_sample) <- c("number", "gene_id", "p_value") # KM OS P-value only (there is no DFS in HNSCC); 
 #x"number" position in ZSWIM2
 #xcandidate_sample$number <- data.frame(which(ZSWIM2$X3==0)) # gene "number"
 candidate_sample$gene_id <- whole_genome[bb:aa] # retrieving gene name from whole_genome; return() at X2
@@ -132,14 +136,16 @@ candidate_cox <- replicate(aa, list()) # empty list(), which doesn't need colnam
 # #}
 
 
-setwd(path_ZSWIM2) # set for a while (for ip loop) at ./marginS/tobacco
+setwd(path_ZSWIM2) # set for a while (for ip loop) at ./marginS
+# *.Rda 要先解壓縮 HNSCC.survival.marginS.20500.tar.gz
+# retrieved then saved as HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda
 for (ip in (bb:aa)) { # 3 hours for each run
   geneName <- candidate_sample$gene_id[ip]
   #print(paste("At", path_ZSWIM2, "=> (", ip, ")", geneName), sep="")
   #candidate_sample$p_value <- lapply(unlist(candidate_sample$gene_id[bb:aa]), get_Rda_pvalue) # retrieving P-value by gene name from .Rda; return() at X3
   #[choice ONE]: _marginFree_ or _marginS_ loading from .Rda
   #  _marginS_
-  
+  # aka: "HNSCC_survivalAnalysis_marginS_ZZZ3.Rda"
   load_filename <- file.path(paste(TCGA_cohort, "_survivalAnalysis", marginTag, geneName, ".Rda", sep=""))
   #OR (automatically defined)
   #_marginFree_
@@ -274,7 +280,7 @@ rm(raw)
 # notice: //
 path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. marginS/
 load(file=paste(path_ZSWIM2, TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")) 
-# as candidate_sample with candidate_cox and n_percent_Bonferroni 
+# as candidate_sample with candidate_cox and n_percent_Bonferroni at HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda 
 
 
 # marginS, marginPlue or marginFree: using a "common" HNSCC_OS_marginS_pvalue_sorted
@@ -284,7 +290,7 @@ HNSCC_OS_marginS_pvalue_sorted <- candidate_sample[order(p_value, -number),] # s
 detach(candidate_sample)
 
 
-# ***其實直接 jump to p.adjust() run 447
+# ***其實直接 jump to p.adjust() post2 run 454
 # x try 人工 Bonferroni correction (adjustment)
 # -> sets the significance cut-off at α/n 
 # -> p.adjust(p, method = p.adjust.methods="bonferroni", n = length(p)) # bonferroni, or fdr
@@ -476,7 +482,8 @@ rm(raw)
 # notice: //
 path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. marginS/
 load(file=paste(path_ZSWIM2, TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep="")) 
-# as candidate_sample with candidate_cox and n_percent_Bonferroni 
+# as candidate_sample with candidate_cox and n_percent_Bonferroni at HNSCC_OS_marginS_pvalueKM_candidate_cox.Rda 
+
 
 
 # marginS, marginPlue or marginFree: using a "common" HNSCC_OS_marginS_pvalue_sorted
@@ -502,8 +509,9 @@ library("BiocManager")
 # a simple way
 # na.omit -> only n=6624 genes have P-value available; removal of NA
 HNSCC_OS_marginS_pvalue_sorted_noNA <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ]
-# keeping z_score
-HNSCC_OS_marginS_pvalue_sorted_noNA$z_score <- scale(HNSCC_OS_marginS_pvalue_sorted_noNA$number, center=T, scale = T)
+#x keeping z_score
+# HNSCC_OS_marginS_pvalue_sorted_noNA$z_score <- scale(HNSCC_OS_marginS_pvalue_sorted_noNA$number, center=T, scale = T)
+
 # 1) try bonferroni by p.adjust()
 #p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="bonferroni", n = nrow(HNSCC_OS_marginS_pvalue_sorted_noNA))
 p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted_noNA$p_value, method="bonferroni") # n=default 不必寫
@@ -522,7 +530,7 @@ HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS <- cbind(HNSCC_OS_marginS_pvalue_s
 save(HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_p_adjustS.Rda", sep="")))
 # [2020/02/16] p_value_adj is FDR and bonferroni;
 # "HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS.Rda" saved at "/home/tex/R/HNSCC_Tex_survival/hnscc_github/marginS/"
-
+# n=6624
 
 
 # x[2019/09/05]
@@ -592,16 +600,19 @@ HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[,c("uni_HR", "uni_P_value", "un
 
 #attach(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)
 #ipp <- 0
+# *** row and col position 非常重要
 for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
   pos_gene <- which(whole_genome==HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR$gene_id[ip]) # HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR$gene_id
   # by geneid ?
   if (length(candidate_cox[[pos_gene]])==11) {
     # reference: candidate_cox_ip, which listing as candidate_cox
-    HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, 7:12]  <- candidate_cox[[pos_gene]][8, c(2:4, 6:8)] # taking RNAseg: sig marked and P-values, HRs
-    # we don't have number0_1 any more:  colnames "number"  "gene_id" "p_value" "z_score"
+    HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, 6:11]  <- candidate_cox[[pos_gene]][9, c(2:4, 6:8)] 
+                                                                # taking 9 RNAseg: sig marked and P-values, HRs
+                                                                #*** 8 is tobacco; 
+        # we don't have number0_1 any more:  colnames "number"  "gene_id" "p_value" "z_score"
     #   ipp <- ipp+1
     print(paste(ip, " out of ", nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), " (", whole_genome[pos_gene], ")", sep=""))
-    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, c(2, 7, 10)]), sep=";"))
+    print(paste(c("..adding...", HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[ip, c(2, 6, 9)]), sep=";"))
   }
   # on : [2018-05-18 07:26:42] [error] handle_read_frame error: websocketpp.transport:7 (End of File)
   #"exp_pvalue" is a correlation of gene expression vs features (TNM....): 
@@ -611,7 +622,8 @@ for (ip in 1:nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR)) {
 }
 # HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS with [Bonferroni][FDR] and variable: KM + Cox
 save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
-# 2020/02/24 ok; go 663
+# as HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR.Rda
+# 2020/02/24 it is tobacco :-); 2020/03/08 ok RNA-seq; go "Pickup all..."
 
 
 # # xx
@@ -695,12 +707,14 @@ save(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM
 # save(HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR.Rda", sep="")))
 # ## =6624
 
+
+
 # Pickup all significant genes list -> HNSCC_OS_marginS_THREE_pvalue005 ####
-# FDR < 0.05; HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, n=6624
-# Z-score > 0.8: HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, n=1475
+# x FDR < 0.05; HNSCC_OS_marginS_pvalue_sorted_noNA_FDRKM_sorted_pvalueCox_HR, n=6624
+# x Z-score > 0.8: HNSCC_OS_marginS_pvalue005_zcutKM_sorted_pvalueCox_HR, n=1475
 
 ### => HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS with [Bonferroni][FDR] and variable: KM + Cox HR
-# is HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR
+# as HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR
 # _marginS_ on [2019/07/02]
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep="")))
 
@@ -760,7 +774,7 @@ cgc_Index2020 <- which(HNSCC_OS_marginS_THREE_pvalue005$gene_id %in% cgc_gene723
 #venn(list(cgc_gene575$symbol[cc_Index2019], cgc_gene723$Gene.Symbol[cc_Index2020]), snames=c("CGC_2019", "CGC_2020"), ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, deeppink, pink", opacity = 0.6, size = 15, cexil = 2.0, cexsn = 0.8, borders = FALSE)
 View(HNSCC_OS_marginS_THREE_pvalue005$gene_id[cgc_Index2020]) # n=213 or 52
 HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005[-cgc_Index2020, ] # removal
-# now n=6368 [2020/02/29]
+# now n=6368 [2020/03/08]
 
 # There is updated HNSCC related gene from publication ####
 # *** go to embase
@@ -1021,7 +1035,7 @@ load(file=file.path(path_cohort, "HNSCC_OS_marginS_THREE_pvalue005_noCancerGene.
 #x HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
 
 bad_FC <- 1.5 # cutoff for fold change
-#good_FC <- 0.5; there is no good guy
+good_FC <- 0.5 # there is also good guy
 # ** choice proper adjusted P-value: "p_value" "p_value_adj_bonferroni" "p_value_adj_FDR" 
 raw <- 
   readline("raw P-value(p), Bonferroni P-value(b) or FDR P-value(f) -- process run: ")
@@ -1045,55 +1059,69 @@ pvalue3 <- select_p(raw)
 pvalue_pos <- select_pos(raw)
 print(c(pvalue3, pvalue_pos))
 rm(raw)
-# go to 1040
 
-#x univariate HR by Cox
-attach(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
+
+# univariate HR by Cox
 #tiff("Rplot07_cox_uniHR.tiff", units="cm", width=5, height=5, res=300) 
 # x# saving as .tiff (by tiff()) => x y axis is too small in .tiff
 # adds a loess regression smoother to a scatter plot by smoothScatter
 #smoothScatter(p_value, uni_HR, nrpoints = 10000, cex=0.6, xlab="P-value (KM survival)", ylab="Cox's Harzard Ratios (univariate)", bandwidth=c(7, 7), nbin=20)
 # ** choice proper adjusted P-value: "p_value" "p_value_adj_bonferroni" "p_value_adj_FDR" 
-# *** removal uni_P-value >= 0.05, then plot
-plot(p_value, uni_HR, type="p", main=paste(TCGA_cohort, "Cox's Harzard Ratios (univariate)", pvalue3), 
-     ylab="Cox's HR", xlab="adjusted P-value (KM survival)", log="y", cex=0.3, , cex.main=1.5, cex.lab=1.3, cex.axis=1)
-#axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05)) #1=below, 2=left, 3=above and 4=right
-abline(h=bad_FC, lty=2, col="red") # HR
-abline(v=alpha_HNSCC, lty=2, col="blue") #no Bonferroni_cutoff
-# run a logistic regression model (categorical 0 vs 1)
-#g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
-# (in this case, generalized linear model with log link)(link = "log"), poisson distribution
-#curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-legend("topright", legend=c(paste("HR at", bad_FC), paste("Cutoff at", alpha_HNSCC)), lty=2:2, col=c("red","blue"), cex=1) # box and font size
-# text(500,900, labels=paste(TCGA_cohort, "KM P-value plot"), cex = 0.60) # (0,0) on bottom_left corner
-# figure legend: logistic regression, LR, by Generalized linear model, glm
-#dev.off()
-detach(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
+# *** taking uni_P-value < 0.05, then plot; n=6204
+HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_uni <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[
+  HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$uni_P_value < 0.05, ] # a temp variable
 
-# multivariate HR by Cox
-# **plot multi_HR, HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, under Bonferroni
-# attach(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
-# tiff("Rplot07_cox_multiHR.tiff")
-# ** choice proper adjusted P-value: "p_value" "p_value_adj_bonferroni" "p_value_adj_FDR" 
-#pvalue3 <- "p_value"
-# # *** keeping uni_P-value and multi_P-value < 0.05, then plot (n=5912)
-HNSCC_OS_marginS_THREE_pvalue005_noCancerGene <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[
-  HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$multi_P_value < 0.05, ]
-
-plot(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[ , pvalue_pos+1], 
-     HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$multi_HR, type="p", main=paste(TCGA_cohort, "Cox's Harzard Ratios (multivariate)\n", "versus", pvalue3), 
+plot(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_uni[ , pvalue_pos+1], 
+     HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_uni$uni_HR, type="p", main=paste(TCGA_cohort, "Cox's Harzard Ratios (univariate)\n", "versus", pvalue3), 
      ylab="Cox's HR", xlab="P-value (KM survival)", log="x", cex=0.3, , cex.main=1.2, cex.lab=1.3, cex.axis=1)
 #axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05))) #1=below, 2=left, 3=above and 4=right
-abline(h=bad_FC, lty=2, col="red")
-abline(v=alpha_HNSCC, lty=2, col="blue")
-abline(h=good_FC, lty=2, col="green")
+x0_p <- min(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_uni[ , pvalue_pos+1])
+x1_p <- max(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_uni[ , pvalue_pos+1])
+y0_p <- min(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_uni$uni_HR)
+y1_p <- max(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_uni$uni_HR)
+segments(x0=x0_p, y0=bad_FC, x1=x1_p, y1=bad_FC, lty=2, col="red") # no abline()
+segments(x0=alpha_HNSCC, y0=y0_p, x1=alpha_HNSCC, y1=y1_p, lty=2, col="blue")
+segments(x0=x0_p, y0=good_FC, x1=x1_p, y1=good_FC, lty=2, col="green")
+#segments(x0=0.5e-7, y0=150, x1=1e-2, y1=150, lty=2, col="blue")
+#segments(x0=Bonferroni_cutoff, y0=0, x1=Bonferroni_cutoff, y1=170, lty=2, col="red") # 5.31011e-06
 # run a logistic regression model (categorical 0 vs 1)
 #g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
 # (in this case, generalized linear model with log link)(link = "log"), poisson distribution
 #curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
-legend("topright", legend=c(paste("HR at", bad_FC), paste("Cutoff at", alpha_HNSCC)), lty=2:2, col=c("red","blue"), cex=1) # box and font size
+legend("topright", legend=c(paste("HR at", bad_FC), paste("HR at", good_FC), paste("P-value at", alpha_HNSCC)), lty=2:2, col=c("red", "green", "blue"), cex=1) # box and font size
+# text(500,900, labels=paste(TCGA_cohort, "KM P-value plot"), cex = 0.60) # (0,0) on bottom_left corner
 # figure legend: logistic regression, LR, by Generalized linear model, glm
-#detach(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene)
+#dev.off()
+
+
+# multivariate HR by Cox
+# **plot multi_HR, HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, under Bonferroni
+# tiff("Rplot07_cox_multiHR.tiff")
+# ** choice proper adjusted P-value: "p_value" "p_value_adj_bonferroni" "p_value_adj_FDR" 
+#x pvalue3 <- "p_value"
+# # *** keeping uni_P-value < 0.05, then plot (n=4942)
+HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_multi <- HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[
+  HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$multi_P_value < 0.05, ]  # a temp variable
+
+plot(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_multi[ , pvalue_pos+1], 
+     HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_multi$multi_HR, type="p", main=paste(TCGA_cohort, "Cox's Harzard Ratios (multivariate)\n", "versus", pvalue3), 
+     ylab="Cox's HR", xlab="P-value (KM survival)", log="x", cex=0.3, , cex.main=1.2, cex.lab=1.3, cex.axis=1)
+#axis(side=3, at=c(1e-7, 1e-6, 1e-5, 0.01, 0.05))) #1=below, 2=left, 3=above and 4=right
+x0_p <- min(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_multi[ , pvalue_pos+1])
+x1_p <- max(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_multi[ , pvalue_pos+1])
+y0_p <- min(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_multi$multi_HR)
+y1_p <- max(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene_multi$multi_HR)
+segments(x0=x0_p, y0=bad_FC, x1=x1_p, y1=bad_FC, lty=2, col="red") # no abline()
+segments(x0=alpha_HNSCC, y0=y0_p, x1=alpha_HNSCC, y1=y1_p, lty=2, col="blue")
+segments(x0=x0_p, y0=good_FC, x1=x1_p, y1=good_FC, lty=2, col="green")
+#segments(x0=0.5e-7, y0=150, x1=1e-2, y1=150, lty=2, col="blue")
+#segments(x0=Bonferroni_cutoff, y0=0, x1=Bonferroni_cutoff, y1=170, lty=2, col="red") # 5.31011e-06
+# run a logistic regression model (categorical 0 vs 1)
+#g <- glm(uni_HR ~ p_value, family=poisson, data=HNSCC_OS_marginS_THREE_pvalue005)
+# (in this case, generalized linear model with log link)(link = "log"), poisson distribution
+#curve(predict(g, data.frame(p_value = x), type="response"), add=TRUE, col="blue") # draws a curve based on prediction from logistic regression model
+legend("topright", legend=c(paste("HR at", bad_FC), paste("HR at", good_FC), paste("P-value at", alpha_HNSCC)), lty=2:2, col=c("red", "green", "blue"), cex=1) # box and font size
+# figure legend: logistic regression, LR, by Generalized linear model, glm
 
 
 # x Venn_marginS_: cross matching HR>1.8 of Uni+Multi, HR<0.5 of Uni+Multi
@@ -1105,53 +1133,83 @@ legend("topright", legend=c(paste("HR at", bad_FC), paste("Cutoff at", alpha_HNS
 # To get the list of gene present in each Venn compartment we can use the gplots package
 #library(gplots) # capture the list of genes from venn
 
-
 # x *** how about Z-score? included in HNSCC_OS_marginS_THREE_pvalue005_1475
 # x use Z-score at the end of our analysis
 
 
+
+
 #{ [pickup1] (bad guy genes)#### 
-# from HNSCC_OS_marginS_THREE_pvalue005; no Bonferroni_cutoff
+# from HNSCC_OS_marginS_THREE_pvalue005_noCancerGene # ** uni_p multi_p 尚未篩選
 # Broader gene candidate (first 100): Cox HR (>1.5 or >=2.5), bad_FC fold change 
-# x (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
-# Bonferroni_cutoff = 5.31011e-06 is too restricted in this cohort
+# (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
+# Bonferroni_cutoff = 5.31011e-06 is enoughly restricted in this cohort
 bad_FC <- bad_FC # 1.6 or 1.8 # it was decided at [# P-values plot uni_HR] section
+# #HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= 2.5), 
+# #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# # xmulti_HR >=1.5 # & (multi_P_value <= 0.05) 
+# HNSCC_OS_marginS_unimulti_CoxHR2p5_uncorrected <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene,  (p_value < alpha_HNSCC) & (multi_P_value < 0.05) & (multi_HR >= bad_FC) & (uni_P_value < 0.05) & (uni_HR >= bad_FC), 
+#                                                          select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# #x n=679; uncorrected P-value < 0.05
 
-# x uni
-HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR >= bad_FC), 
+# univariate p_value_adj_bonferroni  Bonferroni P-value < 0.05 才是王道
+HNSCC_OS_marginS_uni_CoxHR2p5_Bonf <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value_adj_bonferroni < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR >= bad_FC), 
                                         select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=61
-#HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= 2.5), 
-#                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# n=10 同下
+# [1] "DKK1"    "CAMK2N1" "STC2"    "PGK1"    "SURF4"   "USP10"  
+# [7] "NDFIP1"  "FOXA2"   "STIP1"   "DKC1"
 
-# multi_HR >=1.5 # & (multi_P_value <= 0.05) 
-HNSCC_OS_marginS_multi_CoxHR2p5_uncorrected <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene,  (p_value <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR >= bad_FC), 
+# multivariate Bonferroni P-value < 0.05 才是王道
+HNSCC_OS_marginS_multi_CoxHR2p5_Bonf <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene,  (p_value_adj_bonferroni < alpha_HNSCC) & (multi_P_value < 0.05) & (multi_HR >= bad_FC), 
                                           select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=1106; uncorrected P-value < 0.05
+# # n=10; 同上
+# [1] "DKK1"    "CAMK2N1" "STC2"    "PGK1"    "SURF4"   "USP10"  
+# [7] "NDFIP1"  "FOXA2"   "STIP1"   "DKC1"
 
-HNSCC_OS_marginS_multi_CoxHR2p5_Bonf <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene,  (p_value_adj_bonferroni <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR >= bad_FC), 
-                                          select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# # *** n=9; Bonferroni P-value < 0.05 才是王道
-# [1] "IL19"      "FCGBP"     "LOC148709" "EVPLL"    
-# [5] "KIAA1683"  "FAM3D"     "GPR15"     "KLRA1"    
-# [9] "MS4A1"
 
-HNSCC_OS_marginS_multi_CoxHR2p5_FDR <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene,  (p_value_adj_FDR <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR >= bad_FC), 
+# FDR uni/multi
+HNSCC_OS_marginS_uni_CoxHR2p5_FDR <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value_adj_FDR < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR >= bad_FC), 
+                                        select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+HNSCC_OS_marginS_multi_CoxHR2p5_FDR <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene,  (p_value_adj_FDR <= alpha_HNSCC) & (multi_P_value < 0.05) & (multi_HR >= bad_FC), 
                                           select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
-# n=1106; FDR P-value < 0.05; 跟沒有校正的，基因一樣 順序不一樣
+# n=942 and n=845; FDR P-value < 0.05; 跟沒有校正的，基因一樣 順序不一樣
+# comparison...
+# # R4> HNSCC_OS_marginS_multi_CoxHR2p5_FDR$gene_id %in% HNSCC_OS_marginS_uni_CoxHR2p5_FDR$gene_id
+#    Mode   FALSE    TRUE 
+# logical     263     679 交集 n=679
+library(venn)
+venn(list(HNSCC_OS_marginS_uni_CoxHR2p5_FDR, HNSCC_OS_marginS_multi_CoxHR2p5_FDR),
+     snames=c("univariate", "multivariate"),
+     ilabels = T, counts = T, ellipse = FALSE, zcolor = "red, orange", opacity = 0.4, size = 15, cexil = 0.7, cexsn = 0.3, borders = TRUE)
+#      predefined colors if "style"
+#http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf
+# meta-language 1 0 or -
+title <- c(paste(TCGA_cohort, "Cox's Hazard ratio, FC >= ", bad_FC, ""), paste("( while KM P-Value (FDR) <", signif(alpha_HNSCC, 3), ")")) #, collapse = "\n")
+#coords <- unlist(getCentroid(getZones(venn_HR2p5, snames="uni_CoxHR>=2p5, multi_CoxHR>=2p5")))
+# coords[1], coords[2], 
+text(500,900, labels = title[1], cex = 1.5) # (0,0) on bottom_left corner
+text(500,855, labels = title[2], cex = 1) 
+library(gplots)
+tmp_bad <- venn(list(HNSCC_OS_marginS_uni_CoxHR2p5_FDR, HNSCC_OS_marginS_multi_CoxHR2p5_FDR),
+                names=c("univariate", "multivariate"), show.plot=F) #library(gplots); the group count matrix alone
+isect_HR2p5_FDR <- attr(tmp_bad, "intersections")
+
 # # R4> HNSCC_OS_marginS_multi_CoxHR2p5_FDR$gene_id %in% HNSCC_OS_marginS_multi_CoxHR2p5_uncorrected$gene_id
 # Mode    TRUE 
 # logical    1106 
 
-# ***take genes by Bonferroni P-value correction: HNSCC_OS_marginS_multi_CoxHR2p5_Bonf
-save(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_noCancerGene.Rda", sep=""))) # in HNSCC_OS_marginS_THREE_pvalue005_noCancerGene (final results)
+# => 判斷 ***take genes by Bonferroni P-value correction: 
+# HNSCC_OS_marginS_uni_CoxHR2p5_Bonf
+# HNSCC_OS_marginS_multi_CoxHR2p5_Bonf
+#save(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005_noCancerGene.Rda", sep=""))) # in HNSCC_OS_marginS_THREE_pvalue005_noCancerGene (final results)
 #isect_HR2p5 <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf
-save(HNSCC_OS_marginS_multi_CoxHR2p5_Bonf, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
-# go to Export r2excel
+save(HNSCC_OS_marginS_uni_CoxHR2p5_Bonf, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "uni_CoxHR2p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_uni_CoxHR2p5_Bonf (final bad guy candidates)
+save(HNSCC_OS_marginS_multi_CoxHR2p5_Bonf, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final bad guy candidates)
+# go to pickup2 (good guy) then Export r2excel 2020
 
 
 
-#x venn1 diagram of HR>=1 of Uni & Multi ###
+#FDR: venn1 diagram of HR>=1.5 of Uni & Multi ###
 #for list of genes by grouping; 
 venn_HR2p5 <- list(HNSCC_OS_marginS_uni_CoxHR2p5$gene_id, HNSCC_OS_marginS_multi_CoxHR2p5$gene_id)
 # no cutoff by Bonferroni_cutoff
@@ -1188,34 +1246,40 @@ dev.off() # saving instead of showing
 
 
 #===
-#x 不必做 { [pickup2]  (good guy genes) ####
+# { [pickup2]  (good guy genes) ####
 # from HNSCC_OS_marginS_THREE_pvalue005_noCancerGene
-#* Cox HR <0.4 or <0.5 # good_FC <- 0.5
-
-#...
+#* Cox HR <0.5 # 
+good_FC <- 0.5
 #HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value <= Bonferroni_cutoff) & (uni_P_value <= 0.05) & (multi_P_value <= 0.05) & (uni_HR <0.0), 
 #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # n=0 while (uni_P_value <= 0.05) & (multi_P_value <= 0.05) & (uni_HR <0.0)
 # 
-good_FC <- good_FC
-HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR <good_FC), 
-                                        select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
-print(nrow(HNSCC_OS_marginS_uni_CoxHR0p5))
-# n=60
-# x R4> HNSCC_OS_marginS_uni_CoxHR0p5$gene_id
-# [1] "ZNF557"   "IL19"     "EVPLL"    "ZNF266"   "MYO1H"    "ZNF846"   "MASP1"    "DOT1L"   
-# [9] "UTY"      "FAM162B"  "KLRA1"    "FLT3"     "TP53INP1"
-# # 
+#HNSCC_OS_marginS_uni_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value <= alpha_HNSCC) & (uni_P_value <= 0.05) & (uni_HR <good_FC), 
+#                                        select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# uni multi candidate 相近:
+# univariate p_value_adj_bonferroni  Bonferroni P-value < 0.05 才是王道
+HNSCC_OS_marginS_uni_CoxHR0p5_Bonf <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value_adj_bonferroni < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR <= good_FC), 
+                                             select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# n=12 不同下
+# [1] "ZNF557"    "ZNF266"    "IL19"      "MYO1H"     "FCGBP"    
+# [6] "LOC148709" "EVPLL"     "PNMA5"     "KIAA1683"  "SLC26A9"  
+# [11] "NPB"       "FRMD4A"  
 
-# ...
-HNSCC_OS_marginS_multi_CoxHR0p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value <= alpha_HNSCC) & (multi_P_value <= 0.05) & (multi_HR <good_FC), 
-                                          select=c(gene_id, p_value, z_score, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# multivariate Bonferroni P-value < 0.05 才是王道
+HNSCC_OS_marginS_multi_CoxHR0p5_Bonf <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene,  (p_value_adj_bonferroni < alpha_HNSCC) & (multi_P_value < 0.05) & (multi_HR <= good_FC), 
+                                               select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# # n=13; 不同上
+# [1] "ZNF557"    "ZNF266"    "IL19"      "MYO1H"     "FCGBP"    
+# [6] "LOC148709" "EVPLL"     "PNMA5"     "KIAA1683"  "GPR15"    
+# [11] "NPB"       "CALML5"    "PPFIA3" 
+save(HNSCC_OS_marginS_uni_CoxHR0p5_Bonf, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "uni_CoxHR0p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_uni_CoxHR0p5_Bonf (final good guy candidates)
+save(HNSCC_OS_marginS_multi_CoxHR0p5_Bonf, file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR0p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_multi_CoxHR0p5_Bonf (final good guy candidates)
+# go to Export r2excel 2020 (line 1798)
 
-# n=61
 
+# FDR uni/multi
 
-
-# venn2 diagram of HR < 0.8 of Uni & Multi ###
+# FDR: venn2 diagram of HR < 0.5 of Uni & Multi ###
 #for list of genes by grouping; library(gplots)
 venn_HR0p5 <- list(HNSCC_OS_marginS_uni_CoxHR0p5$gene_id, HNSCC_OS_marginS_multi_CoxHR0p5$gene_id)
 names_HR0p5 <- c(paste("Cox's HR(univariate) <", good_FC), paste("Cox's HR(multivariate) <", good_FC))
@@ -1263,8 +1327,8 @@ dev.off() # saving instead of showing
 
 
 
-# from 1150
-## Export r2excel and .Rda 2019 ####
+
+##x Export r2excel and .Rda 2019 ####
 # _marginS_ [2020/03/04] z_cut 要刪去
 # Embase HNSCC genes was removed; no venn is necessary
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # in HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
@@ -1333,7 +1397,7 @@ xlsx.addLineBreak(sheet, 1) # add one blank line
 #xlsx.addTable(wb, sheet, data = t(data.frame(c(paste(geneName, "expression"), "", paste(geneName, "expression"), "", "(Optimised)"))), fontSize=12, startCol=4,
 #              fontColor="darkblue", row.names = F, col.names = F) #, colSpan=1, rowSpan=1)
 
-# a candidate genes table
+# x a candidate genes table
 # 要修
 candidates_alpha_pvalue <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf # after Bonferroni correcion
 # > colnames(HNSCC_OS_marginS_pvalue005_zcut)
@@ -1486,7 +1550,7 @@ xlsx.addPlot.venn(wb, sheet)
 
 
 
-# (bad guy table) prognostic features of those genes in TCGA HNSCC cohort ####
+# (FDR: bad guy table) prognostic features of those genes in TCGA HNSCC cohort ####
 # store KM_sig remrark as a Byte; converted as base10 in list_KM_sigBin
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalueKM_candidate_cox.Rda", sep=""))) # as candidate_cox (a list), since 2019/07/03; with KM_sig, Remark
 # candidate_sample, candidate_cox, n_percent_Bonferroni
@@ -1499,29 +1563,32 @@ load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "candidate
 # #HNSCC_OS_marginS_THREE_pvalue005 <- HNSCC_OS_marginS_THREE_pvalue005_1475 # *** try it
 # # as as HNSCC_OS_marginS_THREE_pvalue005, Bonferroni_cutoff
 # 
+
+
+
 # #.. bad guy gene candidate
 # # => see "remark=1"; "which" or NOT "which", the order is wrong.
 # # isect_HR2p5 is a list, which comes from line 2909
-# #x geneid_bad_uni_HR2p5 <- c(isect_HR2p5$`A:B`, isect_HR2p5$`A`) # from venn_HR2p5: A + A:B = group uni_
 # # R4> isect_HR2p5
 # # $`uni_Cox HR >=1:multi_Cox HR >=1`
 # # [1] "CAMK2N1" "USP10"   "PGK1"    "SURF4"   "EFNB2"   "EIF2AK1" "STC2"   
 
-# R4> isect_HR2p5 (no more from venn)
+# R4> isect_HR2p5 (FDR with venn)
 # $`uni_Cox HR >=1:multi_Cox HR >=1`
 # [1] "CAMK2N1" "USP10"   "PGK1"    "SURF4"   "EFNB2"   "EIF2AK1" "STC2"   
-geneid_bad_uni_HR2p5 <- c(isect_HR2p5[[3]], isect_HR2p5[[1]])
+isect_HR2p5 <- isect_HR2p5_FDR
+geneid_bad_uni_HR2p5 <- c(isect_HR2p5[[3]], isect_HR2p5[[1]]) # geneid_bad_uni_HR2p5 <- c(isect_HR2p5$`A:B`, isect_HR2p5$`A`) # from venn_HR2p5: A + A:B = group uni_
 # whole_genome[which(whole_genome %in% geneid_bad_uni_HR2p5)]
 #  [1] "CD1A"    "CENPN"   "COX7A2L" "ERCC6"   "HIGD1B"  "HMGN5"   "NEK6"    "NUF2"   
 # [9] "PA2G4P4" "PCTP"    "PLOD2"   "RRAS2"   "SFXN1" 
-candidate_bad_uni_HR2p5 <- cbind(data.frame(gene_id=geneid_bad_uni_HR2p5), HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% geneid_bad_uni_HR2p5), 2:7])
+candidate_bad_uni_HR2p5 <- cbind(data.frame(gene_id=geneid_bad_uni_HR2p5), HNSCC_OS_marginS_THREE_pvalue005_noCancerGene[which(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene$gene_id %in% geneid_bad_uni_HR2p5), 2:8])
 #as.binary(candidate_cox[which(whole_genome %in% geneid_bad_uni_HR2p5)]$KM_sig, n=7, logic=T) # store KM_sig remrark as a Byte
 # can NOT use "whole_genome" any more
 #x list_KM_sig <- candidate_cox[which(whole_genome %in% geneid_bad_uni_HR2p5)] 
 list_KM_sig <- candidate_cox[as.numeric(rownames(candidate_bad_uni_HR2p5))] # a list (rownames has whole_genome's right position)
 # km <- function(x) {print(list_KM_sig[[x]][8,9])}; lapply(c(1:10), km)
 list_KM_sigBin <- data.frame(matrix(NA, nrow = length(geneid_bad_uni_HR2p5), ncol = nrow(candidate_cox[[1]])-1))
-colnames(list_KM_sigBin) <- c(rownames(candidate_cox[[1]])[-8])
+colnames(list_KM_sigBin) <- c(rownames(candidate_cox[[1]])[-8]) # 8 column, without tobacco feature
 for (ikm in 1:length(list_KM_sig)) 
 {
   #list_KM_sigBin[ikm, 2:nrow(candidate_cox[[1]])] <- 
@@ -1729,7 +1796,7 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 
 
 #{*** R2Excel (2020) ####
-#2020/03/04 Create an Excel workbook. Both .xls and .xlsx file formats can be used.
+#2020/03/08 Create an Excel workbook .xlsx file formats can be used.
 ## export to HNSCC_OS_marginS_candidates_Bonferroni.xlsx
 filenamex <- paste(TCGA_cohort, "_OS", marginTag, "candidates_Bonferroni", ".xlsx", sep = "") 
 # no more "HNSCC_OS_marginS_candidates_Venn.xlsx"
@@ -1787,10 +1854,14 @@ currentRow <- xlsx.addPlot.candidates(wb, sheet, file="cox_multi_Bonf_KMPvalue.p
 
 # header
 # a candidate genes table
-candidates_alpha_pvalue <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf # after Bonferroni correcion
+# HNSCC_OS_marginS_uni_CoxHR2p5_Bonf; bad guy uni/multi 相同
+# HNSCC_OS_marginS_multi_CoxHR2p5_Bonf
+# [HNSCC_OS_marginS_uni_CoxHR0p5_Bonf; good guy 取交集]
+# [HNSCC_OS_marginS_multi_CoxHR0p5_Bonf]
+candidates_bad_guy <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf # after Bonferroni correction
 # no more Z-score:a normalized number (frequency) of OS P-values, which KM P-value < 0.05, in each gene
-xlsx.addHeader(wb, sheet, value=paste("Table 1. The ", nrow(candidates_alpha_pvalue), " candiate genes overexpressed in ", TCGA_cohort,
-                                      " (ranked by Bonferroni corrected Kaplan Meier P-value, and Cox's uni/multivariate model) ", "\n" , sep=""),
+xlsx.addHeader(wb, sheet, value=paste("Table 1. The ", nrow(candidates_bad_guy), " candiate genes overexpressed with poor prognosis in ", TCGA_cohort, "",
+                                      " (ranked by Bonferroni corrected Kaplan Meier P-value) ", "\n" , sep=""),
                level=5, color="black", underline=0) # nrow(HNSCC_OS_marginS_pvalue005_zcut), n=6601
 #xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
 #               level=5, color="red", underline=0) # total n is taken from surv_OS1$n
@@ -1799,59 +1870,104 @@ xlsx.addHeader(wb, sheet, value=paste("Table 1. The ", nrow(candidates_alpha_pva
 
 # > colnames(HNSCC_OS_marginS_pvalue005_zcut)
 # [1] "gene_id" "p_value" "z_score" rename to "Gene_id", "P_value", "Z_score" (why?)
-colnames(candidates_alpha_pvalue)[1:4] <- c("Gene_id", "P_value", "Bonferroni P_value", "FDR P_value")
+colnames(candidates_bad_guy)[1:4] <- c("Gene_id", "P_value", "Bonferroni P_value", "FDR P_value")
 # # # Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
-attach(candidates_alpha_pvalue) # removal of as.factor (P_value)
+attach(candidates_bad_guy) # removal of as.factor (P_value)
 # in scientific notation: formatC of [, c(2)]
-candidates_alpha_pvalue$P_value <- formatC(as.numeric(as.character(P_value)), format = "e", digits = 2)
-candidates_alpha_pvalue$`Bonferroni P_value` <- formatC(as.numeric(as.character(`Bonferroni P_value`)), format = "f", digits = 3)
-candidates_alpha_pvalue$`FDR P_value` <- formatC(as.numeric(as.character(`FDR P_value`)), format = "f", digits = 4)
-#candidates_alpha_pvalue$Z_score <- signif(Z_score, digits=4)
-candidates_alpha_pvalue <- candidates_alpha_pvalue[order(`Bonferroni P_value`), ] #sorting by order(ascending)
-detach(candidates_alpha_pvalue)
-# export up to top 30 genes [1:30,], out of 1702 genes
-xlsx.addTable(wb, sheet, data = candidates_alpha_pvalue[, ], startCol=2,
+candidates_bad_guy$P_value <- formatC(as.numeric(as.character(P_value)), format = "e", digits = 2)
+candidates_bad_guy$`Bonferroni P_value` <- formatC(as.numeric(as.character(`Bonferroni P_value`)), format = "f", digits = 3)
+candidates_bad_guy$`FDR P_value` <- formatC(as.numeric(as.character(`FDR P_value`)), format = "f", digits = 4)
+#candidates_bad_guy$Z_score <- signif(Z_score, digits=4)
+candidates_bad_guy <- candidates_bad_guy[order(`Bonferroni P_value`), ] #sorting by order(ascending)
+detach(candidates_bad_guy)
+# export up to top 10 genes [1:30,], don't show FDR P-value
+xlsx.addTable(wb, sheet, data = candidates_bad_guy[, -4], startCol=2,
               fontColor="darkblue", fontSize=12,
               rowFill=c("white", "white"), row.names = TRUE)
 
 xlsx.addLineBreak(sheet, 1)
-xlsx.addParagraph(wb, sheet, value=paste("Selection criteria:", "\n", "Bonferroni KM P-value < 0.05", "\n", "Cox's multivariate HR >", bad_FC), isItalic=FALSE, colSpan=3, 
+xlsx.addParagraph(wb, sheet, value=paste("Selection criteria:", "\n", "Bonferroni KM P-value < 0.05", "\n", "Cox's univariate & multivariate HR >=", bad_FC), isItalic=FALSE, colSpan=4, 
+                  rowSpan=4, fontColor="darkblue", fontSize=14)
+xlsx.addLineBreak(sheet, 5)  # add two blank lines
+
+
+# ...
+# HNSCC_OS_marginS_uni_CoxHR0p5_Bonf; good guy 取交集 inner join
+# HNSCC_OS_marginS_multi_CoxHR0p5_Bonf
+#candidates_good_guy <- merge(HNSCC_OS_marginS_uni_CoxHR0p5_Bonf, HNSCC_OS_marginS_multi_CoxHR0p5_Bonf, by="gene_id", all=FALSE)
+candidates_good_guy <- merge(HNSCC_OS_marginS_uni_CoxHR0p5_Bonf, HNSCC_OS_marginS_multi_CoxHR0p5_Bonf) # after Bonferroni correction
+# no more Z-score:a normalized number (frequency) of OS P-values, which KM P-value < 0.05, in each gene
+xlsx.addHeader(wb, sheet, value=paste("Table 2. The ", nrow(candidates_good_guy), " candiate genes overexpressed with better prognosis in ", TCGA_cohort,
+                                      " (ranked by Bonferroni corrected Kaplan Meier P-value) ", "\n" , sep=""),
+               level=5, color="black", underline=0) # nrow(HNSCC_OS_marginS_pvalue005_zcut), n=6601
+#xlsx.addHeader(wb, sheet, value=paste("Cutoff at ", round(cutoff1, 3), " (", percent(surv_OS1$n[1]/(surv_OS1$n[1]+surv_OS1$n[2])), ")", sep = ""),
+#               level=5, color="red", underline=0) # total n is taken from surv_OS1$n
+
+#xlsx.addLineBreak(sheet, 1) # add one blank line
+
+# > colnames(HNSCC_OS_marginS_pvalue005_zcut)
+# [1] "gene_id" "p_value" "z_score" rename to "Gene_id", "P_value", "Z_score" (why?)
+colnames(candidates_good_guy)[1:4] <- c("Gene_id", "P_value", "Bonferroni P_value", "FDR P_value")
+# # # Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
+attach(candidates_good_guy) # removal of as.factor (P_value)
+# in scientific notation: formatC of [, c(2)]
+candidates_good_guy$P_value <- formatC(as.numeric(as.character(P_value)), format = "e", digits = 2)
+candidates_good_guy$`Bonferroni P_value` <- formatC(as.numeric(as.character(`Bonferroni P_value`)), format = "f", digits = 3)
+candidates_good_guy$`FDR P_value` <- formatC(as.numeric(as.character(`FDR P_value`)), format = "f", digits = 4)
+#candidates_good_guy$Z_score <- signif(Z_score, digits=4)
+candidates_good_guy <- candidates_good_guy[order(`Bonferroni P_value`), ] #sorting by order(ascending)
+detach(candidates_good_guy)
+# export up to top 10 genes [1:30,], don't show FDR P-value
+xlsx.addTable(wb, sheet, data = candidates_good_guy[, -4], startCol=2,
+              fontColor="darkblue", fontSize=12,
+              rowFill=c("white", "white"), row.names = TRUE)
+
+xlsx.addLineBreak(sheet, 1)
+xlsx.addParagraph(wb, sheet, value=paste("Selection criteria:", "\n", "Bonferroni KM P-value < 0.05", "\n", "Cox's univariate & multivariate HR <=", good_FC), isItalic=FALSE, colSpan=4, 
                   rowSpan=4, fontColor="darkblue", fontSize=14)
 xlsx.addLineBreak(sheet, 5)  # add two blank lines
 
 
 ### P-value plot of KM survival analyses (PvalueplotKM.tiff 600*500 ** with Bonferroni correction 決定) 這張圖最棒
-#要標出 9 gene list on this P-value plot
-#{
-#Put labels above the points: points() on plot()
-#https://bookdown.org/ndphillips/YaRrr/low-level-plotting-functions.html
-#}
+#要標出 10 gene list on this P-value plot
+# candidates_bad_guy
+# candidates_good_guy
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
 # higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
+detach("package:ggplot2", unload=TRUE)
 attach(HNSCC_OS_marginS_pvalue_sorted) # n=20500, uncorrected P-value
-plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analyses", log="x", cex=0.3) # log scale x or y
-abline(h=150, lty=2, col="blue")
-abline(v=Bonferroni_cutoff, lty=2, col="red") # 5.31011e-06
+plot(p_value, number, type="p", ylab="Frequency", xlab="P-value", main="P-value plot of KM survival analyses", log="x", cex=0.7) # log scale x or y
+#***p value plot abline 改為 segments(x0, y0, x1, y1, ....)
+#abline(h=150, lty=2, col="blue")
+#abline(v=Bonferroni_cutoff, lty=2, col="red") # 5.31011e-06
+segments(x0=0.5e-7, y0=150, x1=1e-2, y1=150, lty=2, col="blue")
+segments(x0=Bonferroni_cutoff, y0=0, x1=Bonferroni_cutoff, y1=170, lty=2, col="red") # 5.31011e-06
 legend("topright", legend=c(paste("Frequency at 150"), paste("Bonferroni ", signif(Bonferroni_cutoff, 2))), lty=2:2, col=c("blue","red"), cex=0.7) # box and font size
 
-# points 9 candidate genes on this P-value plot
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # as HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
+# points 10 candidate genes on this P-value plot, 標出 10 bad and 10 good 
+# **on this P-value plot (PvalueplotKM_10genes.tiff) => X-axis 要改為 0.05
+# #https://bookdown.org/ndphillips/YaRrr/low-level-plotting-functions.html
+#load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # as HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
 load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep=""))) # as HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, with "number"
-points_x <- HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$p_value # uncorrected P-value
+points_x <- candidates_bad_guy$P_value # using uncorrected P-value
 points_y <- HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[
-  HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR$gene_id %in% HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id, 1] # number 
+  HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR$gene_id %in% candidates_bad_guy$Gene_id, 1] # number 
 points(x = points_x, y = points_y,
        pch = 16,
        col = "red" ) # transparent("coral2", trans.val = .8)
 text(x = points_x[c(1,3,5,7,9)], y = points_y[c(1,3,5,7,9)],
-     labels = HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id[c(1,3,5,7,9)],
+     labels = candidates_bad_guy$Gene_id[c(1,3,5,7,9)],
      cex = 0.5, adj = 0,
      pos = 1)            # Put labels below the points
 text(x = points_x[c(2, 4, 6, 8)], y = points_y[c(2, 4, 6, 8)],
-     labels = HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id[c(2, 4, 6, 8)],
+     labels = candidates_bad_guy$Gene_id[c(2, 4, 6, 8)],
      cex = 0.5, adj = 0,
      pos = 3)            # Put labels below the points
 detach(HNSCC_OS_marginS_pvalue_sorted)
+# save as .tiff, then export to .xlsx
+system("convert PvalueplotKM_10genes.tiff PvalueplotKM_10genes.png", intern = FALSE) # convert is a duplicate
+currentRow <- xlsx.addPlot.candidates(wb, sheet, file="PvalueplotKM_10genes.png") # startRow + a plot
+
 
 ## Write wb to disk ###
 ##..[2019/07/22] _marginS_ done
@@ -1869,10 +1985,15 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 save(candidate_bad_unimulti_HR2p5, file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_bad_unimulti_HR2p5", ".Rda", sep="")))
 save(candidate_good_unimulti_HR0p5, file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_good_unimulti_HR0p5", ".Rda", sep="")))
 # retrieve .xlsx of each candidate
+#{
+# retrieve .xlsx from HNSCC.survival.marginS.20500.tar.gz
+# survival.txt 20500 filename of .xlsx
+geneNameX <- as.vector(HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id)
+#}
 # tar of all HNSCC_survivalAnalysis_marginPlus_*.xlsx of candidate list
 # e.x. HNSCC_survivalAnalysis_marginS_ZZZ3.xlsx
 # => marginS_candidate_xlsx.tar.gz
-geneNameX <- c(as.vector(candidate_bad_unimulti_HR2p5[, c(1)]), as.vector(candidate_good_unimulti_HR0p5[, c(1)]))
+#geneNameX <- c(as.vector(candidate_bad_unimulti_HR2p5[, c(1)]), as.vector(candidate_good_unimulti_HR0p5[, c(1)]))
 # 1 EIF2AK1
 # 2	SMPX
 # 3	TMBIM6
@@ -1891,7 +2012,9 @@ write.table(xlsx_list, file="xlsx_list.txt", sep = "",
 #write.text(xlsx_list, file.path(path_cohort))
 # or system(paste("ls", xlsx_list, "> xlsx_list.txt"))
 system(paste("tar -czvf ", sub("_", "", marginTag), "candidate_xlsx.tar.gz -T xlsx_list.txt", sep=""))
+# HNSCC.survival.marginS.20500.tar.gz
 # "tar -czvf marginS_candidate_xlsx.tar.gz -T xlsx_list.txt"
+system(paste("tar -xzvf HNSCC.survival.marginS.20500.tar.gz -T xlsx_list.txt"))
 # how to delete them
 #$ find . -maxdepth 1 -name "HNSCC_survivalAnalysis_marginS_*.Rda" | xargs rm
 
@@ -2363,7 +2486,7 @@ oby <- read.table(header=TRUE, text='
 # R4> options(prompt="R4_plus>")
 # tar
 #{
-#好用的工具
+#好用的工具 guidebook
 # ***bash $ TODAY=`date +"%b %d"`;ls -l | grep "$TODAY"
 # # list today's files
 # https://www.howtogeek.com/248780/how-to-compress-and-extract-files-using-the-tar-command-on-linux/
