@@ -1982,28 +1982,33 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 
 
 # human curation ####
+candidate_bad_unimulti_HR2p5 <- candidates_bad_guy # from Bonferroni correction
 save(candidate_bad_unimulti_HR2p5, file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_bad_unimulti_HR2p5", ".Rda", sep="")))
+# as marginS_candidate_bad_unimulti_HR2p5.Rda
+candidate_good_unimulti_HR0p5 <- candidates_good_guy # from Bonferroni correction
 save(candidate_good_unimulti_HR0p5, file=file.path(path_cohort, paste(sub("_", "", marginTag), "candidate_good_unimulti_HR0p5", ".Rda", sep="")))
+# as marginS_candidate_good_unimulti_HR0p5.Rda
+# 
 # retrieve .xlsx of each candidate
 #{
 # retrieve .xlsx from HNSCC.survival.marginS.20500.tar.gz
 # survival.txt 20500 filename of .xlsx
-geneNameX <- as.vector(HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id)
+#geneNameX <- as.vector(HNSCC_OS_marginS_multi_CoxHR2p5_Bonf$gene_id)
 #}
 # tar of all HNSCC_survivalAnalysis_marginPlus_*.xlsx of candidate list
 # e.x. HNSCC_survivalAnalysis_marginS_ZZZ3.xlsx
 # => marginS_candidate_xlsx.tar.gz
-#geneNameX <- c(as.vector(candidate_bad_unimulti_HR2p5[, c(1)]), as.vector(candidate_good_unimulti_HR0p5[, c(1)]))
-# 1 EIF2AK1
-# 2	SMPX
-# 3	TMBIM6
-# 4	TMLHE
-# 5	PCTP
-# 6	SPOCK1 ...bad + good guys
+geneNameX <- c(as.vector(candidate_bad_unimulti_HR2p5[, c(1)]), as.vector(candidate_good_unimulti_HR0p5[, c(1)]))
+# R4> geneNameX
+# [1] "DKK1"      "CAMK2N1"   "STC2"      "PGK1"      "SURF4"    
+# [6] "USP10"     "NDFIP1"    "FOXA2"     "STIP1"     "DKC1"     
+# [11] "ZNF557"    "ZNF266"    "IL19"      "MYO1H"     "FCGBP"    
+# [16] "LOC148709" "EVPLL"     "PNMA5"     "KIAA1683"  "NPB" ...bad + good guys
 
 # >tar
 #xlsx_list <- as.data.frame(paste(TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep=""))
-xlsx_list <- paste("./", gsub("_", "", marginTag), "/", TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep="")
+xlsx_list <- paste(TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep="")
+#xlsx_list <- paste("./", gsub("_", "", marginTag), "/", TCGA_cohort, "_survivalAnalysis", marginTag, geneNameX, ".xlsx", sep="")
 #colnames(xlsx_list) <- "value" # rename V1 to value; for SparkR
 #tmp <- tempfile() # name as "/tmp/RtmpRXBLFL/file5fb02526933a"
 #writeLines(xlsx_list, con = tmp)
@@ -2015,6 +2020,7 @@ system(paste("tar -czvf ", sub("_", "", marginTag), "candidate_xlsx.tar.gz -T xl
 # HNSCC.survival.marginS.20500.tar.gz
 # "tar -czvf marginS_candidate_xlsx.tar.gz -T xlsx_list.txt"
 system(paste("tar -xzvf HNSCC.survival.marginS.20500.tar.gz -T xlsx_list.txt"))
+>apple$ tar -xzvf /Users/apple/Downloads/Rstudio_marginS_result/HNSCC.survival.marginS.20500.tar.gz  -T xlsx_list.txt
 # how to delete them
 #$ find . -maxdepth 1 -name "HNSCC_survivalAnalysis_marginS_*.Rda" | xargs rm
 
