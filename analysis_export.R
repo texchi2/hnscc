@@ -48,7 +48,8 @@ path_ZSWIM2 <- file.path(path_cohort, gsub("_", "", marginTag), "") # e.x. margi
 
 
 
-#(at the first time) Dissection of ZSWIM2 #
+#(at the first time) 
+#>Dissection of ZSWIM2 ####
 #1) KM plot is not at best cutoff, why??
 #2) ZSWIM2 should be saved by appending.
 #3)
@@ -74,12 +75,32 @@ sum(ZSWIM2_2$Freq)
 #[1] 20500  # scan completely
 
 # Only reture(0) is ok for subsequent analyses
-text_pie <- paste("Workable genes \n in ", round(ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq)*100), " %") # _marginS_ about 45.9% usable RNAseq data
-pie(ZSWIM2_2$Freq, labels=ZSWIM2_2$Var1, main=text_pie)
+pielabels <- sprintf("%s", ZSWIM2_2$Freq[ZSWIM2_2$Freq>0])
+pie_colors <- c("yellow", "green", "violet", 
+              "orange", "blue", "pink", "cyan","red") 
+text_pie <- paste("Workable genes \n in", pie_colors[1], "(", round(ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq)*100), "% of whole genome)") # _marginS_ about 45.9% usable RNAseq data
+# n=9416
+pie(ZSWIM2_2$Freq[ZSWIM2_2$Freq>0],
+    labels=NA,
+    clockwise=F,
+    col=pie_colors,
+    border="white",
+    radius=0.7,
+    cex=0.8,
+    main=text_pie)
+legend("bottomright", legend=pielabels, bty="n",
+       fill=pie_colors)
+# brewer.pal(7,"Set1") # from RColorBrewer::brewer.pal()
+#browsers<-read.table("browsers.txt",header=TRUE)
+#browsers<-browsers[order(browsers[,2]),]
+#pielabels <- sprintf("%s = %3.1f%s", browsers[,1],
+#                     100*browsers[,2]/sum(browsers[,2]), "%")
+#pie(ZSWIM2_2$Freq, labels=ZSWIM2_2$Var1, main=text_pie)
 
+#
 # deal with return(1), return(2) and return(3) errors, try to solve it
 # _marginS_
-n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.4593171
+n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.4593171 -> 0.4581951
 error01_sample <- which(ZSWIM2$X3==1) #  32.2% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
 error02_sample <- which(ZSWIM2$X3==2) # 14.2% error02: There has only one group in survdiff.
 error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group in survdiff.
@@ -1974,16 +1995,17 @@ plot(HNSCC_OS_marginS_pvalue_sorted$p_value,
 # summary(complete.cases(HNSCC_OS_marginS_pvalue_sorted)) == 6429
 mtext(side=3, line=0.7, "P-value plot of KM survival analyses", font=3, cex=1.6)
 # X-axis 為 0.05 # https://rpubs.com/riazakhan94/297778
-# x0 3e-7
-axis(1, seq(8e-8, 0.05, 7e-6), font=2) # X axis, max(HNSCC_OS_marginS_pvalue_sorted$p_value) # 5e-6
-axis(2, seq(0, 190, 50), font=2, las=2, pos=8e-8) # Y axis, max(HNSCC_OS_marginS_pvalue_sorted$number)
+# x0 3e-7, 8e-8
+axis(1, seq(0, 0.05, 7e-6), font=2) # X axis, max(HNSCC_OS_marginS_pvalue_sorted$p_value) # 5e-6
+#axis(2, seq(0, 190, 50), font=2, las=2, pos=-7e-6) # Y axis, max(HNSCC_OS_marginS_pvalue_sorted$number)
 #***p value plot abline 改為 segments(x0, y0, x1, y1, ....)
+
 #abline(h=150, lty=2, col="blue")
 #abline(v=Bonferroni_cutoff, lty=2, col="red") # 5.31011e-06
-segments(x0=3e-6, y0=100, x1=1e-2, y1=100, lty=2, col="blue")
+segments(x0=8e-8, y0=100, x1=4e-2, y1=100, lty=2, col="blue") # h line
 segments(x0=alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), y0=0, 
          x1=alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), y1=170, 
-         lty=2, col="red") # Bonferroni_cutoff= 5.31011e-06 or 選 0.05/6624
+         lty=2, col="red") # Bonferroni_cutoff= 5.31011e-06 or 選 0.05/6624; v line
 legend("topright", legend=c(paste("Frequency at 100"), paste("Cutoff at ", 
                                                              signif(alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), 2), 
                                                              "*")), lty=2:2, col=c("blue","red"), cex=1.1) # box and font size
@@ -2023,12 +2045,12 @@ points(x = points_x, y = points_y,
        col = "red" ) # transparent("coral2", trans.val = .8)
 text(x = points_x[c(1,3,5,7,9)], y = points_y[c(1,3,5,7,9)],
      labels = candidates_bad_guy$Gene_id[c(1,3,5,7,9)],
-     cex = 0.5, adj = 0,
+     cex = 0.3, adj = 0,
      pos = 1)            # Put labels below the points
 text(x = points_x[c(2, 4, 6, 8, 10)], y = points_y[c(2, 4, 6, 8, 10)],
      labels = candidates_bad_guy$Gene_id[c(2, 4, 6, 8, 10)],
-     cex = 0.5, adj = 0,
-     pos = 3)            # Put labels below the points
+     cex = 0.3, adj = 0,
+     pos = 3)            # Put labels above the points
 
 #detach(HNSCC_OS_marginS_pvalue_sorted_noNA_bonferroni)
 # save as .tiff, then export to .xlsx
@@ -2122,7 +2144,30 @@ candidate_good_unimulti_HR0p5[candidate_good_unimulti_HR0p5$Gene_id=="ZNF557", ]
 # 10       0.001    0.499             0
 # Zinc Finger Protein 557
 
-
+# > ROC and AUC for validation ####
+# insinstall.packages("OptimalCutpoints")
+library(OptimalCutpoints)
+data(elas) # The elas data set was obtained from the Cardiology Department at the Galicia General Hospital (Santiago de Compostela, Spain). This study was conducted to assess the clinical usefulness of leukocyte elastase determination in the diagnosis of coronary artery disease (CAD).
+#########################################################9##
+# Youden Index Method ("Youden"): Covariate gender ###
+# ###################################################9### 
+optimal.cutpoint.Youden<-optimal.cutpoints(X = "elas", status = "status", 
+                                           tag.healthy = 0, methods = "Youden", 
+                                           data = elas, pop.prev = NULL, 
+                                           categorical.cov = "gender", control = control.cutpoints(), 
+                                           ci.fit = TRUE, conf.level = 0.95, trace = FALSE) 
+summary(optimal.cutpoint.Youden)
+# Change the method for computing the confidence interval
+# of Sensitivity and Specificity measures, by control = ...
+optimal.cutpoint.Youden<-optimal.cutpoints(X = "elas", status = "status", tag.healthy = 0, methods = "Youden", data = elas, pop.prev = NULL, categorical.cov = "gender",
+                                           control = control.cutpoints(ci.SeSp = "AgrestiCoull"), ci.fit = TRUE, conf.level = 0.95, trace = FALSE)
+summary(optimal.cutpoint.Youden)
+# Compute the Generalized Youden Index
+optimal.cutpoint.Youden<-optimal.cutpoints(X = "elas", status = "status", tag.healthy = 0, methods = "Youden", data = elas, pop.prev = NULL, categorical.cov = "gender",
+                                           control = control.cutpoints(generalized.Youden = TRUE), ci.fit = TRUE, conf.level = 0.95, trace = FALSE)
+summary(optimal.cutpoint.Youden)
+plot.optimal.cutpoints(optimal.cutpoint.Youden)
+summary.optimal.cutpoints(optimal.cutpoint.Youden)
 
 # [DAVID] :-) convert to EntrezID ####
 # the database for annotation, visualization and integrated discovery (DAVID), a web-based online bioinformatics resource (http://david.abcc.ncifcrf.gov)

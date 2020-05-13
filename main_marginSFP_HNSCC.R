@@ -2,6 +2,8 @@
 # ssh has more security mechanism (better than http:// alone)
 # 這是最主要的 R code (marginS and marginFree) since [2018/05/20]-[2018/07/08] instance-4
 # porting to HNSCC_Tex_survival since [2018/10/24] {3 levels:main, TCGA_HNSCC_[marginS/marginFree], cutofFinder_func.R}
+# tex@instance-4:~/R/HNSCC_Tex_survival/hnscc_github$
+
 
 # [2018/10/26] sync: pull and push with remote github (well done); Screens connect from iPad pro (ok)
 # {
@@ -18,6 +20,15 @@
 # [2019/05/02] start to work [2019/05/08] upgraded Rstudio server + install openssl 1.1.0
 # [2019/05/13]
 # [2019/06/19] ready to fully run
+# [2020/05/03] ready to writing manuscript:
+# on mindmap (mindnode app) {
+#   main, main_marginSFP_HNSCC.R;
+#   setting 3 cohort to analysis, TCGA_HNSCC_marginSFP.R [marginS/marginFree/marginPlus];
+#     data process, survival analyses, table generation
+#   cutoff engine, cutofFinder_func_HNSCC.R;
+# } then candidate pickup and export results with analysis_export.R
+# 
+# 
 
 # Tutorial: Survival analysis of TCGA patients integrating gene expression (RNASeq) data
 # https://www.biostars.org/p/153013/
