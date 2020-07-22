@@ -73,6 +73,9 @@ ZSWIM2_2 <- data.frame(ZSWIM2_2)
 plot((ZSWIM2_2))
 sum(ZSWIM2_2$Freq)
 #[1] 20500  # scan completely
+# why error_01: whole_genome[ZSWIM2$X2 == 1]
+# 
+
 
 # Only reture(0) is ok for subsequent analyses
 pielabels <- sprintf("%s", ZSWIM2_2$Freq[ZSWIM2_2$Freq>0])
@@ -102,8 +105,10 @@ legend("bottomright", legend=pielabels, bty="n",
 # _marginS_
 n_percent_Bonferroni <- ZSWIM2_2$Freq[1]/sum(ZSWIM2_2$Freq) # 0.4593171 -> 0.4581951
 error01_sample <- which(ZSWIM2$X3==1) #  32.2% error01: "ZSWIM2 skip from contingencyTCGA()"): one group issue in Melt()
+# => *** re-run
 error02_sample <- which(ZSWIM2$X3==2) # 14.2% error02: There has only one group in survdiff.
-error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group in survdiff.
+error03_sample <- which(ZSWIM2$X3==3) # 6.85% error03: There has only one group in survdiff on KM cutofFinder_func.R.
+#=> Test for difference (log-rank test is multiple Chi-square alone survival time) with P-value; or Test for different KM curve between two groups (seperated by PMM1_median 0 vs 1)
 error05_sample <- which(ZSWIM2$X3==5) # 0.78%(159 genes) error05: for why?
 # done #
 

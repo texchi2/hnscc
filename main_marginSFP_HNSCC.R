@@ -59,12 +59,15 @@ setwd(path_cohort) # set the working directory under rstudio-server on HNSCC, GC
 load(file="whole_genome.Rda") # the name list of protein coding genome
 LUAD_n <- length(whole_genome) # n=20499 -> now is 20500, such as "ZZZ3"   "ZZEF1"  "ZYX"    "ZYG11B" "ZYG11A" "ZXDC"  .....
 
-
+# for dbGaP
+devtools::install_github("gversmee/dbgap2x")
+# https://github.com/gversmee/dbgap2x
 #
 install.packages("devtools")
 library("devtools")
 devtools::install_github("mariodeng/FirebrowseR") # with more features (81): such as residual_tumor, vital_status, days_to_last_followup, "smoking duration"
 library(FirebrowseR)
+library(testthat) # If you’re using RStudio, press Cmd/Ctrl + Shift + T (or run devtools::test() if not) to run all the tests in a package.
 
 cohorts = Metadata.Cohorts(format = "csv") # Download all available cohorts
 cancer.Type = cohorts[grep("head", cohorts$description, ignore.case = T), 1]
