@@ -2008,8 +2008,10 @@ xlsx.addLineBreak(sheet, 5)  # add two blank lines
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
 # higher probability to be "found" significantly on a random selection of "cutoff" value in the tranditional manner.
 #detach("package:ggplot2", unload=TRUE)
-HNSCC_OS_marginS_pvalue_sorted$p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted$p_value, method="bonferroni")
-# [1] "number"                 "gene_id"               
+#x HNSCC_OS_marginS_pvalue_sorted$p_value_adj_bonferroni <- p.adjust(HNSCC_OS_marginS_pvalue_sorted$p_value, method="bonferroni")
+# "HNSCC_OS_marginS_pvalue_sorted_noNA_p_adjustS.Rda" saved at "/home/tex/R/HNSCC_Tex_survival/hnscc_github/marginS/"
+# 這才是 Bonferroni?
+## [1] "number"                 "gene_id"               
 # [3] "p_value"                "p_value_adj_bonferroni"
 #HNSCC_OS_marginS_pvalue_sorted_noNA_bonferroni <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ] # removal of NAs
 #attach(HNSCC_OS_marginS_pvalue_sorted_noNA_bonferroni) # n=20500-13876(NAs)=6624, uncorrected P-value
