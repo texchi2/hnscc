@@ -1174,6 +1174,24 @@ legend("topright", legend=c(paste("HR at", bad_FC), paste("HR at", good_FC), pas
 # figure legend: logistic regression, LR, by Generalized linear model, glm
 
 
+# Figure 2 ####
+# HNSCC_OS_marginS_THREE_pvalue005_noCancerGene => for manuscript Figure 2
+# By uncorrected P-value below 0.05, we selected 967 genes which HR is greater than 1.5 or less than 0.5 
+# (see Figure \ref{fig:figure2a} univariate,
+HNSCC_OS_marginS_uni1p5_Figure2 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR >= bad_FC), 
+                                          select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# n=942
+HNSCC_OS_marginS_uni0p5_Figure2 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR <= good_FC), 
+                                          select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# n=25
+# ... and Figure \ref{fig:figure2b} multivariate, respectively).
+HNSCC_OS_marginS_multi1p5_Figure2 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR >= bad_FC), 
+                                          select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# n=942
+HNSCC_OS_marginS_multi0p5_Figure2 <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR <= good_FC), 
+                                          select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
+# n=25
+
 # x Venn_marginS_: cross matching HR>1.8 of Uni+Multi, HR<0.5 of Uni+Multi
 #library(venn) #https://cran.r-project.org/web/packages/venn/venn.pdf
 # venn(x, snames = "", ilabels = FALSE, counts = FALSE, ellipse = FALSE,
@@ -1194,7 +1212,7 @@ legend("topright", legend=c(paste("HR at", bad_FC), paste("HR at", good_FC), pas
 # Broader gene candidate (first 100): Cox HR (>1.5 or >=2.5), bad_FC fold change 
 # (uni_P_value <= 0.05) & (multi_P_value <= 0.05)
 # Bonferroni_cutoff = 5.31011e-06 is enoughly restricted in this cohort
-bad_FC <- bad_FC # 1.5, 1.6 or 1.8 # it was decided at [# P-values plot uni_HR] section
+bad_FC <- bad_FC # 1.5; 1.6 or 1.8 # it was decided at [# P-values plot uni_HR] section
 # #HNSCC_OS_marginS_uni_CoxHR2p5 <- subset(HNSCC_OS_marginS_THREE_pvalue005, (p_value <= Bonferroni_cutoff) & (uni_HR >= 2.5), 
 # #                                       select=c(number, gene_id, p_value, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # # xmulti_HR >=1.5 # & (multi_P_value <= 0.05) 
@@ -1202,6 +1220,7 @@ bad_FC <- bad_FC # 1.5, 1.6 or 1.8 # it was decided at [# P-values plot uni_HR] 
 #                                                          select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
 # #x n=679; uncorrected P-value < 0.05
 
+# n=6293
 # univariate p_value_adj_bonferroni  Bonferroni P-value < 0.05 才是王道
 HNSCC_OS_marginS_uni_CoxHR2p5_Bonf <- subset(HNSCC_OS_marginS_THREE_pvalue005_noCancerGene, (p_value_adj_bonferroni < alpha_HNSCC) & (uni_P_value < 0.05) & (uni_HR >= bad_FC), 
                                         select=c(gene_id, p_value, p_value_adj_bonferroni, p_value_adj_FDR, uni_HR, uni_P_value, multi_HR, multi_P_value))
@@ -1850,6 +1869,7 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 #2020/03/08 Create an Excel workbook .xlsx file formats can be used.
 # 2020/03/12 updated 100cut FDR and wholegenome Bonferroni correction
 ## export to HNSCC_OS_marginS_candidates_Bonferroni.xlsx
+library("r2excel")
 filenamex <- paste(TCGA_cohort, "_OS", marginTag, "candidates_Bonferroni", ".xlsx", sep = "") 
 # no more "HNSCC_OS_marginS_candidates_Venn.xlsx"
 wb <- createWorkbook(type="xlsx")
@@ -1980,8 +2000,9 @@ xlsx.addParagraph(wb, sheet, value=paste("Selection criteria:", "\n", "Bonferron
 xlsx.addLineBreak(sheet, 5)  # add two blank lines
 
 
-### P-value plot of KM survival analyses (PvalueplotKM.tiff 600*500 ** with Bonferroni correction 決定) 這張圖最棒
-#要標出 10 gene list on this P-value plot
+### 最棒 P-value plot of KM survival analyses (PvalueplotKM_20genes tiff or png 600*500 ** with Bonferroni correction 決定) ####
+### 這張圖最棒 Figure 3
+#要標出 10+10 gene list on this P-value plot
 # candidates_bad_guy
 # candidates_good_guy
 # #number/OS_pvalue: from cutoff finder, the number (frequency) of OS P-values, which KM P-value < 0.05, in this gene;
@@ -1993,15 +2014,18 @@ HNSCC_OS_marginS_pvalue_sorted$p_value_adj_bonferroni <- p.adjust(HNSCC_OS_margi
 #HNSCC_OS_marginS_pvalue_sorted_noNA_bonferroni <- HNSCC_OS_marginS_pvalue_sorted[complete.cases(HNSCC_OS_marginS_pvalue_sorted), ] # removal of NAs
 #attach(HNSCC_OS_marginS_pvalue_sorted_noNA_bonferroni) # n=20500-13876(NAs)=6624, uncorrected P-value
 # Bonferroni_cutoff <- alpha_HNSCC / (LUAD_n * n_percent_Bonferroni) = 0.05/9393 = 5.323113e-06
+# plot() axes scale with any transformation, not just logarithmic (for Weibull plots)
+# min x as 3.783-6
 plot(HNSCC_OS_marginS_pvalue_sorted$p_value, 
      HNSCC_OS_marginS_pvalue_sorted$number, type="p", xaxt="none", yaxt="none",
-     axes=FALSE,
-     ylab="Frequency", xlab="uncorrected KM P-value", log="x", cex=0.3) # log scale x or y; main="P-value plot of KM survival analyses", 
+     axes=FALSE, xlim=c(1e-8, 0.05),
+     ylab="Frequency", xlab="Adjusted KM P-value", log="x", cex=0.3) # log scale x or y; main="P-value plot of KM survival analyses", 
 # summary(complete.cases(HNSCC_OS_marginS_pvalue_sorted)) == 6429
 mtext(side=3, line=0.7, "P-value plot of KM survival analyses", font=3, cex=1.6)
 # X-axis 為 0.05 # https://rpubs.com/riazakhan94/297778
 # x0 3e-7, 8e-8
-axis(1, seq(0, 0.05, 7e-6), font=2) # X axis, max(HNSCC_OS_marginS_pvalue_sorted$p_value) # 5e-6
+# *** no more axis:
+#axis(1, seq(0, 0.05, 7e-6), font=2) # X axis, max(HNSCC_OS_marginS_pvalue_sorted$p_value) # 5e-6
 #axis(2, seq(0, 190, 50), font=2, las=2, pos=-7e-6) # Y axis, max(HNSCC_OS_marginS_pvalue_sorted$number)
 #***p value plot abline 改為 segments(x0, y0, x1, y1, ....)
 
@@ -2010,12 +2034,13 @@ axis(1, seq(0, 0.05, 7e-6), font=2) # X axis, max(HNSCC_OS_marginS_pvalue_sorted
 segments(x0=8e-8, y0=100, x1=4e-2, y1=100, lty=2, col="blue") # h line
 segments(x0=alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), y0=0, 
          x1=alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), y1=170, 
-         lty=2, col="red") # Bonferroni_cutoff= 5.31011e-06 or 選 0.05/6624; v line
-legend("topright", legend=c(paste("Frequency at 100"), paste("Cutoff at ", 
-                                                             signif(alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), 2), 
-                                                             "*")), lty=2:2, col=c("blue","red"), cex=1.1) # box and font size
-mtext(side=1, line=5, paste("* P-value cutoff by Bonferroni method (", alpha_HNSCC, "/", nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), 
-                            "=", signif(alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), 2), ")"), font=2, cex=1, adj=0) # (1=bottom, 2=left, 3=top, 4=right)
+         lty=2, col="red") # Bonferroni_cutoff= 7.8e-06 or 選 0.05/6624; v line
+legend("topright", legend=c(paste("Frequency at 100"), paste("Cutoff at 0.05")), lty=2:2, col=c("blue","red"), cex=1.1) # box and font size
+       #                                                      signif(alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), 2), 
+       #                                                      "*"))
+       
+#mtext(side=1, line=5, paste("* P-value cutoff by Bonferroni method (", alpha_HNSCC, "/", nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), 
+#                            "=", signif(alpha_HNSCC/nrow(HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR), 2), ")"), font=2, cex=1, adj=0) # (1=bottom, 2=left, 3=top, 4=right)
 # n=6429
 #legend("topright", legend=c(paste("Frequency at 100"), paste("Cutoff at ", signif(Bonferroni_cutoff, 2), "*")), lty=2:2, col=c("blue","red"), cex=1.1) # box and font size
 #mtext(side=1, line=5, paste("* P-value cutoff by Bonferroni method (", alpha_HNSCC, "/", (LUAD_n * n_percent_Bonferroni), "=", signif(Bonferroni_cutoff, 2), ")"), font=2, cex=1, adj=0) # (1=bottom, 2=left, 3=top, 4=right)
@@ -2023,8 +2048,9 @@ mtext(side=1, line=5, paste("* P-value cutoff by Bonferroni method (", alpha_HNS
 # points 10 candidate genes on this P-value plot, 標出 10 bad and 10 good 
 # **on this P-value plot (PvalueplotKM_10genes.tiff) => X-axis cutoff 要改為 0.05
 # #https://bookdown.org/ndphillips/YaRrr/low-level-plotting-functions.html
-#load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # as HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
-load(file=file.path(path_ZSWIM2, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep=""))) # as HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, with "number"
+#load(file=file.path(path_ZSWIM3, paste(TCGA_cohort, "_OS", marginTag, "multi_CoxHR2p5_Bonf.Rda", sep=""))) # as HNSCC_OS_marginS_multi_CoxHR2p5_Bonf (final candidates)
+path_ZSWIM3 <- "marginS"
+load(file=file.path(path_ZSWIM3, paste(TCGA_cohort, "_OS", marginTag, "pvalue005KM_sorted_pvalueCox_HR.Rda", sep=""))) # as HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR, with "number"
 # good guy candidates_good_guy, n=10
 points_x <- candidates_good_guy$P_value # using uncorrected P-value
 points_y <- HNSCC_OS_marginS_pvalue005KM_sorted_pvalueCox_HR[
@@ -2058,7 +2084,8 @@ text(x = points_x[c(2, 4, 6, 8, 10)], y = points_y[c(2, 4, 6, 8, 10)],
      pos = 3)            # Put labels above the points
 
 #detach(HNSCC_OS_marginS_pvalue_sorted_noNA_bonferroni)
-# save as .tiff, then export to .xlsx
+# save as PDF instead of .tiff for best resolution
+# export to .xlsx
 system("convert PvalueplotKM_20genes.tiff PvalueplotKM_20genes.png", intern = FALSE) # convert is a duplicate
 currentRow <- xlsx.addPlot.candidates(wb, sheet, file="PvalueplotKM_20genes.png") # startRow + a plot
 
@@ -2071,6 +2098,71 @@ xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 #system(paste("xdg-open ", filenamex), intern=FALSE) # not in non-graphic Ubuntu console
 # the END of R2Excel (2020)###
 #}
+
+
+#{>>** R2Excel (2020/09) ####
+#2020/09/08 Create an Excel workbook/ export to HNSCC_OS_marginS_candidates_Bonferroni_Table3.xlsx
+library("r2excel")
+marginTag <- "_marginS_"
+filenamex <- paste(TCGA_cohort, "_OS", marginTag, "candidates_Bonferroni_Table3", ".xlsx", sep = "") 
+# no more "HNSCC_OS_marginS_candidates_Venn.xlsx"
+wb <- createWorkbook(type="xlsx")
+
+# Create a sheet in that workbook
+sheet <- xlsx::createSheet(wb, sheetName = paste("Survival_candidates"))
+# [add data row by row, start from column 2]
+# > colnames(HNSCC_OS_marginS_pvalue005_zcut)
+# [1] "gene_id" "p_value" "z_score" rename to "Gene_id", "P_value", "Z_score" (why?)
+# Gene ID, Gene Description, P-value, Adjusted P-value, HR*, 95% CI, HR*, 95% CI, Remark
+candidates_good_guy_table3 <- data.frame(matrix(ncol = 9, nrow = 10))
+colnames(candidates_good_guy_table3) <- c("Gene ID", "Gene Description", "P-value", "Adjusted P-value", "HR*", "95% CI", "HR*", "95% CI", "Remark")
+candidates_good_guy_table3[,c(1,3,4,5,7)] <- candidates_good_guy[,c(1,2,3,5,7)]
+#colnames(candidates_good_guy)[1:4] <- c("Gene_id", "P_value", "Bonferroni P_value", "FDR P_value")
+# # # Bonferroni Bonferroni_cutoff; [, c(1,2,4)]
+attach(candidates_good_guy_table3) # removal of as.factor (P_value)
+# in scientific notation: formatC of [, c(2)]
+candidates_good_guy_table3$`P-value` <- formatC(as.numeric(as.character(`P-value`)), format = "e", digits = 2)
+candidates_good_guy_table3$`Adjusted P-value` <- formatC(as.numeric(as.character(`Adjusted P-value`)), format = "f", digits = 3)
+#candidates_good_guy$`FDR P_value` <- formatC(as.numeric(as.character(`FDR P_value`)), format = "f", digits = 4)
+candidates_good_guy_table3 <- candidates_good_guy_table3[order(`Adjusted P-value`), ] #sorting by order(ascending)
+detach(candidates_good_guy_table3)
+# get HR from HNSCC_survivalAnalysis_marginS_ZNF557.Rda
+# #$ find . -maxdepth 1 -name "HNSCC_survivalAnalysis_marginS_*.Rda" | xargs [command]
+i_geneID <- candidates_good_guy_table3$`Gene ID`
+untar_Rda <- data.frame(matrix(ncol = 1, nrow = length(i_geneID)))
+for (iig in 1:length(i_geneID)) {
+  untar_Rda[iig, 1] <- paste("HNSCC_survivalAnalysis_marginS_", i_geneID[iig], ".Rda", sep="")
+  load(file=untar_Rda[iig, 1]) 
+  # retrieving 95% CI from tableOS1
+  ci95 <- tableOS1[18, c(3,4,7,8)] # `RNAseq(z-score)`
+  uni_ci95 <- paste(ci95[1], "-", ci95[2], sep="")
+  multi_ci95 <- paste(ci95[3], "-", ci95[4], sep="")
+  candidates_good_guy_table3[iig, c(6,8)] <- c(uni_ci95, multi_ci95)
+} # end of for loop
+# get_Rda_pvalue <- function(geneName) {
+#   load(file=paste("HNSCC_survivalAnalysis_marginS_", geneName, ".Rda", sep=""))
+#   # load a list = c("tableChi1", "tableOS1", "tableRFS1", "OS_pvalue", "RFS_pvalue") in this .Rda
+#   # a example: geneName <- "ZNF557"
+#   #OS_pvalue$p_OS[which.min(OS_pvalue$p_OS)]
+#   
+#   if (nrow(OS_pvalue) > 0)  { # we hit this gene with P-value < 0.05 in KM plot
+#     return(min(OS_pvalue$p_OS))} else {return(NA)}
+# }
+
+
+# export up to top 10 genes [1:30,], don't show FDR P-value
+xlsx.addTable(wb, sheet, data = candidates_good_guy_table3[, -4], startCol=2,
+              fontColor="darkblue", fontSize=12,
+              rowFill=c("white", "white"), row.names = TRUE)
+
+xlsx.addLineBreak(sheet, 1)
+xlsx.addParagraph(wb, sheet, value=paste("Selection criteria:", "\n", "Bonferroni KM P-value < 0.05", "\n", "Cox's univariate & multivariate HR <=", good_FC), isItalic=FALSE, colSpan=4, 
+                  rowSpan=4, fontColor="darkblue", fontSize=14)
+xlsx.addLineBreak(sheet, 5)  # add two blank lines
+## Write wb to disk ###
+##..[2019/07/22] _marginS_ done
+# Finalize the workbook to an Excel file and write the file to disk.
+xlsx::saveWorkbook(wb, filenamex) # file name only, no path
 
 
 
