@@ -603,7 +603,7 @@ xlsx.addPlot.OS<-function(OS.km, surv_OS1, wb, sheet, startRow=NULL, startCol=2,
   #library("xlsx")
   
   png(filename = "plot.png", width = width, height = height,...)
-  plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+  plot(OS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("Optimal P-Value =", p_OS1), main=paste("OS in TCGA ", TCGA_cohort, "(n=", surv_OS1$n[1]+surv_OS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
   legend("topright", legend=c(paste("low(",surv_OS1$n[1], ")"), paste("high(",surv_OS1$n[2], ")")), lty=1:1, col=c("blue","red"))
   
   dev.off() 
@@ -630,7 +630,7 @@ xlsx.addPlot.RFS<-function(RFS.km, surv_RFS1, wb, sheet, startRow=NULL, startCol
   #library("xlsx")
   png(filename = "plot.png", width = width, height = height,...)
   # plot fuction here
-  plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("optimized P-Value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
+  plot(RFS.km, lty=1, xscale=12, xmax=60, col=c("blue","red"), sub=paste("Optimal P-Value =", p_RFS1), main=paste("RFS in TCGA ", TCGA_cohort, "(n=", surv_RFS1$n[1]+surv_RFS1$n[2],")/", geneName), ylab="Percent Survival", xlab="Years")
   legend("topright", legend=c(paste("low(",surv_RFS1$n[1], ")"), paste("high(",surv_RFS1$n[2], ")")), lty=1:1, col=c("blue","red"))
   
   dev.off() 
