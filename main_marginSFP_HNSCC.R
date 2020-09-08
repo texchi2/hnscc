@@ -80,6 +80,7 @@ HNSCC.clinical.Fire <- Samples.Clinical(cohort = cancer.Type, format="csv") # cs
 
 #{ clinical features CDEs by FirebrowseR; n=522, 81 features (CDEs)
 # obtaining all CDEs
+#  isfar <- get(load("Rda_repository/HNSCC.clinical.Fire.Rda")) # to see what's contained
 all.Found <- F
 page.Counter <- 1
 HNSCC.clinical.Fire <- list()
@@ -97,10 +98,10 @@ while(all.Found == F){
 HNSCC.clinical.Fire <- do.call(rbind, HNSCC.clinical.Fire)
 #}
 save(HNSCC.clinical.Fire, file="Rda_repository/HNSCC.clinical.Fire.Rda")
-# 
+# HNSCC.clinical.RNAseq.Fire.Rda
 # x inner join: merging 2D tables # NOT by "patient_id"
 # p16 HPV status is present
-# 
+# isfar <- get(load("Rda_repository/HNSCC.clinical.RNAseq.Fire.Rda")))
 # 
 # 
 # 
@@ -616,7 +617,7 @@ f <- e + 100
 # # # [61] "primary_therapy_outcome_success" 
 # # 
 # # 
-# # #
+# # # Common Data Element,
 # # # https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/sample-type-codes; GDC Sample Type Codes (data schema)
 # # # # > colnames(HNSCC.clinico_mRNA.Fire)
 # # # https://www.bioconductor.org/packages/devel/data/experiment/manuals/curatedOvarianData/man/curatedOvarianData.pdf (data schema)
@@ -1177,7 +1178,7 @@ for (i in c(1:length(RNAseq_geneNum)))
 
 #load(file.choose()) # self choice
 load(file="~/R/HNSCC.clinical.Fire.Rda")
-osccT <- HNSCC.clinical.Fire # n=528; #HNSCC.clinical.Fire.Rda
+osccT <- HNSCC.clinical.Fire # n=528; #HNSCC.clinical.Fire.Rda of TCGA HNSC
 
 # ignore patient_ID (it is NOT true; anonymous)
 # https://gdc.cancer.gov/resources-tcga-users/tcga-code-tables/ data schema
